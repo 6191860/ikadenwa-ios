@@ -1,0 +1,37 @@
+//
+//  App.hpp
+//  Ikadenwa
+//
+//  Created by omochimetaru on 2016/01/16.
+//  Copyright © 2016年 omochimetaru. All rights reserved.
+//
+
+#pragma once
+
+#include <cstdio>
+#include <string>
+#include <thread>
+#include <memory>
+
+#include <nwr/base/util.h>
+#include <nwr/base/websocket.h>
+#include <nwr/base/timer.h>
+#include <nwr/base/base64.h>
+#include <nwr/base/time.h>
+#include <nwr/engineio/yeast.h>
+#include <nwr/engineio/socket.h>
+
+#include "eio_test.h"
+
+namespace app {
+    class App {
+    public:
+        void Test1();
+        
+//        std::shared_ptr<nwr::eio::Socket> eio_sock_;
+//        std::shared_ptr<nwr::Websocket> ws_;
+//        std::shared_ptr<nwr::Timer> timer_;
+        
+        std::shared_ptr<EioTest> eio_test_;
+    };
+}
