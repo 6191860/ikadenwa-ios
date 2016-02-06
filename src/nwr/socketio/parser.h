@@ -24,6 +24,8 @@
 #include <nwr/base/string.h>
 #include <nwr/base/emitter.h>
 
+#include <nwr/engineio/parser.h>
+
 #include "packet.h"
 
 namespace nwr {
@@ -47,15 +49,14 @@ namespace sio {
         
         EmitterPtr<Packet> decoded_emitter() { return decoded_emitter_; }
         
-        void AddEncodedPacket(const Data & data);
-        void AddBinaryData(const Data & data);        
+        void Add(const eio::PacketData & data);
     private:
         std::shared_ptr<BinaryReconstructor> reconstructor_;
         
         EmitterPtr<Packet> decoded_emitter_;
     };
     
-    Packet DecodeString(const Data & data);
+    Packet DecodeString(const std::string & str);
     
     class BinaryReconstructor {
     public:

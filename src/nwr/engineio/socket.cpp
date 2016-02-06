@@ -41,7 +41,7 @@ namespace eio {
     packet_emitter_(std::make_shared<Emitter<Packet>>()),
     heartbeat_emitter_(std::make_shared<Emitter<Optional<TimeDuration>>>()),
     pong_emitter_(std::make_shared<Emitter<None>>()),
-    message_emitter_(std::make_shared<Emitter<Data>>()),
+    message_emitter_(std::make_shared<Emitter<PacketData>>()),
     handshake_emitter_(std::make_shared<Emitter<Json::Value>>()),
     ping_emitter_(std::make_shared<Emitter<None>>()),
     drain_emitter_(std::make_shared<Emitter<None>>()),
@@ -168,9 +168,9 @@ namespace eio {
     void Socket::OnPacket(const Packet & packet) {
         printf("%s\n", __PRETTY_FUNCTION__);
         if (ready_state_ == ReadyState::Opening || ready_state_ == ReadyState::Open) {
-            printf("socket receive: type=%s, data=%s\n",
+            printf("socket receive: type=%s, data=%.*s\n",
                    ToString(packet.type).c_str(),
-                   nwr::ToString(*packet.data).c_str());
+                   packet.data.size(), packet.data.char_ptr());
             
             packet_emitter_->Emit(packet);
             
@@ -179,7 +179,7 @@ namespace eio {
             
             switch (packet.type) {
                 case PacketType::Open: {
-                    auto json = JsonParse(*packet.data);
+                    Optional<Json::Value> json = JsonParse(packet.data.ptr(), packet.data.size());
                     if (!json) { Fatal("json parse failed"); }
                     OnHandshake(json.value());
                     break;
@@ -189,12 +189,12 @@ namespace eio {
                     pong_emitter_->Emit(None());
                     break;
                 case PacketType::Error: {
-                    auto err = Error("server error", nwr::ToString(*packet.data));
+                    auto err = Error("server error", std::string(packet.data.char_ptr(), packet.data.size()));
                     OnError(err);
                     break;
                 }
                 case PacketType::Message:
-                    message_emitter_->Emit(*packet.data);
+                    message_emitter_->Emit(packet.data);
                     break;
                 default:
                     break;

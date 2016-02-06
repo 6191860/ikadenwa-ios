@@ -70,7 +70,7 @@ namespace eio {
         EmitterPtr<Packet> packet_emitter() { return packet_emitter_; };
         EmitterPtr<Optional<TimeDuration>> heartbeat_emitter() { return heartbeat_emitter_; }
         EmitterPtr<None> pong_emitter() { return pong_emitter_; }
-        EmitterPtr<Data> message_emitter() { return message_emitter_; }
+        EmitterPtr<PacketData> message_emitter() { return message_emitter_; }
         EmitterPtr<Json::Value> handshake_emitter() { return handshake_emitter_; }
         EmitterPtr<None> ping_emitter() { return ping_emitter_; }
         EmitterPtr<None> drain_emitter() { return drain_emitter_; }
@@ -134,7 +134,7 @@ namespace eio {
         EmitterPtr<Packet> packet_emitter_;
         EmitterPtr<Optional<TimeDuration>> heartbeat_emitter_;
         EmitterPtr<None> pong_emitter_;
-        EmitterPtr<Data> message_emitter_;
+        EmitterPtr<PacketData> message_emitter_;
         EmitterPtr<Json::Value> handshake_emitter_;
         EmitterPtr<None> ping_emitter_;
         EmitterPtr<None> drain_emitter_;

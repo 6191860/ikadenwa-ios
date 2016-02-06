@@ -79,7 +79,7 @@ namespace sio {
         void OnPing();
 
         
-        void OnData(const Data & data);
+        void OnData(const eio::PacketData & data);
 
         void OnPong();
         void OnError(const Error & error);

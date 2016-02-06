@@ -77,35 +77,36 @@ namespace sio {
     decoded_emitter_(std::make_shared<Emitter<Packet>>())
     {}
     
-    void Decoder::AddEncodedPacket(const Data & data) {
-        Packet packet = DecodeString(data);
-        if (packet.type == PacketType::BinaryEvent || packet.type == PacketType::BinaryAck) { // binary packet's json
-            reconstructor_ = std::make_shared<BinaryReconstructor>(packet);
-            
-            // no attachments, labeled binary but no binary data to follow
-            if (reconstructor_->recon_pack().attachments.size() == 0) {
+    void Decoder::Add(const eio::PacketData & data) {
+        if (data.text) {
+        
+            Packet packet = DecodeString(*data.text);
+            if (packet.type == PacketType::BinaryEvent || packet.type == PacketType::BinaryAck) { // binary packet's json
+                reconstructor_ = std::make_shared<BinaryReconstructor>(packet);
                 
+                // no attachments, labeled binary but no binary data to follow
+                if (reconstructor_->recon_pack().attachments.size() == 0) {
+                    
+                    decoded_emitter_->Emit(packet);
+                }
+            } else { // non-binary full packet
                 decoded_emitter_->Emit(packet);
             }
-        } else { // non-binary full packet
-            decoded_emitter_->Emit(packet);
-        }
-    }
-    void Decoder::AddBinaryData(const Data & data) {
-        if (!reconstructor_) {
-            Fatal("got binary data when not reconstructing a packet");
+                
         } else {
-            Optional<Packet> packet = reconstructor_->TakeBinaryData(data);
-            if (packet) { // received final buffer
-                reconstructor_ = nullptr;
-                decoded_emitter_->Emit(packet.value());
+            if (!reconstructor_) {
+                Fatal("got binary data when not reconstructing a packet");
+            } else {
+                Optional<Packet> packet = reconstructor_->TakeBinaryData(*data.binary);
+                if (packet) { // received final buffer
+                    reconstructor_ = nullptr;
+                    decoded_emitter_->Emit(packet.value());
+                }
             }
         }
     }
     
-    Packet DecodeString(const Data & data) {
-        std::string str = ToString(data);
-        
+    Packet DecodeString(const std::string & str) {        
         Packet p;
         int i = 0;
         

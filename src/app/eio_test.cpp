@@ -22,7 +22,7 @@ namespace app {
             
             socket->Send(ToData("abcde"));
             
-            socket->message_emitter()->On([socket](const Data & data){
+            socket->message_emitter()->On([socket](const eio::PacketData & data){
                 printf("[EioTest] on message\n");
             });
             socket->close_emitter()->On([](None _){

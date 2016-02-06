@@ -10,18 +10,17 @@
 
 namespace nwr {
     Optional<Json::Value> JsonParse(const std::string & str) {
-        auto ret = OptionalSome(Json::Value());
-        Json::Reader reader;
-        if (!reader.parse(str, ret.value())){
-            return Optional<Json::Value>();
-        }
-        return ret;
+        return JsonParse(reinterpret_cast<const uint8_t *>(&str[0]),
+                         static_cast<int>(str.length()));
     }
     Optional<Json::Value> JsonParse(const Data & data) {
+        return JsonParse(&data[0], static_cast<int>(data.size()));
+    }
+    Optional<Json::Value> JsonParse(const uint8_t * data, int size) {
         auto ret = OptionalSome(Json::Value());
         Json::Reader reader;
-        const char * begin = AsCharPointer(data);
-        if (!reader.parse(begin, begin + data.size(), ret.value())) {
+        const char * p = reinterpret_cast<const char *>(data);
+        if (!reader.parse(p, p + size, ret.value())) {
             return Optional<Json::Value>();
         }
         return ret;

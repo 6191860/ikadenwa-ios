@@ -12,15 +12,10 @@ namespace nwr {
 namespace eio {
     
     int parser_protocol() { return 3; }
-
-    Packet MakeParserErrorPacket(const std::string & error) {
-        auto data = ToData(error);
-        return {
-            PacketType::Error,
-            std::make_shared<Data>(std::move(data))
-        };
-    }
     
+    char PacketTypeToChar(const PacketType & type) {
+        return '0' + static_cast<int>(type);
+    }
     std::string ToString(const PacketType & type) {
         switch (type) {
             case PacketType::Open:
@@ -46,14 +41,56 @@ namespace eio {
     bool IsValidPacketType(uint8_t type) {
         return 0 <= type && type <= static_cast<int>(PacketType::Noop);
     }
+
+    PacketData::PacketData(){}
+    
+    PacketData::PacketData(const DataPtr & data): binary(data){}
+    
+    PacketData::PacketData(const std::shared_ptr<std::string> & data): text(data){}
+    
+    const uint8_t * PacketData::ptr() const {
+        if (binary) {
+            return &binary->at(0);
+        } else {
+            return reinterpret_cast<const uint8_t *>(&text->at(0));
+        }
+    }
+    const char * PacketData::char_ptr() const {
+        if (binary) {
+            return reinterpret_cast<const char *>(&binary->at(0));
+        } else {
+            return &text->at(0);
+        }
+    }
+    int PacketData::size() const {
+        if (binary) {
+            return static_cast<int>(binary->size());
+        } else {
+            return static_cast<int>(text->size());
+        }
+    }
+
+    Packet MakeParserErrorPacket(const std::string & error) {
+        return { PacketType::Error, PacketData(std::make_shared<std::string>(error)) };
+    }
     
     Websocket::Message EncodePacket(const Packet & packet)
     {
-        auto blob = Data();
-        char type_char = '0' + static_cast<int>(packet.type);
-        blob.insert(blob.end(), static_cast<uint8_t>(type_char));
-        blob.insert(blob.end(), packet.data->begin(), packet.data->end());
-        return Websocket::Message(blob);
+        if (packet.data.binary) {
+            return EncodeBuffer(packet);
+        }
+        
+        std::string encoded;
+        encoded += PacketTypeToChar(packet.type);
+        encoded += *packet.data.text;
+        return Websocket::Message(encoded);
+    }
+    
+    Websocket::Message EncodeBuffer(const Packet & packet) {
+        auto data = Data();
+        data.insert(data.end(), static_cast<uint8_t>(packet.type));
+        data.insert(data.end(), packet.data.binary->begin(), packet.data.binary->end());
+        return Websocket::Message(data);
     }
     
     Packet DecodePacket(const Websocket::Message & message)
@@ -65,22 +102,21 @@ namespace eio {
         }
         
         if (message.mode == Websocket::Message::Mode::Text) {
-        
-            uint8_t type = static_cast<char>(data[0]) - '0';
+            char type_char = data[0];
             
-            if (type == static_cast<uint8_t>('b')){
+            if (type_char == 'b'){
                 return DecodeBase64Packet(Websocket::Message(Data(data.begin() + 1, data.end())));
             }
+            
+            uint8_t type = type_char - '0';
             
             if (!IsValidPacketType(type)) {
                 return MakeParserErrorPacket(Format("invalid packet type: %d", type));
             }
             
-            return {
-                static_cast<PacketType>(type),
-                std::make_shared<Data>(data.begin() + 1, data.end())
-            };
-            
+            auto packet_data = std::make_shared<std::string>(reinterpret_cast<const char *>(&data[1]),
+                                                             data.size() - 1);
+            return { static_cast<PacketType>(type), PacketData(packet_data) };
         } else {
             uint8_t type = data[0];
             
@@ -88,10 +124,8 @@ namespace eio {
                 return MakeParserErrorPacket(Format("invalid packet type: %d", type));
             }
             
-            return {
-                static_cast<PacketType>(type),
-                std::make_shared<Data>(data.begin() + 1, data.end())
-            };
+            return { static_cast<PacketType>(type),
+                PacketData(std::make_shared<Data>(data.begin() + 1, data.end())) };
         }
     }
     
@@ -109,10 +143,8 @@ namespace eio {
         Data data2;
         Base64Decode(Data(data.begin() + 1, data.end()), data2);
         
-        return {
-            static_cast<PacketType>(type),
-            std::make_shared<Data>(std::move(data2))
-        };
+        return { static_cast<PacketType>(type),
+            PacketData(std::make_shared<Data>(std::move(data2))) };
     }
 
 }

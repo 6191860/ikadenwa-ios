@@ -18,5 +18,6 @@
 namespace nwr {
     Optional<Json::Value> JsonParse(const std::string & str);
     Optional<Json::Value> JsonParse(const Data & data);
+    Optional<Json::Value> JsonParse(const uint8_t * data, int size);
     std::string JsonFormat(const Json::Value & json);
 }

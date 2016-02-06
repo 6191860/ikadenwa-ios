@@ -223,8 +223,8 @@ namespace sio {
         
         auto thiz = shared_from_this();
         
-        subs_.push_back(On<Data>(socket->message_emitter(),
-                                 [thiz](const Data & data) { thiz->OnData(data); }));
+        subs_.push_back(On<eio::PacketData>(socket->message_emitter(),
+                                            [thiz](const eio::PacketData & data) { thiz->OnData(data); }));
         subs_.push_back(On<None>(socket->ping_emitter(),
                                  [thiz](None _) { thiz->OnPing(); }));
         subs_.push_back(On<None>(socket->pong_emitter(),
@@ -250,7 +250,7 @@ namespace sio {
         });
     }
     
-    void SocketManager::OnData(const Data & data) {
+    void SocketManager::OnData(const eio::PacketData & data) {
         
     }
     
