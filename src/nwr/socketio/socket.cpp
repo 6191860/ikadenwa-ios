@@ -10,7 +10,14 @@
 
 namespace nwr {
 namespace sio {
-    Socket::Socket(int io, int nsp) {
+    std::shared_ptr<Socket> Socket::Create(int io, int nsp) {
+        auto thiz = std::shared_ptr<Socket>(new Socket());
+        thiz->Init(io, nsp);
+        return thiz;
+    }
+    Socket::Socket() {
+    }
+    void Socket::Init(int io, int nsp) {
         
     }
 }

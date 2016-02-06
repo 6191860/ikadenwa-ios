@@ -8,7 +8,7 @@
 
 #include "websocket.h"
 
-#include "util.h"
+#include "string.h"
 #include "url.h"
 #include "task_queue.h"
 #include "websocket_impl.h"
@@ -17,7 +17,7 @@ namespace nwr {
     
     Websocket::Message::Message(const std::string & text):
     Message(Mode::Text,
-            std::make_shared<Data>(std::move(ToData(text)))){}
+            std::make_shared<Data>(ToData(text))){}
 
     Websocket::Message::Message(const Data & binary):
     Message(Mode::Binary,
@@ -29,7 +29,7 @@ namespace nwr {
     Websocket::Message::Message(Mode mode):
     Message(mode, std::make_shared<Data>()){}
     
-    Websocket::Message::Message(Mode mode, const std::shared_ptr<Data> & data):
+    Websocket::Message::Message(Mode mode, const DataPtr & data):
     mode(mode), data(data){}
     
     std::shared_ptr<Websocket> Websocket::Create(const std::string & url,

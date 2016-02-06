@@ -15,16 +15,27 @@
 
 namespace nwr {
 namespace eio {
-    
-//    TODO ping timer release
-    
+        
     Socket::ConstructorParams::ConstructorParams():
     agent(),
     timestamp_param("t"),
-    timestamp_requests(false)
+    timestamp_requests(false),
+    reconnection(true),
+    reconnection_attempts(-1),
+    reconnection_delay(TimeDuration(1.0)),
+    reconnection_delay_max(TimeDuration(5.0)),
+    randomization_factor(0.5),
+    timeout(TimeDuration(20.0)),
+    auto_connect(true)
     {}
     
-    Socket::Socket(const std::string & uri, const ConstructorParams & params):
+    std::shared_ptr<Socket> Socket::Create(const std::string & uri, const ConstructorParams & params) {
+        auto thiz = std::shared_ptr<Socket>(new Socket());
+        thiz->Init(uri, params);
+        return thiz;
+    }
+    
+    Socket::Socket():
     transport_(nullptr),
     open_emitter_(std::make_shared<Emitter<None>>()),
     packet_emitter_(std::make_shared<Emitter<Packet>>()),
@@ -39,22 +50,25 @@ namespace eio {
     error_emitter_(std::make_shared<Emitter<Error>>()),
     close_emitter_(std::make_shared<Emitter<None>>())
     {
+    }
+    
+    void Socket::Init(const std::string &uri, const ConstructorParams &params) {
         on_heartbeat_ptr_ = std::make_shared<EventListener<Optional<TimeDuration>>>(
-                std::bind(&Socket::OnHeartbeat, this, std::placeholders::_1));
+            std::bind(&Socket::OnHeartbeat, this, std::placeholders::_1));
         
         auto new_params = params;
         auto url_parts = ParseUrl(uri);
         
         hostname_ = url_parts.hostname;
         secure_ = url_parts.scheme == "https" || url_parts.scheme == "wss";
-        if (url_parts.port.presented()) {
+        if (url_parts.port) {
             port_ = url_parts.port.value();
         } else {
             // if no port is specified manually, use the protocol default
             port_ = secure_ ? 443 : 80;
         }
         query_ = url_parts.query;
-
+        
         agent_ = params.agent;
         path_ = PathAppendSlash(params.path.Recover("/engine.io"));
         
@@ -86,8 +100,8 @@ namespace eio {
         query["transport"] = name;
 
         // session id if we already have one
-        if (sid_ != "") {
-            query["sid"] = sid_;
+        if (id_ != "") {
+            query["sid"] = id_;
         }
         
         Transport::ConstructorParams p;
@@ -126,18 +140,20 @@ namespace eio {
         // set up transport
         transport_ = transport;
         
+        auto thiz = shared_from_this();
+        
         // set up transport listeners
-        transport_->drain_emitter()->On([this](None _){
-            OnDrain();
+        transport_->drain_emitter()->On([thiz](None _){
+            thiz->OnDrain();
         });
-        transport_->packet_emitter()->On([this](const Packet & packet){
-            OnPacket(packet);
+        transport_->packet_emitter()->On([thiz](const Packet & packet){
+            thiz->OnPacket(packet);
         });
-        transport_->error_emitter()->On([this](const Error & error){
-            OnError(error);
+        transport_->error_emitter()->On([thiz](const Error & error){
+            thiz->OnError(error);
         });
-        transport_->close_emitter()->On([this](None _){
-            OnClose();
+        transport_->close_emitter()->On([thiz](None _){
+            thiz->OnClose();
         });
     }
     
@@ -163,10 +179,9 @@ namespace eio {
             
             switch (packet.type) {
                 case PacketType::Open: {
-                    
                     auto json = JsonParse(*packet.data);
-                    if (json == nullptr) { Fatal("json parse failed"); }
-                    OnHandshake(*json);
+                    if (!json) { Fatal("json parse failed"); }
+                    OnHandshake(json.value());
                     break;
                 }
                 case PacketType::Pong:
@@ -197,7 +212,7 @@ namespace eio {
         if(!rtc::GetStringFromJsonObject(json, "sid", &str)) {
             Fatal(Format("invalid json: %s", JsonFormat(json).c_str()));
         }
-        sid_ = str;
+        id_ = str;
         transport_->query_ref()["sid"] = str;
         
         double dbl;
@@ -230,11 +245,12 @@ namespace eio {
             ping_timeout_timer_->Cancel();
         }
 
+        auto thiz = shared_from_this();
         ping_timeout_timer_ = Timer::Create(timeout.Recover(ping_interval_ + ping_timeout_),
-                                            [this]{
+                                            [thiz]{
                                                 printf("ping timeout\n");
-                                                if (ready_state_ == ReadyState::Closed) { return; }
-                                                OnClose();
+                                                if (thiz->ready_state_ == ReadyState::Closed) { return; }
+                                                thiz->OnClose();
                                             });
     }
     
@@ -244,18 +260,20 @@ namespace eio {
             ping_interval_timer_->Cancel();
         }
         
+        auto thiz = shared_from_this();
         ping_interval_timer_ = Timer::Create(ping_interval_,
-                                             [this]{
+                                             [thiz]{
                                                  printf("write ping\n");
-                                                 Ping();
-                                                 OnHeartbeat(OptionalSome(ping_timeout_));
+                                                 thiz->Ping();
+                                                 thiz->OnHeartbeat(OptionalSome(thiz->ping_timeout_));
                                              });
     }
     
     void Socket::Ping() {
         printf("%s\n", __PRETTY_FUNCTION__);
-        SendPacket(PacketType::Ping, Data(0), 0, [this]{
-            ping_emitter_->Emit(None());
+        auto thiz = shared_from_this();
+        SendPacket(PacketType::Ping, Data(0), 0, [thiz]{
+            thiz->ping_emitter_->Emit(None());
         });
     }
     
@@ -327,10 +345,11 @@ namespace eio {
     void Socket::Close() {
         printf("%s\n", __PRETTY_FUNCTION__);
         
-        auto close_func = std::function<void()>([this]{
-            OnClose();
+        auto thiz = shared_from_this();
+        auto close_func = std::function<void()>([thiz]{
+            thiz->OnClose();
             printf("socket closing");
-            transport_->Close();
+            thiz->transport_->Close();
         });
         
         if (ready_state_ == ReadyState::Opening || ready_state_ == ReadyState::Open) {
@@ -378,7 +397,7 @@ namespace eio {
             ready_state_ = ReadyState::Closed;
             
             // clear session id
-            sid_ = "";
+            id_ = "";
             
             // emit close event
             

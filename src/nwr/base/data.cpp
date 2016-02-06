@@ -9,7 +9,10 @@
 #include "data.h"
 
 namespace nwr {
+    const char * AsCharPointer(const Data & data) {
+        return reinterpret_cast<const char *>(&data[0]);
+    }
     std::string ToString(const Data & data) {
-        return std::string((const char *)&data[0], data.size());
+        return std::string(AsCharPointer(data), data.size());
     }
 }

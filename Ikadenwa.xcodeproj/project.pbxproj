@@ -11,12 +11,16 @@
 		D60852A41C50B95100CEE554 /* path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60852A21C50B95100CEE554 /* path.cpp */; };
 		D60852A61C50DF6000CEE554 /* data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60852A51C50DF6000CEE554 /* data.cpp */; };
 		D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E8B1C64DC3700A8B6CA /* eio_test.cpp */; };
+		D6155E901C660EBD00A8B6CA /* parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E8E1C660EBD00A8B6CA /* parser.cpp */; };
+		D6155E931C66157200A8B6CA /* binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E911C66157200A8B6CA /* binary.cpp */; };
+		D6155E961C6615B100A8B6CA /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E941C6615B100A8B6CA /* packet.cpp */; };
+		D6155E991C66273500A8B6CA /* env.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E971C66273500A8B6CA /* env.cpp */; };
 		D664369D1C4A544C0059A94B /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D664369B1C4A544C0059A94B /* app.cpp */; };
 		D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D664369F1C4A5F070059A94B /* AppDelegate.mm */; };
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
 		D66436A51C4A64110059A94B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D66436A41C4A64110059A94B /* main.m */; };
 		D66436A81C4A73420059A94B /* websocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436A71C4A73420059A94B /* websocket.cpp */; };
-		D66436AB1C4A74C20059A94B /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436AA1C4A74C20059A94B /* util.cpp */; };
+		D66436AB1C4A74C20059A94B /* string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436AA1C4A74C20059A94B /* string.cpp */; };
 		D66436AE1C4A805F0059A94B /* url.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436AD1C4A805F0059A94B /* url.cpp */; };
 		D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */ = {isa = PBXBuildFile; fileRef = D66436B21C4CD89D0059A94B /* ios_task_queue.mm */; };
 		D66436B91C4CEA740059A94B /* task_queue.mm in Sources */ = {isa = PBXBuildFile; fileRef = D66436B81C4CEA740059A94B /* task_queue.mm */; };
@@ -88,6 +92,14 @@
 		D60852A51C50DF6000CEE554 /* data.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = data.cpp; sourceTree = "<group>"; };
 		D6155E8B1C64DC3700A8B6CA /* eio_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = eio_test.cpp; path = app/eio_test.cpp; sourceTree = "<group>"; };
 		D6155E8C1C64DC3700A8B6CA /* eio_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eio_test.h; path = app/eio_test.h; sourceTree = "<group>"; };
+		D6155E8E1C660EBD00A8B6CA /* parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parser.cpp; path = nwr/socketio/parser.cpp; sourceTree = "<group>"; };
+		D6155E8F1C660EBD00A8B6CA /* parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = parser.h; path = nwr/socketio/parser.h; sourceTree = "<group>"; };
+		D6155E911C66157200A8B6CA /* binary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = binary.cpp; path = nwr/socketio/binary.cpp; sourceTree = "<group>"; };
+		D6155E921C66157200A8B6CA /* binary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = binary.h; path = nwr/socketio/binary.h; sourceTree = "<group>"; };
+		D6155E941C6615B100A8B6CA /* packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = packet.cpp; path = nwr/socketio/packet.cpp; sourceTree = "<group>"; };
+		D6155E951C6615B100A8B6CA /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = nwr/socketio/packet.h; sourceTree = "<group>"; };
+		D6155E971C66273500A8B6CA /* env.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = env.cpp; sourceTree = "<group>"; };
+		D6155E981C66273500A8B6CA /* env.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = env.h; sourceTree = "<group>"; };
 		D664369B1C4A544C0059A94B /* app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = app/app.cpp; sourceTree = "<group>"; };
 		D664369C1C4A544C0059A94B /* app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = app.h; path = app/app.h; sourceTree = "<group>"; };
 		D664369E1C4A5F070059A94B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -96,8 +108,8 @@
 		D66436A41C4A64110059A94B /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		D66436A61C4A73240059A94B /* websocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = websocket.h; sourceTree = "<group>"; };
 		D66436A71C4A73420059A94B /* websocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = websocket.cpp; sourceTree = "<group>"; };
-		D66436A91C4A74AB0059A94B /* util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
-		D66436AA1C4A74C20059A94B /* util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = util.cpp; sourceTree = "<group>"; };
+		D66436A91C4A74AB0059A94B /* string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = string.h; sourceTree = "<group>"; };
+		D66436AA1C4A74C20059A94B /* string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = string.cpp; sourceTree = "<group>"; };
 		D66436AC1C4A80540059A94B /* url.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = url.h; sourceTree = "<group>"; };
 		D66436AD1C4A805F0059A94B /* url.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = url.cpp; sourceTree = "<group>"; };
 		D66436B01C4CD7B50059A94B /* task_queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = task_queue.h; sourceTree = "<group>"; };
@@ -296,8 +308,10 @@
 		D6A690711C44CC1100952A7F /* base */ = {
 			isa = PBXGroup;
 			children = (
-				D66436A91C4A74AB0059A94B /* util.h */,
-				D66436AA1C4A74C20059A94B /* util.cpp */,
+				D6155E981C66273500A8B6CA /* env.h */,
+				D6155E971C66273500A8B6CA /* env.cpp */,
+				D66436A91C4A74AB0059A94B /* string.h */,
+				D66436AA1C4A74C20059A94B /* string.cpp */,
 				D6F78A481C543FD900B21614 /* optional.h */,
 				D66436E61C4FD8780059A94B /* none.h */,
 				D66436BB1C4D2BA50059A94B /* task.h */,
@@ -356,6 +370,12 @@
 		D6F78A4A1C54DAD000B21614 /* socketio */ = {
 			isa = PBXGroup;
 			children = (
+				D6155E951C6615B100A8B6CA /* packet.h */,
+				D6155E941C6615B100A8B6CA /* packet.cpp */,
+				D6155E921C66157200A8B6CA /* binary.h */,
+				D6155E911C66157200A8B6CA /* binary.cpp */,
+				D6155E8F1C660EBD00A8B6CA /* parser.h */,
+				D6155E8E1C660EBD00A8B6CA /* parser.cpp */,
 				D6F78A4C1C54DAE900B21614 /* on.h */,
 				D6F78A4B1C54DAE900B21614 /* on.cpp */,
 				D6F78A4F1C54EC2400B21614 /* url.h */,
@@ -461,10 +481,11 @@
 				D66436A51C4A64110059A94B /* main.m in Sources */,
 				D66436A81C4A73420059A94B /* websocket.cpp in Sources */,
 				D60852A11C50B24D00CEE554 /* socket.cpp in Sources */,
-				D66436AB1C4A74C20059A94B /* util.cpp in Sources */,
+				D66436AB1C4A74C20059A94B /* string.cpp in Sources */,
 				D66436C11C4D40D80059A94B /* ios_looper.mm in Sources */,
 				D66436C31C4D42980059A94B /* looper.mm in Sources */,
 				D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */,
+				D6155E901C660EBD00A8B6CA /* parser.cpp in Sources */,
 				D66436EF1C4FEF330059A94B /* time.cpp in Sources */,
 				D66436AE1C4A805F0059A94B /* url.cpp in Sources */,
 				D66436DC1C4E94F30059A94B /* websocket_impl.cpp in Sources */,
@@ -475,14 +496,17 @@
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,
 				D60852A41C50B95100CEE554 /* path.cpp in Sources */,
 				D6F78A561C55090600B21614 /* socket.cpp in Sources */,
+				D6155E961C6615B100A8B6CA /* packet.cpp in Sources */,
 				D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */,
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
 				D6F78A531C55018A00B21614 /* socket_manager.cpp in Sources */,
+				D6155E931C66157200A8B6CA /* binary.cpp in Sources */,
 				D66436CC1C4DC8F10059A94B /* parser.cpp in Sources */,
 				D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */,
 				D6F78A4D1C54DAE900B21614 /* on.cpp in Sources */,
 				D66436E51C4F6C5A0059A94B /* error.cpp in Sources */,
 				D66436F01C5000B40059A94B /* websocket_transport.cpp in Sources */,
+				D6155E991C66273500A8B6CA /* env.cpp in Sources */,
 				D6F78A501C54EC2400B21614 /* url.cpp in Sources */,
 				D66436EC1C4FE9EC0059A94B /* yeast.cpp in Sources */,
 				D66436B91C4CEA740059A94B /* task_queue.mm in Sources */,

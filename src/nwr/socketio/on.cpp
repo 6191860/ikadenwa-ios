@@ -10,10 +10,13 @@
 
 namespace nwr {
 namespace sio {
+    OnToken::OnToken(){}
+    
     OnToken::OnToken(const std::function<void()> & destroy_func):
     destroy_func_(destroy_func)
     {}
-    void OnToken::Destroy() {
+    
+    void OnToken::Destroy() const{
         destroy_func_();
     }
 }

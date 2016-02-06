@@ -13,7 +13,8 @@
 #include <thread>
 #include <memory>
 
-#include <nwr/base/util.h>
+#include <nwr/base/env.h>
+#include <nwr/base/string.h>
 #include <nwr/base/websocket.h>
 #include <nwr/base/timer.h>
 #include <nwr/base/base64.h>

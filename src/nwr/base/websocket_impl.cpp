@@ -8,7 +8,8 @@
 
 #include "websocket_impl.h"
 
-#include "util.h"
+#include "env.h"
+#include "string.h"
 #include "url.h"
 #include "task_queue.h"
 
@@ -38,7 +39,7 @@ namespace nwr {
         if (scheme == "wss" || scheme == "https") {
             is_ssl = true;
         }
-        if (!url_parts.port.presented()) {
+        if (!url_parts.port) {
             if (is_ssl) {
                 url_parts.port = OptionalSome(443);
             } else {

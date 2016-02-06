@@ -31,12 +31,12 @@ namespace nwr {
                 Binary = 2
             };
             Mode mode;
-            std::shared_ptr<Data> data;
+            DataPtr data;
             Message(const std::string & text);
             Message(const Data & binary);
             Message();
             Message(Mode mode);
-            Message(Mode mode, const std::shared_ptr<Data> & data);
+            Message(Mode mode, const DataPtr & data);
         };
         
         using OnCloseFunc = std::function<void()>;

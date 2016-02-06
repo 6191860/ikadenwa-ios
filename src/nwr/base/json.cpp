@@ -9,20 +9,20 @@
 #include "json.h"
 
 namespace nwr {
-    std::shared_ptr<Json::Value> JsonParse(const std::string & str) {
-        auto ret = std::make_shared<Json::Value>();
+    Optional<Json::Value> JsonParse(const std::string & str) {
+        auto ret = OptionalSome(Json::Value());
         Json::Reader reader;
-        if (!reader.parse(str, *ret)){
-            return nullptr;
+        if (!reader.parse(str, ret.value())){
+            return Optional<Json::Value>();
         }
         return ret;
     }
-    std::shared_ptr<Json::Value> JsonParse(const Data & data) {
-        auto ret = std::make_shared<Json::Value>();
+    Optional<Json::Value> JsonParse(const Data & data) {
+        auto ret = OptionalSome(Json::Value());
         Json::Reader reader;
-        const char * begin = reinterpret_cast<const char *>(&data[0]);
-        if (!reader.parse(begin, begin + data.size(), *ret)) {
-            return nullptr;
+        const char * begin = AsCharPointer(data);
+        if (!reader.parse(begin, begin + data.size(), ret.value())) {
+            return Optional<Json::Value>();
         }
         return ret;
     }

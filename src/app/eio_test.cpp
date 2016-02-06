@@ -16,7 +16,7 @@ namespace app {
 //        params.origin = "192.168.1.5";
         
         
-        auto socket = std::make_shared<eio::Socket>("ws://192.168.1.5:8080", params);
+        auto socket = eio::Socket::Create("ws://192.168.1.5:8080", params);
         socket->open_emitter()->On([socket](None _){
             printf("[EioTest] on open\n");
             

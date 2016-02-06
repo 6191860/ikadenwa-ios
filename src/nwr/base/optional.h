@@ -18,58 +18,49 @@ namespace nwr {
         Optional(const Optional & copy): value_(nullptr) {
             *this = copy;
         }
-
         Optional(Optional && move): value_(nullptr) {
             *this = move;
         }
-        
         explicit Optional(const T & value): value_(nullptr) {
-            set_value(value);
+            set_value(new T (value));
         }
         explicit Optional(T && value): value_(nullptr) {
-            set_value(value);
+            set_value(new T (value));
         }
-        
         ~Optional() {
-            set_null();
+            set_value(nullptr);
         }
         
-        bool presented() const { return value_ != nullptr; }
+        explicit operator bool() const { return value_ != nullptr; }
         
-        T value() const { return *value_; }
+        const T & value() const { return *value_; }
+        T & value() { return * value_; }
         
         T Recover(const T & value) const {
-            return presented() ? this->value() : value;
+            return *this ? this->value() : value;
         }
         
         Optional<T> & operator=(const Optional & copy) {
             if (copy.value_) {
-                set_value(*copy.value_);
+                set_value(new T(*copy.value_));
             } else {
-                set_null();
+                set_value(nullptr);
             }
             return *this;
         }
         Optional<T> & operator=(Optional && move) {
-            set_null();
             if (move.value_) {
-                value_ = move.value_;
+                set_value(move.value_);
                 move.value_ = nullptr;
+            } else {
+                set_value(nullptr);
             }
             return *this;
         }
     private:
-        void set_null() {
+        void set_value(T * value) {
             Release();
-            value_ = nullptr;
-        }
-        void set_value(const T & value) {
-            Release();
-            value_ = new T (value);
-        }
-        void set_value(T && value) {
-            Release();
-            value_ = new T (value);
+            value_ = value;
         }
         void Release() {
             if (value_) {
@@ -82,5 +73,8 @@ namespace nwr {
     
     template <typename T> Optional<T> OptionalSome(const T & value) {
         return Optional<T>(value);
+    }
+    template <typename T> Optional<T> OptionalNone() {
+        return Optional<T>();
     }
 }

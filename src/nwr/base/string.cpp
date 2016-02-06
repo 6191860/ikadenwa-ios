@@ -6,7 +6,9 @@
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
-#include "util.h"
+#include "string.h"
+
+#include "env.h"
 
 namespace nwr {
     std::string Format(const char * format, ...) {
@@ -33,11 +35,6 @@ namespace nwr {
         std::string ret(buf, len);
         delete [] buf;
         return ret;
-    }
-    
-    void Fatal(const std::string & message) {
-        printf("[Fatal] %s\n", message.c_str());
-        std::abort();
     }
     
     std::vector<std::string> Split(const std::string & str, const std::string & delim) {
@@ -82,5 +79,11 @@ namespace nwr {
         return Data(p, p + string.length());
     }
 
+    bool IsDigit(const std::string & str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (!std::isdigit(str[i])) { return false; }
+        }
+        return true;
+    }
 }
 

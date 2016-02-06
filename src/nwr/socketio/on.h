@@ -15,8 +15,9 @@ namespace sio {
     
     class OnToken {
     public:
+        OnToken();
         OnToken(const std::function<void()> & destroy_func);
-        void Destroy();
+        void Destroy() const;
     private:
         std::function<void()> destroy_func_;
     };
@@ -28,7 +29,7 @@ namespace sio {
         
         emitter->On(heap_listener);
         
-        auto token = OnToken2([emitter, heap_listener] {
+        auto token = OnToken([emitter, heap_listener] {
             emitter->Off(heap_listener);
         });
         return token;

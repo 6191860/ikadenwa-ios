@@ -13,9 +13,10 @@
 #include <webrtc/base/json.h>
 
 #include "data.h"
+#include "optional.h"
 
 namespace nwr {
-    std::shared_ptr<Json::Value> JsonParse(const std::string & str);
-    std::shared_ptr<Json::Value> JsonParse(const Data & data);
+    Optional<Json::Value> JsonParse(const std::string & str);
+    Optional<Json::Value> JsonParse(const Data & data);
     std::string JsonFormat(const Json::Value & json);
 }

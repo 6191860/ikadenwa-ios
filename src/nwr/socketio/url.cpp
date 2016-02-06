@@ -8,7 +8,8 @@
 
 #include "url.h"
 
-#include "util.h"
+#include "env.h"
+#include "string.h"
 
 namespace nwr {
 namespace sio {
@@ -18,7 +19,7 @@ namespace sio {
         
         auto url_part = ParseUrl(uri);
         
-        if (!url_part.port.presented()) {
+        if (!url_part.port) {
             if (url_part.scheme == "http" || url_part.scheme == "ws") {
                 ret.port = 80;
             } else if (url_part.scheme == "https" || url_part.scheme == "wss") {

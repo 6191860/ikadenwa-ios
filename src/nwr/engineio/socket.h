@@ -16,6 +16,7 @@
 #include <nwr/base/none.h>
 #include <nwr/base/data.h>
 #include <nwr/base/error.h>
+#include <nwr/base/time.h>
 #include <nwr/base/emitter.h>
 #include <nwr/base/json.h>
 
@@ -28,16 +29,26 @@ namespace eio {
     
     class Transport;
     
-    class Socket {
+    class Socket: public std::enable_shared_from_this<Socket> {
     public:
         struct ConstructorParams {
             ConstructorParams();
             
+            //  engine.io
             std::string origin;
             std::string agent;
             Optional<std::string> path;
             std::string timestamp_param;
             bool timestamp_requests;
+            
+            //  socket.io
+            bool reconnection;
+            int reconnection_attempts;
+            TimeDuration reconnection_delay;
+            TimeDuration reconnection_delay_max;
+            double randomization_factor;
+            TimeDuration timeout;
+            bool auto_connect;
         };
         enum class ReadyState {
             None,
@@ -46,7 +57,11 @@ namespace eio {
             Closed,
             Closing
         };
-        Socket(const std::string & uri, const ConstructorParams & params);
+        static std::shared_ptr<Socket> Create(const std::string & uri, const ConstructorParams & params);
+    private:
+        Socket();
+        void Init(const std::string & uri, const ConstructorParams & params);
+    public:
         virtual ~Socket();
         
         int protocol();
@@ -63,6 +78,8 @@ namespace eio {
         EmitterPtr<Packet> packet_create_emitter() { return packet_create_emitter_; }
         EmitterPtr<Error> error_emitter() { return error_emitter_; }
         EmitterPtr<None> close_emitter() { return close_emitter_; }
+        
+        std::string id() { return id_; }
     private:
         std::shared_ptr<Transport> CreateTransport(const std::string & name);
         
@@ -105,7 +122,7 @@ namespace eio {
         ReadyState ready_state_;
         std::vector<Packet> write_buffer_;
         std::shared_ptr<Transport> transport_;
-        std::string sid_;
+        std::string id_;
         TimeDuration ping_interval_;
         TimeDuration ping_timeout_;
         TimerPtr ping_timeout_timer_;
@@ -125,7 +142,6 @@ namespace eio {
         EmitterPtr<Packet> packet_create_emitter_;
         EmitterPtr<Error> error_emitter_;
         EmitterPtr<None> close_emitter_;
-        
     };
     
 }

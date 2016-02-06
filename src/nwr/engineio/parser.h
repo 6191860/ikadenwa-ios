@@ -16,8 +16,9 @@
 #include <functional>
 #include <algorithm>
 
+#include <nwr/base/env.h>
 #include <nwr/base/data.h>
-#include <nwr/base/util.h>
+#include <nwr/base/string.h>
 #include <nwr/base/base64.h>
 #include <nwr/base/websocket.h>
 
@@ -39,7 +40,7 @@ namespace eio {
         
     struct Packet {
         PacketType type;
-        std::shared_ptr<Data> data;
+        DataPtr data;
     };
     
     Packet MakeParserErrorPacket(const std::string & error);

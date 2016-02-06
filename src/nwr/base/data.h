@@ -10,9 +10,14 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace nwr {
     using Data = std::vector<uint8_t>;
+    
+    using DataPtr = std::shared_ptr<Data>;
+    
+    const char * AsCharPointer(const Data & data);
     
     std::string ToString(const Data & data);
 }

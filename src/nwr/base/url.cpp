@@ -7,7 +7,8 @@
 //
 
 #include "url.h"
-#include "util.h"
+#include "env.h"
+#include "string.h"
 
 namespace nwr {
     UrlParts::UrlParts():

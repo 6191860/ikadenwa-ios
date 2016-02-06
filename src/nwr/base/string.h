@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <cctype>
 
 #include "data.h"
 
@@ -19,8 +20,6 @@ namespace nwr {
     std::string Format(const char * format, ...);
     std::string FormatV(const char * foramt, va_list ap);
     
-    [[noreturn]] void Fatal(const std::string & message);
-    
     std::vector<std::string> Split(const std::string & str, const std::string & delim);
     std::vector<std::string> Split(const std::string & str, const std::string & delim, int max_count);
     
@@ -28,4 +27,6 @@ namespace nwr {
     
     const uint8_t * AsDataPointer(const std::string & string);
     Data ToData(const std::string & string);
+    
+    bool IsDigit(const std::string & str);
 }

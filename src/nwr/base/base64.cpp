@@ -10,7 +10,8 @@
 
 #include <openssl/ssl.h>
 
-#include "util.h"
+#include "env.h"
+#include "string.h"
 
 namespace nwr {
     void Base64Encode(const Data & data, Data & dest_str) {
