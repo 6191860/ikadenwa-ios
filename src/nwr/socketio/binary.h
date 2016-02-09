@@ -17,11 +17,6 @@
 namespace nwr {
 namespace sio {
     
-//    struct TuplePacketBuffer {
-//        Packet packet;
-//        std::vector<std::shared_ptr<Data>> buffer;
-//    };
-//    
-//    void DeconstructPacket(const Packet & packet);
+
 }
 }

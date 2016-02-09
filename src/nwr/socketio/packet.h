@@ -28,11 +28,19 @@ namespace sio {
     Optional<PacketType> PacketTypeFromString(const std::string & str);
     bool IsValidPacketTypeValue(int value);
     
+    struct PacketData {
+        std::shared_ptr<Json::Value> json;
+        std::vector<DataPtr> binaries;
+        
+    };
+    
     struct Packet {
+        Packet();
+        
         PacketType type;
         Optional<std::string> nsp;
         Optional<int> id;
-        Optional<Json::Value> data;
+        std::shared_ptr<Json::Value> data;
         std::vector<DataPtr> attachments;
     };
 }

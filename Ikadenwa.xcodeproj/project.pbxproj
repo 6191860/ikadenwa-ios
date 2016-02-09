@@ -49,7 +49,7 @@
 		D6F78A461C54110700B21614 /* json.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A441C54110700B21614 /* json.cpp */; };
 		D6F78A4D1C54DAE900B21614 /* on.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A4B1C54DAE900B21614 /* on.cpp */; };
 		D6F78A501C54EC2400B21614 /* url.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A4E1C54EC2400B21614 /* url.cpp */; };
-		D6F78A531C55018A00B21614 /* socket_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A511C55018A00B21614 /* socket_manager.cpp */; };
+		D6F78A531C55018A00B21614 /* manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A511C55018A00B21614 /* manager.cpp */; };
 		D6F78A561C55090600B21614 /* socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A541C55090600B21614 /* socket.cpp */; };
 /* End PBXBuildFile section */
 
@@ -164,8 +164,8 @@
 		D6F78A4C1C54DAE900B21614 /* on.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = on.h; path = nwr/socketio/on.h; sourceTree = "<group>"; };
 		D6F78A4E1C54EC2400B21614 /* url.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = url.cpp; path = nwr/socketio/url.cpp; sourceTree = "<group>"; };
 		D6F78A4F1C54EC2400B21614 /* url.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = url.h; path = nwr/socketio/url.h; sourceTree = "<group>"; };
-		D6F78A511C55018A00B21614 /* socket_manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = socket_manager.cpp; path = nwr/socketio/socket_manager.cpp; sourceTree = "<group>"; };
-		D6F78A521C55018A00B21614 /* socket_manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socket_manager.h; path = nwr/socketio/socket_manager.h; sourceTree = "<group>"; };
+		D6F78A511C55018A00B21614 /* manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = manager.cpp; path = nwr/socketio/manager.cpp; sourceTree = "<group>"; };
+		D6F78A521C55018A00B21614 /* manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = manager.h; path = nwr/socketio/manager.h; sourceTree = "<group>"; };
 		D6F78A541C55090600B21614 /* socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = socket.cpp; path = nwr/socketio/socket.cpp; sourceTree = "<group>"; };
 		D6F78A551C55090600B21614 /* socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socket.h; path = nwr/socketio/socket.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -380,8 +380,8 @@
 				D6F78A4B1C54DAE900B21614 /* on.cpp */,
 				D6F78A4F1C54EC2400B21614 /* url.h */,
 				D6F78A4E1C54EC2400B21614 /* url.cpp */,
-				D6F78A521C55018A00B21614 /* socket_manager.h */,
-				D6F78A511C55018A00B21614 /* socket_manager.cpp */,
+				D6F78A521C55018A00B21614 /* manager.h */,
+				D6F78A511C55018A00B21614 /* manager.cpp */,
 				D6F78A551C55090600B21614 /* socket.h */,
 				D6F78A541C55090600B21614 /* socket.cpp */,
 			);
@@ -499,7 +499,7 @@
 				D6155E961C6615B100A8B6CA /* packet.cpp in Sources */,
 				D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */,
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
-				D6F78A531C55018A00B21614 /* socket_manager.cpp in Sources */,
+				D6F78A531C55018A00B21614 /* manager.cpp in Sources */,
 				D6155E931C66157200A8B6CA /* binary.cpp in Sources */,
 				D66436CC1C4DC8F10059A94B /* parser.cpp in Sources */,
 				D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */,
@@ -631,8 +631,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/lib/openssl/include",
 					"$(SRCROOT)/lib/websockets/include",
@@ -657,8 +659,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_MODULES = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/lib/openssl/include",
 					"$(SRCROOT)/lib/websockets/include",

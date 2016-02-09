@@ -20,10 +20,11 @@ namespace app {
         socket->open_emitter()->On([socket](None _){
             printf("[EioTest] on open\n");
             
-            socket->Send(ToData("abcde"));
+            socket->Send(eio::PacketData("abcde"));
             
             socket->message_emitter()->On([socket](const eio::PacketData & data){
-                printf("[EioTest] on message\n");
+                printf("[EioTest] on message: %s\n",
+                       DataFormat(data.ptr(), data.size()).c_str());
             });
             socket->close_emitter()->On([](None _){
                 printf("[EioTest] on close\n");

@@ -30,5 +30,8 @@ namespace sio {
         return (static_cast<int>(PacketType::Connect) <= value &&
                 value <= static_cast<int>(PacketType::BinaryAck));
     }
+    
+    Packet::Packet()
+    {}
 }
 }

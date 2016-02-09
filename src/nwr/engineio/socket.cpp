@@ -37,23 +37,23 @@ namespace eio {
     
     Socket::Socket():
     transport_(nullptr),
-    open_emitter_(std::make_shared<Emitter<None>>()),
-    packet_emitter_(std::make_shared<Emitter<Packet>>()),
-    heartbeat_emitter_(std::make_shared<Emitter<Optional<TimeDuration>>>()),
-    pong_emitter_(std::make_shared<Emitter<None>>()),
-    message_emitter_(std::make_shared<Emitter<PacketData>>()),
-    handshake_emitter_(std::make_shared<Emitter<Json::Value>>()),
-    ping_emitter_(std::make_shared<Emitter<None>>()),
-    drain_emitter_(std::make_shared<Emitter<None>>()),
-    flush_emitter_(std::make_shared<Emitter<None>>()),
-    packet_create_emitter_(std::make_shared<Emitter<Packet>>()),
-    error_emitter_(std::make_shared<Emitter<Error>>()),
-    close_emitter_(std::make_shared<Emitter<None>>())
+    open_emitter_(std::make_shared<decltype(open_emitter_)::element_type>()),
+    packet_emitter_(std::make_shared<decltype(packet_emitter_)::element_type>()),
+    heartbeat_emitter_(std::make_shared<decltype(heartbeat_emitter_)::element_type>()),
+    pong_emitter_(std::make_shared<decltype(pong_emitter_)::element_type>()),
+    message_emitter_(std::make_shared<decltype(message_emitter_)::element_type>()),
+    handshake_emitter_(std::make_shared<decltype(handshake_emitter_)::element_type>()),
+    ping_emitter_(std::make_shared<decltype(ping_emitter_)::element_type>()),
+    drain_emitter_(std::make_shared<decltype(drain_emitter_)::element_type>()),
+    flush_emitter_(std::make_shared<decltype(flush_emitter_)::element_type>()),
+    packet_create_emitter_(std::make_shared<decltype(packet_create_emitter_)::element_type>()),
+    error_emitter_(std::make_shared<decltype(error_emitter_)::element_type>()),
+    close_emitter_(std::make_shared<decltype(close_emitter_)::element_type>())
     {
     }
     
     void Socket::Init(const std::string &uri, const ConstructorParams &params) {
-        on_heartbeat_ptr_ = std::make_shared<EventListener<Optional<TimeDuration>>>(
+        on_heartbeat_ptr_ = EventListenerMake<Optional<TimeDuration>>(
             std::bind(&Socket::OnHeartbeat, this, std::placeholders::_1));
         
         auto new_params = params;
@@ -272,7 +272,7 @@ namespace eio {
     void Socket::Ping() {
         printf("%s\n", __PRETTY_FUNCTION__);
         auto thiz = shared_from_this();
-        SendPacket(PacketType::Ping, Data(0), 0, [thiz]{
+        SendPacket(PacketType::Ping, Data(0), [thiz]{
             thiz->ping_emitter_->Emit(None());
         });
     }
@@ -311,15 +311,15 @@ namespace eio {
     }
 
     
-    void Socket::Send(const Data & data) {
-        Send(data, 0, std::function<void()>());
+    void Socket::Send(const PacketData & data) {
+        Send(data, std::function<void()>());
     }
-    void Socket::Send(const Data & data, int options, std::function<void()> callback) {
+    void Socket::Send(const PacketData & data, std::function<void()> callback) {
         printf("%s\n", __PRETTY_FUNCTION__);
-        SendPacket(PacketType::Message, data, options, callback);
+        SendPacket(PacketType::Message, data, callback);
     }
    
-    void Socket::SendPacket(PacketType type, const Data & data, int options, std::function<void()> callback) {
+    void Socket::SendPacket(PacketType type, const PacketData & data, std::function<void()> callback) {
         printf("%s\n", __PRETTY_FUNCTION__);
         if (ready_state_ == ReadyState::Closing || ready_state_ == ReadyState::Closed) {
             return;
@@ -327,7 +327,7 @@ namespace eio {
         
         Packet packet = {
             type,
-            std::make_shared<Data>(data)
+            data
         };
         
         packet_create_emitter_->Emit(packet);
@@ -335,7 +335,7 @@ namespace eio {
         
         if (callback) {
             flush_emitter_->Once([callback](const None & _) {
-                callback();
+                if (callback) { callback(); }
             });
         }
         

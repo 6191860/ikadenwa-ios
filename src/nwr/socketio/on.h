@@ -12,6 +12,12 @@
 
 namespace nwr {
 namespace sio {
+    class OnToken;
+    
+    template <typename Event> OnToken On(const EmitterPtr<Event> & emitter,
+                                         const typename EventListener<Event>::element_type & listener);
+    template <typename Event> OnToken On(const EmitterPtr<Event> & emitter,
+                                         const EventListener<Event> & listener);
     
     class OnToken {
     public:
@@ -23,14 +29,16 @@ namespace sio {
     };
     
     template <typename Event> OnToken On(const EmitterPtr<Event> & emitter,
+                                         const typename EventListener<Event>::element_type & listener)
+    {
+        return On(emitter, EventListenerMake<Event>(listener));
+    }
+    template <typename Event> OnToken On(const EmitterPtr<Event> & emitter,
                                          const EventListener<Event> & listener)
     {
-        EventListenerPtr<Event> heap_listener = std::make_shared<EventListener<Event>>(listener);
-        
-        emitter->On(heap_listener);
-        
-        auto token = OnToken([emitter, heap_listener] {
-            emitter->Off(heap_listener);
+        emitter->On(listener);
+        auto token = OnToken([emitter, listener] {
+            emitter->Off(listener);
         });
         return token;
     }

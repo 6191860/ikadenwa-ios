@@ -44,7 +44,13 @@ namespace eio {
 
     PacketData::PacketData(){}
     
+    PacketData::PacketData(const Data & data):
+    PacketData(std::make_shared<Data>(data)){}
+    
     PacketData::PacketData(const DataPtr & data): binary(data){}
+    
+    PacketData::PacketData(const std::string & data):
+    PacketData(std::make_shared<std::string>(data)){}
     
     PacketData::PacketData(const std::shared_ptr<std::string> & data): text(data){}
     

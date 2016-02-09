@@ -17,38 +17,38 @@
 namespace nwr {
     template <typename Event> class Emitter;
     template <typename Event> using EmitterPtr = std::shared_ptr<Emitter<Event>>;
-    
-    template <typename Event> using EventListener = std::function<void(const Event &)>;
-    template <typename Event> using EventListenerPtr = std::shared_ptr<EventListener<Event>>;
 
+    template <typename Event> using EventListener = std::shared_ptr<std::function<void (const Event &)>>;
+    template <typename Event>
+    EventListener<Event> EventListenerMake(const std::function<void (const Event &)> & func) {
+        return std::make_shared<typename EventListener<Event>::element_type>(func);
+    }
+    
     template <typename Event> class Emitter {
-    private:
-        using Listener = EventListener<Event>;
-        using ListenerPtr = EventListenerPtr<Event>;
-        using ListenerPtrPtr = std::shared_ptr<ListenerPtr>;
     public:
         Emitter() {}
         ~Emitter() {}
         
-        std::vector<EventListenerPtr<Event>> listeners() {
+        std::vector<EventListener<Event>> listeners() {
             return listeners_;
         }
         
-        void On(const EventListener<Event> & listener) {
-            On(std::make_shared<EventListener<Event>>(listener));
+        void On(const typename EventListener<Event>::element_type & listener) {
+            On(EventListenerMake(listener));
         }
-        void On(const EventListenerPtr<Event> & listener) {
+        
+        void On(const EventListener<Event> & listener) {
             listeners_.push_back(listener);
         }
         
-        void Once(const EventListener<Event> & listener) {
-            Once(std::make_shared<EventListener<Event>>(listener));
+        void Once(const typename EventListener<Event>::element_type & listener) {
+            Once(EventListenerMake(listener));
         }
-        void Once(const EventListenerPtr<Event> & listener) {
-            ListenerPtrPtr on_handler_ptr = std::make_shared<ListenerPtr>(nullptr);
+        
+        void Once(const EventListener<Event> & listener) {
+            auto on_handler_ptr = std::make_shared<EventListener<Event>>();
             
-            ListenerPtr on_handler =
-            std::make_shared<Listener>([this, on_handler_ptr, listener](const Event & event){
+            auto on_handler = EventListenerMake<Event>([this, on_handler_ptr, listener](const Event & event){
                 this->Off(*on_handler_ptr);
                 (*listener)(event);
             });
@@ -58,9 +58,9 @@ namespace nwr {
             this->On(on_handler);
         }
         
-        void Off(const EventListenerPtr<Event> & listener) {
+        void Off(const EventListener<Event> & listener) {
             std::remove_if(listeners_.begin(), listeners_.end(),
-                           [listener](const EventListenerPtr<Event> & elem){
+                           [listener](const EventListener<Event> & elem){
                                return listener == elem;
                            });
         }
@@ -76,7 +76,7 @@ namespace nwr {
             }
         }
     private:
-        std::vector<EventListenerPtr<Event>> listeners_;
+        std::vector<EventListener<Event>> listeners_;
     };
 }
 

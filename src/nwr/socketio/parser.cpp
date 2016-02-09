@@ -58,7 +58,7 @@ namespace sio {
         // json data
         if (packet.data) {
             if (nsp) { str += ","; }
-            str += JsonFormat(packet.data.value());
+            str += JsonFormat(*packet.data);
         }
         
 //        debug('encoded %j as %s', obj, str);
@@ -76,6 +76,8 @@ namespace sio {
     Decoder::Decoder():
     decoded_emitter_(std::make_shared<Emitter<Packet>>())
     {}
+    
+    Decoder::~Decoder(){}
     
     void Decoder::Add(const eio::PacketData & data) {
         if (data.text) {
@@ -173,14 +175,14 @@ namespace sio {
             i += 1;
             Optional<Json::Value> data = JsonParse(str.substr(i));
             if (!data) { return ParserError(); }
-            p.data = data;
+            p.data = std::make_shared<Json::Value>(data.value());
         }
         
 //        debug('decoded %s as %j', str, p);
         return p;
     }
     
-    Decoder::~Decoder() {
+    void Decoder::Destroy() {
         if (reconstructor_) {
             reconstructor_->FinishedReconstruction();
             reconstructor_ = nullptr;
@@ -209,7 +211,7 @@ namespace sio {
         Packet packet;
         packet.type = PacketType::Error;
         Json::Value data("parser error");
-        packet.data = OptionalSome(data);
+        packet.data = std::make_shared<Json::Value>(data);
         return packet;
     }
 }

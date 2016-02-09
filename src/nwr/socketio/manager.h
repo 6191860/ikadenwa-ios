@@ -20,17 +20,19 @@
 #include <nwr/base/none.h>
 #include <nwr/engineio/socket.h>
 
-#include "parser.h"
-#include "on.h"
 
 namespace nwr {
 namespace sio {
     
-    //  TODO: reconnection
+    //  TODO: reconnection, backoff
     
+    class OnToken;
+    class Encoder;
+    class Decoder;
+    class Packet;
     class Socket;
     
-    class SocketManager: public std::enable_shared_from_this<SocketManager> {
+    class Manager: public std::enable_shared_from_this<Manager> {
     public:
         enum class ReadyState {
             Closed,
@@ -38,10 +40,17 @@ namespace sio {
             Open,
             
         };
-        static std::shared_ptr<SocketManager> Create(const std::string & uri, const eio::Socket::ConstructorParams & params);
+        static std::shared_ptr<Manager> Create(const std::string & uri, const eio::Socket::ConstructorParams & params);
     private:
-        SocketManager();
+        Manager();
         void Init(const std::string & uri, const eio::Socket::ConstructorParams & params);
+    public:
+        EmitterPtr<None> open_emitter() { return open_emitter_; }
+        EmitterPtr<None> close_emitter() { return close_emitter_; }
+        EmitterPtr<Packet> packet_emitter() { return packet_emitter_; }
+        
+        ReadyState ready_state() { return ready_state_; }
+        bool auto_connect() { return auto_connect_; }
     private:
         void EachNsp(const std::function<void(const std::shared_ptr<Socket> &)
                      > & proc);
@@ -70,26 +79,28 @@ namespace sio {
         void set_timeout(const TimeDuration & value);
         
         void MaybeReconnectOnOpen();
-
-        
         void EmitAll();
-        
+    public:
         void Open(const std::function<void(const Optional<Error> &)> & callback);
+    private:
         void OnOpen();
         void OnPing();
-
-        
-        void OnData(const eio::PacketData & data);
-
         void OnPong();
-        void OnError(const Error & error);
-        void OnClose();
+        void OnData(const eio::PacketData & data);
         void OnDecoded(const Packet & packet);
-        
-        void Reconnect();
+        void OnError(const Error & error);
+        std::shared_ptr<Socket> GetSocket(const std::string & nsp);
+        void Destroy(const std::shared_ptr<Socket> & socket);
+        void WritePacket(const Packet & packet);
+        void ProcessPacketQueue();
         void Cleanup();
-        
+        void Close();
+        void OnClose();
+        void Reconnect();
+
         EmitterPtr<None> open_emitter_;
+        EmitterPtr<None> close_emitter_;
+        EmitterPtr<Packet> packet_emitter_;
         
         std::map<std::string, std::shared_ptr<Socket>> nsps_;
         std::vector<OnToken> subs_;
@@ -104,17 +115,17 @@ namespace sio {
         TimeDuration timeout_;
         ReadyState ready_state_;
         std::string uri_;
-        int connecting_;
+        std::vector<std::shared_ptr<Socket>> connecting_;
         Optional<std::chrono::system_clock::time_point> last_ping_;
         bool encoding_;
-        int packet_buffer_;
+        std::vector<Packet> packet_buffer_;
         std::shared_ptr<Encoder> encoder_;
         std::shared_ptr<Decoder> decoder_;
         bool auto_connect_;
-        
         bool reconnecting_;
         std::shared_ptr<eio::Socket> engine_;
         bool skip_reconnect_;
+
         
     };
 }

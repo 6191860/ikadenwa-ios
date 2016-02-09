@@ -26,12 +26,12 @@ namespace eio {
     {}
     
     Transport::Transport(const ConstructorParams & params):
-    error_emitter_(std::make_shared<Emitter<Error>>()),
-    open_emitter_(std::make_shared<Emitter<None>>()),
-    packet_emitter_(std::make_shared<Emitter<Packet>>()),
-    close_emitter_(std::make_shared<Emitter<None>>()),
-    flush_emitter_(std::make_shared<Emitter<None>>()),
-    drain_emitter_(std::make_shared<Emitter<None>>())
+    error_emitter_(std::make_shared<decltype(error_emitter_)::element_type>()),
+    open_emitter_(std::make_shared<decltype(open_emitter_)::element_type>()),
+    packet_emitter_(std::make_shared<decltype(packet_emitter_)::element_type>()),
+    close_emitter_(std::make_shared<decltype(close_emitter_)::element_type>()),
+    flush_emitter_(std::make_shared<decltype(flush_emitter_)::element_type>()),
+    drain_emitter_(std::make_shared<decltype(drain_emitter_)::element_type>())
     {
         path_ = params.path;
         hostname_ = params.hostname;

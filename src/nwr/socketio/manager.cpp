@@ -6,26 +6,32 @@
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
-#include "socket_manager.h"
+#include "manager.h"
 
+#include "on.h"
+#include "parser.h"
 #include "socket.h"
 
 namespace nwr {
 namespace sio {
     
-    std::shared_ptr<SocketManager> SocketManager::Create(
+    std::shared_ptr<Manager> Manager::Create(
         const std::string & uri, const eio::Socket::ConstructorParams & params)
     {
-        auto thiz = std::shared_ptr<SocketManager>(new SocketManager());
+        auto thiz = std::shared_ptr<Manager>(new Manager());
         thiz->Init(uri, params);
         return thiz;
     }
  
-    SocketManager::SocketManager() {
+    Manager::Manager():
+    open_emitter_(std::make_shared<decltype(open_emitter_)::element_type>()),
+    close_emitter_(std::make_shared<decltype(close_emitter_)::element_type>()),
+    packet_emitter_(std::make_shared<decltype(packet_emitter_)::element_type>())
+    {
     }
     
 //    TODO: recheck
-    void SocketManager::Init(
+    void Manager::Init(
         const std::string & uri, const eio::Socket::ConstructorParams & params)
     {
         eio::Socket::ConstructorParams p = params;
@@ -36,6 +42,8 @@ namespace sio {
         params_ = p;
         
         set_reconnection(p.reconnection);
+        reconnection_ = false; // TODO: disabled now
+        
         set_reconnection_attempts(p.reconnection_attempts);
         set_reconnection_delay(p.reconnection_delay);
         set_reconnection_delay_max(p.reconnection_delay_max);
@@ -44,10 +52,8 @@ namespace sio {
         set_timeout(p.timeout);
         ready_state_ = ReadyState::Closed;
         uri_ = uri;
-        connecting_ = 0;
         last_ping_ = Optional<std::chrono::system_clock::time_point>();
         encoding_ = false;
-        packet_buffer_ = 0;
         encoder_ = std::make_shared<Encoder>();
         decoder_ = std::make_shared<Decoder>();
         auto_connect_ = p.auto_connect;
@@ -56,7 +62,7 @@ namespace sio {
         }
     }
     
-    void SocketManager::EachNsp(const std::function<void(const std::shared_ptr<Socket> &)
+    void Manager::EachNsp(const std::function<void(const std::shared_ptr<Socket> &)
                                 > & proc)
     {
         auto nsps = nsps_;
@@ -65,7 +71,7 @@ namespace sio {
         }
     }
     
-    void SocketManager::EachNsp(const std::function<void(
+    void Manager::EachNsp(const std::function<void(
                                                          const std::string &,
                                                          const std::shared_ptr<Socket> &)
                                 > & proc)
@@ -76,50 +82,50 @@ namespace sio {
         }
     }
     
-    void SocketManager::UpdateSocketIds() {
+    void Manager::UpdateSocketIds() {
         EachNsp([this](const std::shared_ptr<Socket> & socket){
             socket->set_id(engine_->id());
         });        
     }
     
-    bool SocketManager::reconnection() {
+    bool Manager::reconnection() {
         return reconnection_;
     }
-    void SocketManager::set_reconnection(bool value) {
+    void Manager::set_reconnection(bool value) {
         reconnection_ = value;
     }
-    int SocketManager::reconnection_attempts() {
+    int Manager::reconnection_attempts() {
         return reconnection_attempts_;
     }
-    void SocketManager::set_reconnection_attempts(int value) {
+    void Manager::set_reconnection_attempts(int value) {
         reconnection_attempts_ = value;
     }
-    TimeDuration SocketManager::reconnection_delay() {
+    TimeDuration Manager::reconnection_delay() {
         return reconnection_delay_;
     }
-    void SocketManager::set_reconnection_delay(const TimeDuration & value) {
+    void Manager::set_reconnection_delay(const TimeDuration & value) {
         reconnection_delay_ = value;
     }
-    TimeDuration SocketManager::reconnection_delay_max() {
+    TimeDuration Manager::reconnection_delay_max() {
         return reconnection_delay_max_;
     }
-    void SocketManager::set_reconnection_delay_max(const TimeDuration & value) {
+    void Manager::set_reconnection_delay_max(const TimeDuration & value) {
         reconnection_delay_max_ = value;
     }
-    double SocketManager::randomization_factor() {
+    double Manager::randomization_factor() {
         return randomization_factor_;
     }
-    void SocketManager::set_randomization_factor(double value) {
+    void Manager::set_randomization_factor(double value) {
         randomization_factor_ = value;
     }
-    TimeDuration SocketManager::timeout() {
+    TimeDuration Manager::timeout() {
         return timeout_;
     }
-    void SocketManager::set_timeout(const TimeDuration & value) {
+    void Manager::set_timeout(const TimeDuration & value) {
         timeout_ = value;
     }
     
-    void SocketManager::MaybeReconnectOnOpen() {
+    void Manager::MaybeReconnectOnOpen() {
         // Only try to reconnect if it's the first time we're connecting
         if (!reconnecting_ && reconnection_ /* TODO: && this.backoff.attempts === 0 */) {
             // keeps reconnection from firing twice for the same reconnection loop
@@ -127,7 +133,7 @@ namespace sio {
         }
     }
 
-    void SocketManager::EmitAll() {
+    void Manager::EmitAll() {
 //        this.emit.apply(this, arguments);
 //        for (var nsp in this.nsps) {
 //            if (has.call(this.nsps, nsp)) {
@@ -136,7 +142,7 @@ namespace sio {
 //        }
     }
     
-    void SocketManager::Open(const std::function<void(const Optional<Error> &)> & callback) {
+    void Manager::Open(const std::function<void(const Optional<Error> &)> & callback) {
         printf("[%s] ready_state = %d\n", __PRETTY_FUNCTION__ ,(int)ready_state_);
         if (ready_state_ == ReadyState::Open || ready_state_ == ReadyState::Opening) {
             return;
@@ -148,7 +154,7 @@ namespace sio {
         
         auto socket = engine_;
         ready_state_ = ReadyState::Opening;
-        skip_reconnect_ = false;
+        skip_reconnect_ = true; // TODO: reconnecting is disabled now
         
         auto thiz = shared_from_this();
         
@@ -207,7 +213,7 @@ namespace sio {
         subs_.push_back(error_sub);
     }
     
-    void SocketManager::OnOpen() {
+    void Manager::OnOpen() {
         printf("[%s] open\n", __PRETTY_FUNCTION__);
         
         // clear old subs
@@ -237,41 +243,162 @@ namespace sio {
                                    [thiz](const Packet & packet) { thiz->OnDecoded(packet); }));        
     }
     
-    void SocketManager::OnPing() {
+    void Manager::OnPing() {
         last_ping_ = OptionalSome(std::chrono::system_clock::now());
         EachNsp([](const std::shared_ptr<Socket> & socket){
             socket->ping_emitter()->Emit(None());
         });
     }
-    void SocketManager::OnPong() {
+    
+    void Manager::OnPong() {
         auto duration = std::chrono::duration_cast<TimeDuration>(std::chrono::system_clock::now() - last_ping_.value());
         EachNsp([duration](const std::shared_ptr<Socket> & socket){
             socket->pong_emitter()->Emit(duration);
         });
     }
     
-    void SocketManager::OnData(const eio::PacketData & data) {
-        
+    void Manager::OnData(const eio::PacketData & data) {
+        decoder_->Add(data);
     }
     
+    void Manager::OnDecoded(const Packet & packet) {
+        packet_emitter_->Emit(packet);
+    }
 
-    void SocketManager::OnError(const Error & error) {
-        
-    }
-    void SocketManager::OnClose() {
-        
-    }
-    void SocketManager::OnDecoded(const Packet & packet) {
-        
+    void Manager::OnError(const Error & error) {
+        printf("[%s] %s\n", __PRETTY_FUNCTION__, error.Dump().c_str());
+        EachNsp([error](const std::shared_ptr<Socket> & socket) {
+            socket->error_emitter()->Emit(error);
+        });
     }
     
-    void SocketManager::Reconnect() {
+    std::shared_ptr<Socket> Manager::GetSocket(const std::string & nsp) {
+        auto socket_ptr = std::make_shared<std::shared_ptr<Socket>>();
         
+        auto thiz = shared_from_this();
+        auto on_connecting = EventListenerMake<None>([thiz, socket_ptr] (None _) {
+            if (std::find(thiz->connecting_.begin(), thiz->connecting_.end(),
+                          *socket_ptr) == thiz->connecting_.end())
+            {
+                thiz->connecting_.push_back(*socket_ptr);
+            }
+        });
+        
+        std::shared_ptr<Socket> socket;
+        *socket_ptr = socket = nsps_[nsp];
+        
+        if (!socket) {
+            *socket_ptr = socket = Socket::Create(this, nsp);
+            
+            nsps_[nsp] = socket;
+            
+            socket->connecting_emitter()->On(on_connecting);
+
+            socket->connect_emitter()->On([thiz, socket](None _){
+                socket->set_id(thiz->engine_->id());
+            });
+            
+            if (auto_connect_) {
+                // manually call here since connecting evnet is fired before listening
+                (*on_connecting)(None());
+            }
+        }
+        
+
+        return socket;
     }
     
-    void SocketManager::Cleanup() {
+    void Manager::Destroy(const std::shared_ptr<Socket> & socket) {
+        auto index = std::find(connecting_.begin(), connecting_.end(), socket);
+        if (index != connecting_.end()) {
+            connecting_.erase(index);
+        }
+        if (connecting_.size() > 0) {
+            return;
+        }
         
+        Close();
     }
     
+    void Manager::WritePacket(const Packet & packet) {
+        printf("[%s]\n", __PRETTY_FUNCTION__);
+
+        if (!encoding_) {
+            // encode, then write to engine with result
+            encoding_ = true;
+            auto encoded_packets = encoder_->Encode(packet);
+ 
+            for (int i = 0; i < encoded_packets.size(); i++) {
+                engine_->Send(encoded_packets[i]);
+            }
+            
+            encoding_ = false;
+            ProcessPacketQueue();
+        } else { // add packet to the queue
+            packet_buffer_.push_back(packet);
+        }
+    }
+    
+    void Manager::ProcessPacketQueue() {
+        if (packet_buffer_.size() > 0 && !encoding_) {
+            auto pack = packet_buffer_.front();
+            packet_buffer_.erase(packet_buffer_.begin());
+            WritePacket(pack);
+        }
+    }
+
+    void Manager::Cleanup() {
+        printf("[%s]\n", __PRETTY_FUNCTION__);
+
+        for (auto sub : subs_) {
+            sub.Destroy();
+        }
+        subs_.clear();
+        
+        packet_buffer_.clear();
+        encoding_ = false;
+        last_ping_ = Optional<std::chrono::system_clock::time_point>();
+
+        decoder_->Destroy();
+    }
+    
+    void Manager::Close() {
+        printf("[%s]\n", __PRETTY_FUNCTION__);
+
+        skip_reconnect_ = true;
+        reconnecting_ = false;
+        
+        if (ready_state_ == ReadyState::Opening) {
+            // `onclose` will not fire because
+            // an open event never happened
+            Cleanup();
+        }
+        
+        ready_state_ = ReadyState::Closed;
+        
+        if (engine_) {
+            engine_->Close();
+        }
+    }
+    
+    void Manager::OnClose() {
+        printf("[%s]\n", __PRETTY_FUNCTION__);
+
+        Cleanup();
+//        this.backoff.reset();
+        ready_state_ = ReadyState::Closed;
+        
+        close_emitter_->Emit(None());
+        
+        if (reconnection_ && !skip_reconnect_) {
+            Reconnect();
+        }
+    }
+
+    
+    void Manager::Reconnect() {
+        Fatal("not implemented");
+    }
+
 }
 }

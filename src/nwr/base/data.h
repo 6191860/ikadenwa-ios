@@ -11,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <sstream>
 
 namespace nwr {
     using Data = std::vector<uint8_t>;
@@ -20,6 +21,9 @@ namespace nwr {
     const char * AsCharPointer(const Data & data);
     
     std::string ToString(const Data & data);
+    
+    std::string DataFormat(const Data & data);
+    std::string DataFormat(const uint8_t * data, int size);
 }
 
 

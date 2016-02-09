@@ -99,10 +99,10 @@ namespace eio {
         void OnDrain();
         void Flush();
     public:
-        void Send(const Data & data);
-        void Send(const Data & data, int options, std::function<void()> callback);
+        void Send(const PacketData & data);
+        void Send(const PacketData & data, std::function<void()> callback);
     private:
-        void SendPacket(PacketType type, const Data & data, int options, std::function<void()> callback);
+        void SendPacket(PacketType type, const PacketData & data, std::function<void()> callback);
     public:
         void Close();
     private:
@@ -128,7 +128,7 @@ namespace eio {
         TimerPtr ping_timeout_timer_;
         TimerPtr ping_interval_timer_;
         int prev_buffer_len_;
-        EventListenerPtr<Optional<TimeDuration>> on_heartbeat_ptr_;
+        EventListener<Optional<TimeDuration>> on_heartbeat_ptr_;
         
         EmitterPtr<None> open_emitter_;
         EmitterPtr<Packet> packet_emitter_;

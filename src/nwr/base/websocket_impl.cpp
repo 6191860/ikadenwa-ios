@@ -124,7 +124,7 @@ namespace nwr {
                                           enum lws_callback_reasons reason,
                                           void * user, void * in, size_t len)
     {
-        printf("[WebsocketImpl::LwsCallbackHandler] reason=%d\n", reason);
+//        printf("[WebsocketImpl::LwsCallbackHandler] reason=%d\n", reason);
         switch (reason) {
             case LWS_CALLBACK_CLIENT_ESTABLISHED: {
                 protocol_ = lws_get_protocol(wsi)->name;

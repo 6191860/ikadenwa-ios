@@ -29,7 +29,7 @@
 #include "packet.h"
 
 namespace nwr {
-namespace sio {
+namespace sio {   
     class BinaryReconstructor;
     
     int parser_protocol();
@@ -50,6 +50,7 @@ namespace sio {
         EmitterPtr<Packet> decoded_emitter() { return decoded_emitter_; }
         
         void Add(const eio::PacketData & data);
+        void Destroy();
     private:
         std::shared_ptr<BinaryReconstructor> reconstructor_;
         
