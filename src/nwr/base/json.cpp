@@ -17,11 +17,11 @@ namespace nwr {
         return JsonParse(&data[0], static_cast<int>(data.size()));
     }
     Optional<Json::Value> JsonParse(const uint8_t * data, int size) {
-        auto ret = OptionalSome(Json::Value());
+        auto ret = Some(Json::Value());
         Json::Reader reader;
         const char * p = reinterpret_cast<const char *>(data);
-        if (!reader.parse(p, p + size, ret.value())) {
-            return Optional<Json::Value>();
+        if (!reader.parse(p, p + size, *ret)) {
+            return None();
         }
         return ret;
     }

@@ -41,9 +41,9 @@ namespace sio {
         
         // if we have a namespace other than `/`
         // we append it followed by a comma `,`
-        if (packet.nsp && packet.nsp.value() != "/") {
+        if (packet.nsp && *packet.nsp != "/") {
             nsp = true;
-            str += packet.nsp.value();
+            str += *packet.nsp;
         }
         
         // immediately followed by the id
@@ -52,7 +52,7 @@ namespace sio {
                 str += ",";
                 nsp = false;
             }
-            str += Format("%d", packet.id.value());
+            str += Format("%d", *packet.id);
         }
         
         // json data
@@ -102,7 +102,7 @@ namespace sio {
                 Optional<Packet> packet = reconstructor_->TakeBinaryData(*data.binary);
                 if (packet) { // received final buffer
                     reconstructor_ = nullptr;
-                    decoded_emitter_->Emit(packet.value());
+                    decoded_emitter_->Emit(*packet);
                 }
             }
         }
@@ -118,7 +118,7 @@ namespace sio {
         auto packetType = PacketTypeFromString(str.substr(0, 1));
         if (!packetType) { return ParserError(); }
         
-        p.type = packetType.value();
+        p.type = *packetType;
         
         // look up attachments if type binary
         if (p.type == PacketType::BinaryEvent || p.type == PacketType::BinaryAck) {
@@ -139,16 +139,16 @@ namespace sio {
         
         // look up namespace (if any)
         if (i + 1 < str.length() && str[i+1] == '/') {
-            p.nsp = OptionalSome(std::string());
+            p.nsp = Some(std::string());
             while (true) {
                 i += 1;
                 if (i >= str.length()) { break; }
                 char c = str[i];
                 if (c == ',') { break; }
-                p.nsp = OptionalSome(p.nsp.value() + c);
+                p.nsp = Some(*p.nsp + c);
             }
         } else {
-            p.nsp = OptionalSome(std::string("/"));
+            p.nsp = Some(std::string("/"));
         }
         
         // look up id
@@ -166,7 +166,7 @@ namespace sio {
                         break; }
                     buf += c;
                 }
-                p.id = OptionalSome(atoi(buf.c_str()));
+                p.id = Some(atoi(buf.c_str()));
             }
         }
         
@@ -175,7 +175,7 @@ namespace sio {
             i += 1;
             Optional<Json::Value> data = JsonParse(str.substr(i));
             if (!data) { return ParserError(); }
-            p.data = std::make_shared<Json::Value>(data.value());
+            p.data = std::make_shared<Json::Value>(*data);
         }
         
 //        debug('decoded %s as %j', str, p);
@@ -198,9 +198,9 @@ namespace sio {
         if (buffers_.size() == recon_pack_.attachments.size()) { // done with buffer list
             recon_pack_.attachments = buffers_;
             FinishedReconstruction();
-            return OptionalSome(recon_pack_);
+            return Some(recon_pack_);
         }
-        return Optional<Packet>();
+        return None();
     }
     
     void BinaryReconstructor::FinishedReconstruction() {

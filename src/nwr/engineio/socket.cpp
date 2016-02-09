@@ -62,7 +62,7 @@ namespace eio {
         hostname_ = url_parts.hostname;
         secure_ = url_parts.scheme == "https" || url_parts.scheme == "wss";
         if (url_parts.port) {
-            port_ = url_parts.port.value();
+            port_ = *url_parts.port;
         } else {
             // if no port is specified manually, use the protocol default
             port_ = secure_ ? 443 : 80;
@@ -70,7 +70,7 @@ namespace eio {
         query_ = url_parts.query;
         
         agent_ = params.agent;
-        path_ = PathAppendSlash(params.path.Recover("/engine.io"));
+        path_ = PathAppendSlash(params.path || std::string("/engine.io"));
         
         timestamp_param_ = params.timestamp_param;
         timestamp_requests_ = params.timestamp_requests;
@@ -175,13 +175,13 @@ namespace eio {
             packet_emitter_->Emit(packet);
             
             // Socket is live - any packet counts
-            heartbeat_emitter_->Emit(Optional<TimeDuration>());
+            heartbeat_emitter_->Emit(None());
             
             switch (packet.type) {
                 case PacketType::Open: {
                     Optional<Json::Value> json = JsonParse(packet.data.ptr(), packet.data.size());
                     if (!json) { Fatal("json parse failed"); }
-                    OnHandshake(json.value());
+                    OnHandshake(*json);
                     break;
                 }
                 case PacketType::Pong:
@@ -246,7 +246,7 @@ namespace eio {
         }
 
         auto thiz = shared_from_this();
-        ping_timeout_timer_ = Timer::Create(timeout.Recover(ping_interval_ + ping_timeout_),
+        ping_timeout_timer_ = Timer::Create(timeout || (ping_interval_ + ping_timeout_),
                                             [thiz]{
                                                 printf("ping timeout\n");
                                                 if (thiz->ready_state_ == ReadyState::Closed) { return; }
@@ -265,7 +265,7 @@ namespace eio {
                                              [thiz]{
                                                  printf("write ping\n");
                                                  thiz->Ping();
-                                                 thiz->OnHeartbeat(OptionalSome(thiz->ping_timeout_));
+                                                 thiz->OnHeartbeat(Some(thiz->ping_timeout_));
                                              });
     }
     

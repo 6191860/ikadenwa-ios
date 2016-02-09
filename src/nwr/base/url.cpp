@@ -28,7 +28,7 @@ namespace nwr {
         auto hostname_port = Split(hostname_port_after[0], ":", 2);
         ret.hostname = hostname_port[0];
         if (hostname_port.size() == 2) {
-            ret.port = OptionalSome(atoi(hostname_port[1].c_str()));
+            ret.port = Some(atoi(hostname_port[1].c_str()));
         }
         
         if (hostname_port_after.size() == 1) {

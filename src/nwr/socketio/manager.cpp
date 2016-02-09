@@ -36,7 +36,7 @@ namespace sio {
     {
         eio::Socket::ConstructorParams p = params;
         if (!p.path) {
-            p.path = OptionalSome(std::string("/socket.io"));
+            p.path = Some(std::string("/socket.io"));
         }
         
         params_ = p;
@@ -161,7 +161,7 @@ namespace sio {
         // emit `open`
         OnToken open_sub = On<None>(socket->open_emitter(), [thiz, callback](None _) {
             thiz->OnOpen();
-            if (callback) { callback(Optional<Error>()); }
+            if (callback) { callback(None()); }
         });
         
         // emit `connect_error`
@@ -178,7 +178,7 @@ namespace sio {
             if (callback) {
                 auto err = Error("connection error", "",
                                  std::make_shared<Error>(error));
-                callback(OptionalSome(err));
+                callback(Some(err));
             } else {
                 // Only do this if there is no fn to handle the error
                 thiz->MaybeReconnectOnOpen();
@@ -244,14 +244,14 @@ namespace sio {
     }
     
     void Manager::OnPing() {
-        last_ping_ = OptionalSome(std::chrono::system_clock::now());
+        last_ping_ = Some(std::chrono::system_clock::now());
         EachNsp([](const std::shared_ptr<Socket> & socket){
             socket->ping_emitter()->Emit(None());
         });
     }
     
     void Manager::OnPong() {
-        auto duration = std::chrono::duration_cast<TimeDuration>(std::chrono::system_clock::now() - last_ping_.value());
+        auto duration = std::chrono::duration_cast<TimeDuration>(std::chrono::system_clock::now() - *last_ping_);
         EachNsp([duration](const std::shared_ptr<Socket> & socket){
             socket->pong_emitter()->Emit(duration);
         });
@@ -357,7 +357,7 @@ namespace sio {
         
         packet_buffer_.clear();
         encoding_ = false;
-        last_ping_ = Optional<std::chrono::system_clock::time_point>();
+        last_ping_ = None();
 
         decoder_->Destroy();
     }

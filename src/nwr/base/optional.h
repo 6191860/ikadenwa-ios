@@ -10,16 +10,20 @@
 
 #include <utility>
 
+#include "none.h"
+
 namespace nwr {
     template <typename T> class Optional {
     public:
         Optional(): value_(nullptr) {
         }
-        Optional(const Optional & copy): value_(nullptr) {
+        Optional(const Optional<T> & copy): value_(nullptr) {
             *this = copy;
         }
-        Optional(Optional && move): value_(nullptr) {
+        Optional(Optional<T> && move): value_(nullptr) {
             *this = move;
+        }
+        Optional(None value): value_(nullptr) {
         }
         explicit Optional(const T & value): value_(nullptr) {
             set_value(new T (value));
@@ -33,11 +37,14 @@ namespace nwr {
         
         explicit operator bool() const { return value_ != nullptr; }
         
-        const T & value() const { return *value_; }
-        T & value() { return * value_; }
+        const T & operator* () const { return *value_; }
+        T & operator* () { return *value_; }
         
-        T Recover(const T & value) const {
-            return *this ? this->value() : value;
+        const T * operator-> () const { return value_; }
+        T * operator-> () { return value_; }
+        
+        T operator||(const T & value) const {
+            return *this ? **this : value;
         }
         
         Optional<T> & operator=(const Optional & copy) {
@@ -71,10 +78,7 @@ namespace nwr {
         T * value_;
     };
     
-    template <typename T> Optional<T> OptionalSome(const T & value) {
+    template <typename T> Optional<T> Some(const T & value) {
         return Optional<T>(value);
-    }
-    template <typename T> Optional<T> OptionalNone() {
-        return Optional<T>();
     }
 }

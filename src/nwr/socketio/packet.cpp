@@ -17,13 +17,13 @@ namespace sio {
     }
     Optional<PacketType> PacketTypeFromString(const std::string & str) {
         if (str.length() <= 0) {
-            return Optional<PacketType>();
+            return None();
         }
         int value = str[0] - '0';
         if (!IsValidPacketTypeValue(value)) {
-            return Optional<PacketType>();
+            return None();
         }
-        return OptionalSome(static_cast<PacketType>(value));
+        return Some(static_cast<PacketType>(value));
     }
     
     bool IsValidPacketTypeValue(int value) {

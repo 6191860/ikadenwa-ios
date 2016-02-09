@@ -36,6 +36,7 @@
 		D66436EF1C4FEF330059A94B /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436ED1C4FEF330059A94B /* time.cpp */; };
 		D66436F01C5000B40059A94B /* websocket_transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436E71C4FDB180059A94B /* websocket_transport.cpp */; };
 		D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436F11C5014BF0059A94B /* timer_pool.cpp */; };
+		D67CAE411C6A530E0000A3C3 /* any.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67CAE3F1C6A530E0000A3C3 /* any.cpp */; };
 		D6A690531C42361700952A7F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A690521C42361700952A7F /* ViewController.swift */; };
 		D6A690561C42361700952A7F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6A690541C42361700952A7F /* Main.storyboard */; };
 		D6A690581C42361700952A7F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D6A690571C42361700952A7F /* Assets.xcassets */; };
@@ -144,6 +145,8 @@
 		D66436EE1C4FEF330059A94B /* time.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = time.h; sourceTree = "<group>"; };
 		D66436F11C5014BF0059A94B /* timer_pool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timer_pool.cpp; sourceTree = "<group>"; };
 		D66436F21C5014BF0059A94B /* timer_pool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = timer_pool.h; sourceTree = "<group>"; };
+		D67CAE3F1C6A530E0000A3C3 /* any.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any.cpp; sourceTree = "<group>"; };
+		D67CAE401C6A530E0000A3C3 /* any.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any.h; sourceTree = "<group>"; };
 		D6A6904D1C42361700952A7F /* Ikadenwa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikadenwa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6A690521C42361700952A7F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		D6A690551C42361700952A7F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -312,8 +315,8 @@
 				D6155E971C66273500A8B6CA /* env.cpp */,
 				D66436A91C4A74AB0059A94B /* string.h */,
 				D66436AA1C4A74C20059A94B /* string.cpp */,
-				D6F78A481C543FD900B21614 /* optional.h */,
 				D66436E61C4FD8780059A94B /* none.h */,
+				D6F78A481C543FD900B21614 /* optional.h */,
 				D66436BB1C4D2BA50059A94B /* task.h */,
 				D66436B01C4CD7B50059A94B /* task_queue.h */,
 				D66436B81C4CEA740059A94B /* task_queue.mm */,
@@ -342,6 +345,8 @@
 				D66436E31C4F6C5A0059A94B /* error.cpp */,
 				D6F78A451C54110700B21614 /* json.h */,
 				D6F78A441C54110700B21614 /* json.cpp */,
+				D67CAE401C6A530E0000A3C3 /* any.h */,
+				D67CAE3F1C6A530E0000A3C3 /* any.cpp */,
 				D66436A61C4A73240059A94B /* websocket.h */,
 				D66436A71C4A73420059A94B /* websocket.cpp */,
 				D66436DB1C4E94F30059A94B /* websocket_impl.h */,
@@ -501,6 +506,7 @@
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
 				D6F78A531C55018A00B21614 /* manager.cpp in Sources */,
 				D6155E931C66157200A8B6CA /* binary.cpp in Sources */,
+				D67CAE411C6A530E0000A3C3 /* any.cpp in Sources */,
 				D66436CC1C4DC8F10059A94B /* parser.cpp in Sources */,
 				D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */,
 				D6F78A4D1C54DAE900B21614 /* on.cpp in Sources */,

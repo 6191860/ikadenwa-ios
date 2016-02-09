@@ -41,9 +41,9 @@ namespace nwr {
         }
         if (!url_parts.port) {
             if (is_ssl) {
-                url_parts.port = OptionalSome(443);
+                url_parts.port = Some(443);
             } else {
-                url_parts.port = OptionalSome(80);
+                url_parts.port = Some(80);
             }
         }
         url_ = url;
@@ -59,7 +59,7 @@ namespace nwr {
             lws_client_connect_info info = { 0 };
             info.context = context_->context();
             info.address = url_parts.hostname.c_str();
-            info.port = url_parts.port.Recover(-1);
+            info.port = url_parts.port || -1;
             info.ssl_connection = is_ssl ? 1 : 0;
             info.path = path.c_str();
             info.host = url_parts.hostname.c_str();
