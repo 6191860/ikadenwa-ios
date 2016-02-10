@@ -8,6 +8,8 @@
 
 #include "parser.h"
 
+#include "binary.h"
+
 namespace nwr {
 namespace sio {
     int parser_protocol() {
@@ -35,7 +37,7 @@ namespace sio {
         
         // attachments if we have them
         if (packet.type == PacketType::BinaryEvent || packet.type == PacketType::BinaryAck) {
-            str += Format("%d", static_cast<int>(packet.attachments.size()));
+            str += Format("%d", packet.attachments);
             str += "-";
         }
         
@@ -56,9 +58,9 @@ namespace sio {
         }
         
         // json data
-        if (packet.data) {
+        if (packet.data.type() != Any::Type::Null) {
             if (nsp) { str += ","; }
-            str += JsonFormat(*packet.data);
+            str += JsonFormat(*packet.data.ToJson());
         }
         
 //        debug('encoded %j as %s', obj, str);
@@ -66,11 +68,13 @@ namespace sio {
         return std::make_shared<Data>(ToData(str));
     }
     
-    std::vector<DataPtr> EncodeAsBinary(const Packet & packet) {
-        auto pack = EncodeAsString(packet);
-        std::vector<DataPtr> buffers = packet.attachments;
-        buffers.insert(buffers.begin(), pack);
-        return buffers;
+    std::vector<DataPtr> EncodeAsBinary(const Packet & obj) {
+        auto deconstruction = DeconstructPacket(obj);
+        auto pack = EncodeAsString(std::get<0>(deconstruction));
+        auto buffers = std::get<1>(deconstruction);
+
+        buffers.insert(buffers.begin(), pack); // add packet info to beginning of data list
+        return buffers; // write all the buffers
     }
     
     Decoder::Decoder():
@@ -87,7 +91,7 @@ namespace sio {
                 reconstructor_ = std::make_shared<BinaryReconstructor>(packet);
                 
                 // no attachments, labeled binary but no binary data to follow
-                if (reconstructor_->recon_pack().attachments.size() == 0) {
+                if (reconstructor_->recon_pack().attachments == 0) {
                     
                     decoded_emitter_->Emit(packet);
                 }
@@ -99,7 +103,7 @@ namespace sio {
             if (!reconstructor_) {
                 Fatal("got binary data when not reconstructing a packet");
             } else {
-                Optional<Packet> packet = reconstructor_->TakeBinaryData(*data.binary);
+                Optional<Packet> packet = reconstructor_->TakeBinaryData(data.binary);
                 if (packet) { // received final buffer
                     reconstructor_ = nullptr;
                     decoded_emitter_->Emit(*packet);
@@ -134,7 +138,7 @@ namespace sio {
                 !(i < str.length() && str[i] == '-')) {
                 Fatal("Illegal attachments");
             }
-            p.attachments.resize(atoi(buf.c_str()));
+            p.attachments = atoi(buf.c_str());
         }
         
         // look up namespace (if any)
@@ -175,7 +179,7 @@ namespace sio {
             i += 1;
             auto data = JsonParse(str.substr(i));
             if (!data) { return ParserError(); }
-            p.data = data;
+            p.data = Any::FromJson(*data);
         }
         
 //        debug('decoded %s as %j', str, p);
@@ -193,12 +197,12 @@ namespace sio {
     recon_pack_(packet)
     {}
     
-    Optional<Packet> BinaryReconstructor::TakeBinaryData(const Data &data) {
-        buffers_.push_back(std::make_shared<Data>(data));
-        if (buffers_.size() == recon_pack_.attachments.size()) { // done with buffer list
-            recon_pack_.attachments = buffers_;
+    Optional<Packet> BinaryReconstructor::TakeBinaryData(const DataPtr &data) {
+       buffers_.push_back(data);
+        if (buffers_.size() == recon_pack_.attachments) { // done with buffer list
+            auto packet = ReconstructPacket(recon_pack_, buffers_);
             FinishedReconstruction();
-            return Some(recon_pack_);
+            return Some(packet);
         }
         return None();
     }
@@ -210,8 +214,7 @@ namespace sio {
     Packet ParserError() {
         Packet packet;
         packet.type = PacketType::Error;
-        Json::Value data("parser error");
-        packet.data = std::make_shared<Json::Value>(data);
+        packet.data = Any("parser error");
         return packet;
     }
 }

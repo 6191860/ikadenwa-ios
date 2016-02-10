@@ -10,13 +10,14 @@
 
 #include <vector>
 #include <memory>
+#include <tuple>
 #include <nwr/base/data.h>
 
 #include "packet.h"
 
 namespace nwr {
 namespace sio {
-    
-
+    std::tuple<Packet, std::vector<DataPtr>> DeconstructPacket(const Packet & packet);
+    Packet ReconstructPacket(Packet packet, const std::vector<DataPtr> & buffers);
 }
 }

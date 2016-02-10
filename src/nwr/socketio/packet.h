@@ -12,6 +12,7 @@
 #include <nwr/base/optional.h>
 #include <nwr/base/data.h>
 #include <nwr/base/json.h>
+#include <nwr/base/any.h>
 
 namespace nwr {
 namespace sio {
@@ -40,8 +41,8 @@ namespace sio {
         PacketType type;
         Optional<std::string> nsp;
         Optional<int> id;
-        std::shared_ptr<Json::Value> data;
-        std::vector<DataPtr> attachments;
+        Any data;
+        int attachments;
     };
 }
 }

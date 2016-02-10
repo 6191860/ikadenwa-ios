@@ -33,11 +33,11 @@ namespace nwr {
     Any::Any(const Data & value): Any(std::make_shared<Data>(value)){}
     Any::Any(const DataPtr & value): type_(Type::Data), value_(value) {}
     
-    Any::Any(const std::vector<Any> & value):
-    type_(Type::Array), value_(std::make_shared<std::vector<Any>>(value)) {}
+    Any::Any(const ArrayType & value):
+    type_(Type::Array), value_(std::make_shared<ArrayType>(value)) {}
 
-    Any::Any(const std::map<std::string, Any> & value):
-    type_(Type::Dictionary), value_(std::make_shared<std::map<std::string, Any>>(value)) {}
+    Any::Any(const ObjectType & value):
+    type_(Type::Object), value_(std::make_shared<ObjectType>(value)) {}
     
     Any::Type Any::type() const {
         return type_;
@@ -47,17 +47,17 @@ namespace nwr {
         switch (type()) {
             case Type::Array:
                 return static_cast<int>(AsArray()->size());
-            case Type::Dictionary:
-                return static_cast<int>(AsDictionary()->size());
+            case Type::Object:
+                return static_cast<int>(AsObject()->size());
             default:
                 return 0;
         }
     }
     
     std::vector<std::string> Any::keys() const {
-        if (type() == Type::Dictionary) {
+        if (type() == Type::Object) {
             std::vector<std::string> r;
-            for (auto entry : *inner_dictionary()) {
+            for (auto entry : *inner_object()) {
                 r.push_back(entry.first);
             }
             return r;
@@ -97,12 +97,12 @@ namespace nwr {
             return None();
         }
     }
-    Optional<std::vector<Any>> Any::AsArray() const {
+    Optional<Any::ArrayType> Any::AsArray() const {
         auto array = inner_array();
         return array ? Some(*array) : None();
     }
-    Optional<std::map<std::string, Any>> Any::AsDictionary() const {
-        auto dict = inner_dictionary();
+    Optional<Any::ObjectType> Any::AsObject() const {
+        auto dict = inner_object();
         return dict ? Some(*dict) : None();
     }
     
@@ -124,7 +124,7 @@ namespace nwr {
                 break;
             case Type::Data:
             case Type::Array:
-            case Type::Dictionary:
+            case Type::Object:
                 value_ = copy.value_;
                 break;
         }
@@ -158,18 +158,25 @@ namespace nwr {
         array->at(index) = value;
     }
     Any Any::GetAt(const std::string & key) const {
-        auto dict = inner_dictionary();
+        auto dict = inner_object();
         if (dict) {
-            if (dict->find(key) != dict->end()) {
+            if (HasKey(key)) {
                 return dict->at(key);
             }
         }
         return nullptr;
     }
     void Any::SetAt(const std::string & key, const Any & value) {
-        auto dict = inner_dictionary();
+        auto dict = inner_object();
         if (!dict) { Fatal("not dictionary"); }
         dict->at(key) = value;
+    }
+    bool Any::HasKey(const std::string & key) const {
+        auto dict = inner_object();
+        if (dict) {
+            return dict->find(key) != dict->end();
+        }
+        return false;
     }
     
     Any Any::FromJson(const Json::Value & json) {
@@ -187,14 +194,14 @@ namespace nwr {
             case Json::booleanValue:
                 return Any(json.asBool());
             case Json::arrayValue: {
-                std::vector<Any> array;
+                ArrayType array;
                 for (int i = 0; i < json.size(); i++) {
                     array.push_back(FromJson(json[i]));
                 }
                 return Any(array);
             }
             case Json::objectValue: {
-                std::map<std::string, Any> dict;
+                ObjectType dict;
                 for (auto key : json.getMemberNames()) {
                     dict[key] = FromJson(json.get(key, Json::Value()));
                 }
@@ -222,7 +229,7 @@ namespace nwr {
                 }
                 return json;
             }
-            case Type::Dictionary: {
+            case Type::Object: {
                 auto json = std::make_shared<Json::Value>(Json::objectValue);
                 for (auto key : keys()) {
                     (*json)[key] = *GetAt(key).ToJson();
@@ -232,16 +239,16 @@ namespace nwr {
         }
     }
     
-    std::shared_ptr<std::vector<Any>> Any::inner_array() const {
+    std::shared_ptr<Any::ArrayType> Any::inner_array() const {
         if (type() == Type::Array) {
-            return std::static_pointer_cast<std::vector<Any>>(value_);
+            return std::static_pointer_cast<ArrayType>(value_);
         } else {
             return nullptr;
         }
     }
-    std::shared_ptr<std::map<std::string, Any>> Any::inner_dictionary() const {
-        if (type() == Type::Dictionary) {
-            return std::static_pointer_cast<std::map<std::string, Any>>(value_);
+    std::shared_ptr<Any::ObjectType> Any::inner_object() const {
+        if (type() == Type::Object) {
+            return std::static_pointer_cast<Any::ObjectType>(value_);
         } else {
             return nullptr;
         }

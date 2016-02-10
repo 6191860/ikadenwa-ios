@@ -23,6 +23,7 @@
 #include <nwr/base/json.h>
 #include <nwr/base/string.h>
 #include <nwr/base/emitter.h>
+#include <nwr/base/any.h>
 
 #include <nwr/engineio/parser.h>
 
@@ -36,11 +37,11 @@ namespace sio {
     
     class Encoder {
     public:
-        std::vector<DataPtr> Encode(const Packet & packet);
+        std::vector<DataPtr> Encode(const Packet & obj);
     };
     
-    DataPtr EncodeAsString(const Packet & packet);
-    std::vector<DataPtr> EncodeAsBinary(const Packet & packet);
+    DataPtr EncodeAsString(const Packet & obj);
+    std::vector<DataPtr> EncodeAsBinary(const Packet & obj);
     
     class Decoder {
     public:
@@ -65,7 +66,7 @@ namespace sio {
         
         const Packet & recon_pack() { return recon_pack_; }
         
-        Optional<Packet> TakeBinaryData(const Data & data);
+        Optional<Packet> TakeBinaryData(const DataPtr & data);
         void FinishedReconstruction();
     private:
         Packet recon_pack_;
