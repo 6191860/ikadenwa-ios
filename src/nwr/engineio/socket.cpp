@@ -179,7 +179,7 @@ namespace eio {
             
             switch (packet.type) {
                 case PacketType::Open: {
-                    Optional<Json::Value> json = JsonParse(packet.data.ptr(), packet.data.size());
+                    auto json = JsonParse(packet.data.ptr(), packet.data.size());
                     if (!json) { Fatal("json parse failed"); }
                     OnHandshake(*json);
                     break;

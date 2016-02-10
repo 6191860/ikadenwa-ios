@@ -45,6 +45,7 @@
 		D6A6906A1C4237F100952A7F /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690681C4237F100952A7F /* libcrypto.a */; };
 		D6A6906B1C4237F100952A7F /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690691C4237F100952A7F /* libssl.a */; };
 		D6A6906E1C42380100952A7F /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A6906D1C42380100952A7F /* libwebsockets.a */; };
+		D6B9DE2E1C6B862900EBF183 /* any_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE2C1C6B862900EBF183 /* any_test.cpp */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D6F78A461C54110700B21614 /* json.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A441C54110700B21614 /* json.cpp */; };
@@ -159,6 +160,8 @@
 		D6A690681C4237F100952A7F /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = lib/openssl/lib/libcrypto.a; sourceTree = "<group>"; };
 		D6A690691C4237F100952A7F /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = lib/openssl/lib/libssl.a; sourceTree = "<group>"; };
 		D6A6906D1C42380100952A7F /* libwebsockets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebsockets.a; path = lib/websockets/lib/libwebsockets.a; sourceTree = "<group>"; };
+		D6B9DE2C1C6B862900EBF183 /* any_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = any_test.cpp; path = app/any_test.cpp; sourceTree = "<group>"; };
+		D6B9DE2D1C6B862900EBF183 /* any_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = any_test.h; path = app/any_test.h; sourceTree = "<group>"; };
 		D6F78A381C53E2E400B21614 /* webrtc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = webrtc.xcodeproj; path = "lib/webrtc/framework-project/webrtc.xcodeproj"; sourceTree = "<group>"; };
 		D6F78A441C54110700B21614 /* json.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json.cpp; sourceTree = "<group>"; };
 		D6F78A451C54110700B21614 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
@@ -196,6 +199,8 @@
 				D664369B1C4A544C0059A94B /* app.cpp */,
 				D6155E8C1C64DC3700A8B6CA /* eio_test.h */,
 				D6155E8B1C64DC3700A8B6CA /* eio_test.cpp */,
+				D6B9DE2D1C6B862900EBF183 /* any_test.h */,
+				D6B9DE2C1C6B862900EBF183 /* any_test.cpp */,
 			);
 			name = app;
 			sourceTree = "<group>";
@@ -511,6 +516,7 @@
 				D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */,
 				D6F78A4D1C54DAE900B21614 /* on.cpp in Sources */,
 				D66436E51C4F6C5A0059A94B /* error.cpp in Sources */,
+				D6B9DE2E1C6B862900EBF183 /* any_test.cpp in Sources */,
 				D66436F01C5000B40059A94B /* websocket_transport.cpp in Sources */,
 				D6155E991C66273500A8B6CA /* env.cpp in Sources */,
 				D6F78A501C54EC2400B21614 /* url.cpp in Sources */,

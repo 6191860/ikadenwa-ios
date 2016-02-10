@@ -16,8 +16,8 @@
 #include "optional.h"
 
 namespace nwr {
-    Optional<Json::Value> JsonParse(const std::string & str);
-    Optional<Json::Value> JsonParse(const Data & data);
-    Optional<Json::Value> JsonParse(const uint8_t * data, int size);
+    std::shared_ptr<Json::Value> JsonParse(const std::string & str);
+    std::shared_ptr<Json::Value> JsonParse(const Data & data);
+    std::shared_ptr<Json::Value> JsonParse(const uint8_t * data, int size);
     std::string JsonFormat(const Json::Value & json);
 }

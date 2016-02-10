@@ -173,9 +173,9 @@ namespace sio {
         // look up json data
         if (i + 1 < str.length()) {
             i += 1;
-            Optional<Json::Value> data = JsonParse(str.substr(i));
+            auto data = JsonParse(str.substr(i));
             if (!data) { return ParserError(); }
-            p.data = std::make_shared<Json::Value>(*data);
+            p.data = data;
         }
         
 //        debug('decoded %s as %j', str, p);

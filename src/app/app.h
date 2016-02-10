@@ -23,6 +23,7 @@
 #include <nwr/engineio/socket.h>
 
 #include "eio_test.h"
+#include "any_test.h"
 
 namespace app {
     class App {
@@ -34,5 +35,6 @@ namespace app {
 //        std::shared_ptr<nwr::Timer> timer_;
         
         std::shared_ptr<EioTest> eio_test_;
+        std::shared_ptr<AnyTest> any_test_;
     };
 }

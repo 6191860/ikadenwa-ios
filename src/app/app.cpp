@@ -46,7 +46,10 @@ namespace app {
 //            }
 //        });
         
-        eio_test_ = std::make_shared<EioTest>();
-        eio_test_->Run();
+//        eio_test_ = std::make_shared<EioTest>();
+//        eio_test_->Run();
+        
+        any_test_ = std::make_shared<AnyTest>();
+        any_test_->Run();
     }
 }

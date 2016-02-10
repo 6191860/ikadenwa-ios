@@ -16,121 +16,67 @@
 #include "data.h"
 #include "optional.h"
 
+namespace Json {
+    class Value;
+}
+
 namespace nwr {
     class Any {
     public:
         enum class Type {
+            //  value types
             Null,
             Boolean,
             Number,
-            String, // value
-            Data, // ref
-            Array, // ref
-            Dictionary // ref
+            String,
+            //  ref types
+            Data,
+            Array,
+            Dictionary
         };
         Any();
         Any(const Any & copy);
         Any(Any && move);
         
-        explicit Any(std::nullptr_t value);
+        Any(std::nullptr_t value);
         explicit Any(bool value);
         explicit Any(int value);
         explicit Any(double value);
+        explicit Any(const char * value);
         explicit Any(const std::string & value);
         explicit Any(const Data & value);
         explicit Any(const DataPtr & value);
         explicit Any(const std::vector<Any> & value);
-        explicit Any(const std::shared_ptr<std::vector<Any>> & value);
         explicit Any(const std::map<std::string, Any> & value);
-        explicit Any(const std::shared_ptr<std::map<std::string, Any>> & value);
         
         Type type() const;
+        int count() const;
+        std::vector<std::string> keys() const;
         
         Optional<bool> AsBoolean() const;
         Optional<int> AsInt() const;
         Optional<double> AsDouble() const;
         Optional<std::string> AsString() const;
         Optional<DataPtr> AsData() const;
-        Optional<std::shared_ptr<std::vector<Any>>> AsArray() const;
-        Optional<std::shared_ptr<std::map<std::string, Any>>> AsDictionary() const;
+        Optional<std::vector<Any>> AsArray() const;
+        Optional<std::map<std::string, Any>> AsDictionary() const;
         
         Any & operator= (const Any & copy);
         Any & operator= (Any && move);
+                
+        Any GetAt(int index) const;
+        void SetAt(int index, const Any & value);
         
-        Any & operator= (std::nullptr_t value);
-        Any & operator= (bool value);
-        Any & operator= (int value);
-        Any & operator= (double value);
-        Any & operator= (const std::string & value);
-        Any & operator= (const Data & value);
-        Any & operator= (const DataPtr & value);
-        Any & operator= (const std::vector<Any> & value);
-        Any & operator= (const std::shared_ptr<std::vector<Any>> & value);
-        Any & operator= (const std::map<std::string, Any> & value);
-        Any & operator= (const std::shared_ptr<std::map<std::string, Any>> & value);
+        Any GetAt(const std::string & key) const;
+        void SetAt(const std::string & key, const Any & value);
+        
+        static Any FromJson(const Json::Value & json);
+        std::shared_ptr<Json::Value> ToJson() const;
     private:
-        struct Holder {
-            Holder(Type type): type(type) {}
-            virtual ~Holder() {}
-            virtual Holder * Copy() = 0;
-            Type type;
-        };
-        struct NullHolder: public Holder {
-            using ThisType = NullHolder;
-            NullHolder(): Holder(Type::Null) {}
-            virtual ThisType * Copy() { return new ThisType(); }
-        };
-        struct BooleanHolder: public Holder {
-            using ThisType = BooleanHolder;
-            BooleanHolder(bool value): Holder(Type::Boolean), value(value) {}
-            virtual ThisType * Copy() { return new ThisType(value); }
-            bool value;
-        };
-        struct NumberHolder: public Holder {
-            using ThisType = NumberHolder;
-            NumberHolder(int value): Holder(Type::Number), value(value) {}
-            NumberHolder(double value): Holder(Type::Number), value(value) {}
-            virtual ThisType * Copy() { return new ThisType(value); }
-            double value;
-        };
-        struct StringHolder: public Holder {
-            using ThisType = StringHolder;
-            StringHolder(const std::string & value): Holder(Type::String), value(value) {}
-            virtual ThisType * Copy() { return new ThisType(value); }
-            std::string value;
-        };
-        struct DataHolder: public Holder {
-            using ThisType = DataHolder;
-            DataHolder(const Data & value):
-            DataHolder(std::make_shared<Data>(value)){}
-            
-            DataHolder(const DataPtr & value): Holder(Type::Data), value(value) {}
-            
-            virtual ThisType * Copy() { return new ThisType(value); }
-            DataPtr value;
-        };
-        struct ArrayHolder: public Holder {
-            using ThisType = ArrayHolder;
-            ArrayHolder(const std::vector<Any> & value):
-            ArrayHolder(std::make_shared<std::vector<Any>>(value)){}
-            
-            ArrayHolder(std::shared_ptr<std::vector<Any>> value):
-            Holder(Type::Array), value(value) {}
-            
-            virtual ThisType * Copy() { return new ThisType(value); }
-            std::shared_ptr<std::vector<Any>> value;
-        };
-        struct DictionaryHolder: public Holder {
-            using ThisType = DictionaryHolder;
-            DictionaryHolder(const std::map<std::string, Any> & value):
-            DictionaryHolder(std::make_shared<std::map<std::string, Any>>(value)){}
-            
-            DictionaryHolder(std::shared_ptr<std::map<std::string, Any>> value):
-            Holder(Type::Dictionary), value(value) {}
-            
-            virtual ThisType * Copy() { return new ThisType(value); }
-            std::shared_ptr<std::map<std::string, Any>> value;
-        };
-        std::shared_ptr<Holder> holder_;
+        std::shared_ptr<std::vector<Any>> inner_array() const;
+        std::shared_ptr<std::map<std::string, Any>> inner_dictionary() const;
+        
+        Type type_;
+        std::shared_ptr<void> value_;
     };
 }
