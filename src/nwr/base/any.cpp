@@ -8,6 +8,7 @@
 
 #include "any.h"
 #include "env.h"
+#include "string.h"
 
 #include "json.h"
 
@@ -38,6 +39,9 @@ namespace nwr {
 
     Any::Any(const ObjectType & value):
     type_(Type::Object), value_(std::make_shared<ObjectType>(value)) {}
+    
+    Any::Any(const PointerType & value):
+    type_(Type::Pointer), value_(value) {}
     
     Any::Type Any::type() const {
         return type_;
@@ -74,7 +78,7 @@ namespace nwr {
         }
     }
     Optional<int> Any::AsInt() const {
-        return AsDouble().Map<int>([](double x){ return static_cast<int>(x); });
+        return AsDouble().Map<int>([](double x) { return static_cast<int>(x); });
     }
     Optional<double> Any::AsDouble() const {
         if (type() == Type::Number) {
@@ -106,6 +110,14 @@ namespace nwr {
         return dict ? Some(*dict) : None();
     }
     
+    Optional<Any::PointerType> Any::AsPointer() const {
+        if (type() == Type::Pointer) {
+            return Some(value_);
+        } else {
+            return None();
+        }
+    }
+    
     Any & Any::operator= (const Any & copy) {
         type_ = copy.type_;
         
@@ -125,6 +137,7 @@ namespace nwr {
             case Type::Data:
             case Type::Array:
             case Type::Object:
+            case Type::Pointer:
                 value_ = copy.value_;
                 break;
         }
@@ -143,7 +156,7 @@ namespace nwr {
         auto array = inner_array();
         if (array) {
             if (0 <= index && index < array->size()) {
-                return array->at(index);
+                return (*array)[index];
             }
         }
         return nullptr;
@@ -155,13 +168,13 @@ namespace nwr {
         if (array->size() <= index) {
             array->resize(index + 1);
         }
-        array->at(index) = value;
+        (*array)[index] = value;
     }
     Any Any::GetAt(const std::string & key) const {
         auto dict = inner_object();
         if (dict) {
             if (HasKey(key)) {
-                return dict->at(key);
+                return (*dict)[key];
             }
         }
         return nullptr;
@@ -169,7 +182,7 @@ namespace nwr {
     void Any::SetAt(const std::string & key, const Any & value) {
         auto dict = inner_object();
         if (!dict) { Fatal("not dictionary"); }
-        dict->at(key) = value;
+        (*dict)[key] = value;
     }
     bool Any::HasKey(const std::string & key) const {
         auto dict = inner_object();
@@ -236,6 +249,8 @@ namespace nwr {
                 }
                 return json;
             }
+            case Type::Pointer:
+                return std::make_shared<Json::Value>(Format("%p", value_.get()));
         }
     }
     

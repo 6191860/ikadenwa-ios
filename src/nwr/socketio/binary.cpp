@@ -13,7 +13,8 @@ namespace sio {
     Any _DeconstructPacket(const Any & data, std::vector<DataPtr> & buffers);
     Any _ReconstructPacket(Any data, const std::vector<DataPtr> & buffers,
                            int & cur_place_holder);
-
+    bool _HasBinary(const Any & data);
+    
     std::tuple<Packet, std::vector<DataPtr>> DeconstructPacket(const Packet & packet) {
         std::vector<DataPtr> buffers;
         Any packetData = packet.data;
@@ -77,6 +78,30 @@ namespace sio {
             return data;
         }
         return data;
+    }
+    
+    bool HasBinary(const Any & data) {
+        return _HasBinary(data);
+    }
+    
+    bool _HasBinary(const Any & data) {
+        if (data.type() == Any::Type::Data) {
+            return true;
+        }
+        if (data.type() == Any::Type::Array) {
+            for (int i = 0; i < data.count(); i++) {
+                if (_HasBinary(data.GetAt(i))) {
+                    return true;
+                }
+            }
+        } else if (data.type() == Any::Type::Object) {
+            for (auto key : data.keys()) {
+                if (_HasBinary(data.GetAt(key))) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 }

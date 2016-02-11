@@ -16,19 +16,18 @@ namespace sio {
         return 4;
     }
     
-    std::vector<DataPtr> Encoder::Encode(const Packet & packet) {
+    std::vector<eio::PacketData> Encoder::Encode(const Packet & packet) {
         printf("%s\n", __PRETTY_FUNCTION__);
         
         if (packet.type == PacketType::BinaryEvent || packet.type == PacketType::BinaryAck) {
             return EncodeAsBinary(packet);
         } else {
-            auto encoding = EncodeAsString(packet);
-            std::vector<DataPtr> ret = { encoding };
-            return ret;
+            std::string encoding = EncodeAsString(packet);
+            return { eio::PacketData(encoding) };
         }
     }
     
-    DataPtr EncodeAsString(const Packet & packet) {
+    std::string EncodeAsString(const Packet & packet) {
         std::string str;
         bool nsp = false;
         
@@ -65,15 +64,20 @@ namespace sio {
         
 //        debug('encoded %j as %s', obj, str);
         
-        return std::make_shared<Data>(ToData(str));
+        return str;
     }
     
-    std::vector<DataPtr> EncodeAsBinary(const Packet & obj) {
+    std::vector<eio::PacketData> EncodeAsBinary(const Packet & obj) {
         auto deconstruction = DeconstructPacket(obj);
-        auto pack = EncodeAsString(std::get<0>(deconstruction));
-        auto buffers = std::get<1>(deconstruction);
+        std::string pack = EncodeAsString(std::get<0>(deconstruction));
+        
+        std::vector<eio::PacketData> buffers;
+        
+        buffers = Map<DataPtr, eio::PacketData>(std::get<1>(deconstruction), [](const DataPtr & data){
+            return eio::PacketData(data);
+        });
 
-        buffers.insert(buffers.begin(), pack); // add packet info to beginning of data list
+        buffers.insert(buffers.begin(), eio::PacketData(pack)); // add packet info to beginning of data list
         return buffers; // write all the buffers
     }
     

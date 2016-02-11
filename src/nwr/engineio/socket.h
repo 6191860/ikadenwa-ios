@@ -49,6 +49,10 @@ namespace eio {
             double randomization_factor;
             TimeDuration timeout;
             bool auto_connect;
+            
+            //  socket.io; io()
+            bool force_new;
+            bool multiplex;
         };
         enum class ReadyState {
             None,

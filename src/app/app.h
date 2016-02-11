@@ -24,17 +24,15 @@
 
 #include "eio_test.h"
 #include "any_test.h"
+#include "sio_test.h"
 
 namespace app {
     class App {
     public:
         void Test1();
         
-//        std::shared_ptr<nwr::eio::Socket> eio_sock_;
-//        std::shared_ptr<nwr::Websocket> ws_;
-//        std::shared_ptr<nwr::Timer> timer_;
-        
         std::shared_ptr<EioTest> eio_test_;
         std::shared_ptr<AnyTest> any_test_;
+        std::shared_ptr<SioTest> sio_test_;
     };
 }

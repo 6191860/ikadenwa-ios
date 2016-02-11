@@ -56,16 +56,16 @@ namespace eio {
     
     const uint8_t * PacketData::ptr() const {
         if (binary) {
-            return &binary->at(0);
+            return &(*binary)[0];
         } else {
-            return reinterpret_cast<const uint8_t *>(&text->at(0));
+            return reinterpret_cast<const uint8_t *>(&(*text)[0]);
         }
     }
     const char * PacketData::char_ptr() const {
         if (binary) {
-            return reinterpret_cast<const char *>(&binary->at(0));
+            return reinterpret_cast<const char *>(&(*binary)[0]);
         } else {
-            return &text->at(0);
+            return &(*text)[0];
         }
     }
     int PacketData::size() const {

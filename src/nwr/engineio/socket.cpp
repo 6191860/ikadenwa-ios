@@ -20,13 +20,17 @@ namespace eio {
     agent(),
     timestamp_param("t"),
     timestamp_requests(false),
+    
     reconnection(true),
     reconnection_attempts(-1),
     reconnection_delay(TimeDuration(1.0)),
     reconnection_delay_max(TimeDuration(5.0)),
     randomization_factor(0.5),
     timeout(TimeDuration(20.0)),
-    auto_connect(true)
+    auto_connect(true),
+    
+    force_new(false),
+    multiplex(true)
     {}
     
     std::shared_ptr<Socket> Socket::Create(const std::string & uri, const ConstructorParams & params) {
@@ -219,12 +223,12 @@ namespace eio {
         if (!rtc::GetDoubleFromJsonObject(json, "pingInterval", &dbl)) {
             Fatal(Format("invalid json: %s", JsonFormat(json).c_str()));
         }
-        ping_interval_ = TimeDuration(dbl);
+        ping_interval_ = TimeDuration(dbl / 1000.0);
         
         if (!rtc::GetDoubleFromJsonObject(json, "pingTimeout", &dbl)) {
             Fatal(Format("invalid json: %s", JsonFormat(json).c_str()));
         }
-        ping_timeout_ = TimeDuration(dbl);
+        ping_timeout_ = TimeDuration(dbl / 1000.0);
  
         OnOpen();
 
@@ -272,7 +276,7 @@ namespace eio {
     void Socket::Ping() {
         printf("%s\n", __PRETTY_FUNCTION__);
         auto thiz = shared_from_this();
-        SendPacket(PacketType::Ping, Data(0), [thiz]{
+        SendPacket(PacketType::Ping, PacketData(""), [thiz]{
             thiz->ping_emitter_->Emit(None());
         });
     }
@@ -312,7 +316,7 @@ namespace eio {
 
     
     void Socket::Send(const PacketData & data) {
-        Send(data, std::function<void()>());
+        Send(data, nullptr);
     }
     void Socket::Send(const PacketData & data, std::function<void()> callback) {
         printf("%s\n", __PRETTY_FUNCTION__);
@@ -379,10 +383,14 @@ namespace eio {
             printf("socket close\n");
             
             // clear timers
-            ping_interval_timer_->Cancel();
-            ping_interval_timer_ = nullptr;
-            ping_timeout_timer_->Cancel();
-            ping_timeout_timer_ = nullptr;
+            if (ping_interval_timer_) {
+                ping_interval_timer_->Cancel();
+                ping_interval_timer_ = nullptr;
+            }
+            if (ping_timeout_timer_) {
+                ping_timeout_timer_->Cancel();
+                ping_timeout_timer_ = nullptr;
+            }
             
             // stop event from firing again for transport
             transport_->close_emitter()->RemoveAllListeners();

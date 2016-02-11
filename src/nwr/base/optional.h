@@ -75,18 +75,21 @@ namespace nwr {
             return *this;
         }
         
-        bool operator== (const Optional<T> & cmp) {
+        bool operator== (const Optional<T> & cmp) const {
             if (*this) {
                 return cmp && value() == cmp.value();
             } else {
                 return !cmp;
             }
         }
+        bool operator!= (const Optional<T> & cmp) const {
+            return !(*this == cmp);
+        }
         
-        template <typename U> Optional<U> Map (const std::function<U(const T &)> & f) {
+        template <typename U> Optional<U> Map (const std::function<U(const T &)> & f) const {
             return *this ? Some(f(value())) : None();
         }
-        template <typename U> Optional<U> FlatMap (const std::function<Optional<U>(const T &)> & f) {
+        template <typename U> Optional<U> FlatMap (const std::function<Optional<U>(const T &)> & f) const {
             return *this ? f(value()) : None();
         }
     private:

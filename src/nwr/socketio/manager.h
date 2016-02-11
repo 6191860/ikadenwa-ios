@@ -14,10 +14,13 @@
 #include <functional>
 #include <memory>
 
+#include <nwr/base/array.h>
 #include <nwr/base/time.h>
 #include <nwr/base/timer.h>
 #include <nwr/base/emitter.h>
 #include <nwr/base/none.h>
+#include <nwr/base/any.h>
+#include <nwr/base/any_emitter.h>
 #include <nwr/engineio/socket.h>
 
 
@@ -49,6 +52,7 @@ namespace sio {
         EmitterPtr<None> close_emitter() { return close_emitter_; }
         EmitterPtr<Packet> packet_emitter() { return packet_emitter_; }
         
+        std::map<std::string, std::shared_ptr<Socket>> nsps() { return nsps_; }
         ReadyState ready_state() { return ready_state_; }
         bool auto_connect() { return auto_connect_; }
     private:
@@ -57,6 +61,7 @@ namespace sio {
         void EachNsp(const std::function<void(const std::string &,
                                               const std::shared_ptr<Socket> &)
                      > & proc);
+        void EmitAll(const std::string & event, const std::vector<Any> & args);
         
         void UpdateSocketIds();
         
@@ -89,9 +94,13 @@ namespace sio {
         void OnData(const eio::PacketData & data);
         void OnDecoded(const Packet & packet);
         void OnError(const Error & error);
+    public:
         std::shared_ptr<Socket> GetSocket(const std::string & nsp);
+    public:
         void Destroy(const std::shared_ptr<Socket> & socket);
+    public:
         void WritePacket(const Packet & packet);
+    private:
         void ProcessPacketQueue();
         void Cleanup();
         void Close();

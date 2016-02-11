@@ -16,6 +16,8 @@ namespace nwr {
 namespace sio {
     
     struct Url {
+        std::string source;
+        
         std::string protocol;
         std::string hostname;
         int port;
@@ -27,7 +29,7 @@ namespace sio {
         std::string href;
     };
     
-    Url UrlMake(const std::string & uri, int loc);
+    Url UrlMake(const std::string & uri);
     
 }
 }

@@ -10,12 +10,16 @@
 
 #include <string>
 #include <memory>
+#include <vector>
+#include <map>
 #include <functional>
 
 #include <nwr/base/emitter.h>
 #include <nwr/base/none.h>
 #include <nwr/base/error.h>
 #include <nwr/base/time.h>
+#include <nwr/base/any.h>
+#include <nwr/base/any_emitter.h>
 
 namespace nwr {
 namespace sio {
@@ -25,61 +29,55 @@ namespace sio {
     class Manager;
     
     class Socket: public std::enable_shared_from_this<Socket> {
+    private:
+        static std::vector<std::string> events_;
     public:
         static std::shared_ptr<Socket> Create(Manager * io, const std::string & nsp);
+        AnyEmitterPtr emitter() { return emitter_; }
     private:
+        using AckFunc = std::function<void(const Any &)>;
+        
+        struct EmitParams {
+            std::string event;
+            std::vector<Any> args;
+//            AckFunc ack;
+        };
+        
         Socket();
         void Init(Manager * io, const std::string & nsp);
     public:
-        EmitterPtr<None> connect_emitter() { return connect_emitter_; }
-        EmitterPtr<Error> connect_error_emitter() { return connect_error_emitter_; }
-        EmitterPtr<TimeDuration> connect_timeout_emitter() { return connect_timeout_emitter_; }
-        EmitterPtr<None> connecting_emitter() { return connecting_emitter_; }
-        EmitterPtr<None> disconnect_emitter() { return disconnect_emitter_; }
-        EmitterPtr<Error> error_emitter() { return error_emitter_; }
-        EmitterPtr<None> reconnect_emitter() { return reconnect_emitter_; }
-        EmitterPtr<None> reconnect_attempt_emitter() { return reconnect_attempt_emitter_; }
-        EmitterPtr<None> reconnect_failed_emitter() { return reconnect_failed_emitter_; }
-        EmitterPtr<None> reconnect_error_emitter() { return reconnect_error_emitter_; }
-        EmitterPtr<None> reconnecting_emitter() { return reconnecting_emitter_; }
-        EmitterPtr<None> ping_emitter() { return ping_emitter_; }
-        EmitterPtr<TimeDuration> pong_emitter() { return pong_emitter_; }
-        EmitterPtr<Packet> packet_emitter() { return packet_emitter_; }
-        
         std::string id() { return id_; }
         void set_id(const std::string & value) { id_ = value; }
     private:
         void SubEvents();
         void Open();
-//        void Send();
-        void Emit(const std::string & ev, const Packet & packet);
+        void Send(const std::vector<Any> & args, const AckFunc & ack_callback);
+    public:
+        void Emit(const std::string & event, const std::vector<Any> & args);
+        void Emit(const std::string & event, const std::vector<Any> & args, const AckFunc & ack_callback);
+    private:
+        void SendPacket(Packet packet);
         void OnOpen();
-        void OnPacket(const Packet & packet);
         void OnClose();
-        
-        
-        EmitterPtr<None> connect_emitter_;
-        EmitterPtr<Error> connect_error_emitter_;
-        EmitterPtr<TimeDuration> connect_timeout_emitter_;
-        EmitterPtr<None> connecting_emitter_;
-        EmitterPtr<None> disconnect_emitter_;
-        EmitterPtr<Error> error_emitter_;
-        EmitterPtr<None> reconnect_emitter_;
-        EmitterPtr<None> reconnect_attempt_emitter_;
-        EmitterPtr<None> reconnect_failed_emitter_;
-        EmitterPtr<None> reconnect_error_emitter_;
-        EmitterPtr<None> reconnecting_emitter_;
-        EmitterPtr<None> ping_emitter_;
-        EmitterPtr<TimeDuration> pong_emitter_;
-        EmitterPtr<Packet> packet_emitter_;
+        void OnPacket(const Packet & packet);
+        void OnEvent(const Packet & packet);
+        AckFunc Ack(int id);
+        void OnAck(const Packet & packet);
+        void OnConnect();
+        void EmitBuffered();
+        void OnDisconnect();
+        void Destroy();
+        void Close();
+
+        AnyEmitterPtr emitter_;
         
         std::string id_;
         Manager * io_;
         std::string nsp_;
         int ids_;
-        int acks_;
-        int receive_buffer_;
-        int send_buffer_;
+        std::map<int, AckFunc> acks_;
+        std::vector<EmitParams> receive_buffer_;
+        std::vector<Packet> send_buffer_;
         bool connected_;
         bool disconnected_;
         std::vector<OnToken> subs_;

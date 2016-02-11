@@ -19,5 +19,7 @@ namespace nwr {
 namespace sio {
     std::tuple<Packet, std::vector<DataPtr>> DeconstructPacket(const Packet & packet);
     Packet ReconstructPacket(Packet packet, const std::vector<DataPtr> & buffers);
+    
+    bool HasBinary(const Any & data);
 }
 }

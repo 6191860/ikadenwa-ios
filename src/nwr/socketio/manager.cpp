@@ -82,6 +82,12 @@ namespace sio {
         }
     }
     
+    void Manager::EmitAll(const std::string & event, const std::vector<Any> & args) {
+        EachNsp([event, args](const std::shared_ptr<Socket> & socket){
+            socket->emitter()->Emit(event, args);
+        });
+    }
+    
     void Manager::UpdateSocketIds() {
         EachNsp([this](const std::shared_ptr<Socket> & socket){
             socket->set_id(engine_->id());
@@ -133,15 +139,6 @@ namespace sio {
         }
     }
 
-    void Manager::EmitAll() {
-//        this.emit.apply(this, arguments);
-//        for (var nsp in this.nsps) {
-//            if (has.call(this.nsps, nsp)) {
-//                this.nsps[nsp].emit.apply(this.nsps[nsp], arguments);
-//            }
-//        }
-    }
-    
     void Manager::Open(const std::function<void(const Optional<Error> &)> & callback) {
         printf("[%s] ready_state = %d\n", __PRETTY_FUNCTION__ ,(int)ready_state_);
         if (ready_state_ == ReadyState::Open || ready_state_ == ReadyState::Opening) {
@@ -171,9 +168,9 @@ namespace sio {
             thiz->Cleanup();
             thiz->ready_state_ = ReadyState::Closed;
             
-            thiz->EachNsp([thiz, error](const std::shared_ptr<Socket> & socket){
-                socket->connect_error_emitter()->Emit(error);
-            });
+            thiz->EmitAll("connect_error", {
+                Any(std::make_shared<Error>(error))
+            } );
             
             if (callback) {
                 auto err = Error("connection error", "",
@@ -199,9 +196,7 @@ namespace sio {
                 
                 socket->error_emitter()->Emit(Error("timeout", ""));
                 
-                thiz->EachNsp([thiz, timeout](const std::shared_ptr<Socket> & socket){
-                    socket->connect_timeout_emitter()->Emit(timeout);
-                });
+                thiz->EmitAll("timeout", { Any(timeout.count()) });
             });
             
             subs_.push_back(OnToken([timer]{
@@ -245,16 +240,12 @@ namespace sio {
     
     void Manager::OnPing() {
         last_ping_ = Some(std::chrono::system_clock::now());
-        EachNsp([](const std::shared_ptr<Socket> & socket){
-            socket->ping_emitter()->Emit(None());
-        });
+        EmitAll("ping", {});
     }
     
     void Manager::OnPong() {
         auto duration = std::chrono::duration_cast<TimeDuration>(std::chrono::system_clock::now() - *last_ping_);
-        EachNsp([duration](const std::shared_ptr<Socket> & socket){
-            socket->pong_emitter()->Emit(duration);
-        });
+        EmitAll("pong", { Any(duration.count()) });
     }
     
     void Manager::OnData(const eio::PacketData & data) {
@@ -267,8 +258,8 @@ namespace sio {
 
     void Manager::OnError(const Error & error) {
         printf("[%s] %s\n", __PRETTY_FUNCTION__, error.Dump().c_str());
-        EachNsp([error](const std::shared_ptr<Socket> & socket) {
-            socket->error_emitter()->Emit(error);
+        EmitAll("error", {
+            Any(std::make_shared<Error>(error))
         });
     }
     
@@ -276,10 +267,8 @@ namespace sio {
         auto socket_ptr = std::make_shared<std::shared_ptr<Socket>>();
         
         auto thiz = shared_from_this();
-        auto on_connecting = EventListenerMake<None>([thiz, socket_ptr] (None _) {
-            if (std::find(thiz->connecting_.begin(), thiz->connecting_.end(),
-                          *socket_ptr) == thiz->connecting_.end())
-            {
+        auto on_connecting = AnyEventListenerMake([thiz, socket_ptr] () {
+            if (IndexOf(thiz->connecting_, *socket_ptr) == -1) {
                 thiz->connecting_.push_back(*socket_ptr);
             }
         });
@@ -292,15 +281,14 @@ namespace sio {
             
             nsps_[nsp] = socket;
             
-            socket->connecting_emitter()->On(on_connecting);
-
-            socket->connect_emitter()->On([thiz, socket](None _){
+            socket->emitter()->On("connecting", on_connecting);
+            socket->emitter()->On("connect", [thiz, socket](const std::vector<Any> & args) {
                 socket->set_id(thiz->engine_->id());
             });
             
             if (auto_connect_) {
                 // manually call here since connecting evnet is fired before listening
-                (*on_connecting)(None());
+                (*on_connecting)({});
             }
         }
         
@@ -309,10 +297,8 @@ namespace sio {
     }
     
     void Manager::Destroy(const std::shared_ptr<Socket> & socket) {
-        auto index = std::find(connecting_.begin(), connecting_.end(), socket);
-        if (index != connecting_.end()) {
-            connecting_.erase(index);
-        }
+        Remove(connecting_, socket);
+        
         if (connecting_.size() > 0) {
             return;
         }
@@ -326,7 +312,7 @@ namespace sio {
         if (!encoding_) {
             // encode, then write to engine with result
             encoding_ = true;
-            auto encoded_packets = encoder_->Encode(packet);
+            std::vector<eio::PacketData> encoded_packets = encoder_->Encode(packet);
  
             for (int i = 0; i < encoded_packets.size(); i++) {
                 engine_->Send(encoded_packets[i]);

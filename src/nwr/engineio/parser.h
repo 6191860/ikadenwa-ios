@@ -43,10 +43,10 @@ namespace eio {
     
     struct PacketData {
         PacketData();
-        PacketData(const Data & data);
-        PacketData(const DataPtr & data);
-        PacketData(const std::string & data);
-        PacketData(const std::shared_ptr<std::string> & data);
+        explicit PacketData(const Data & data);
+        explicit PacketData(const DataPtr & data);
+        explicit PacketData(const std::string & data);
+        explicit PacketData(const std::shared_ptr<std::string> & data);
         
         DataPtr binary;
         std::shared_ptr<std::string> text;

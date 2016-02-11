@@ -14,6 +14,9 @@
 #include <functional>
 #include <memory>
 
+#include "env.h"
+#include "array.h"
+
 namespace nwr {
     template <typename Event> class Emitter;
     template <typename Event> using EmitterPtr = std::shared_ptr<Emitter<Event>>;
@@ -59,15 +62,10 @@ namespace nwr {
         }
         
         void Off(const EventListener<Event> & listener) {
-            std::remove_if(listeners_.begin(), listeners_.end(),
-                           [listener](const EventListener<Event> & elem){
-                               return listener == elem;
-                           });
+            Remove(listeners_, listener);
         }
         void RemoveAllListeners() {
-            for (auto listener : listeners()) {
-                Off(listener);
-            }
+            listeners_.clear();
         }
         
         void Emit(const Event & event) {

@@ -8,6 +8,8 @@
 
 #include "timer_pool.h"
 
+#include "array.h"
+
 namespace nwr {
     TimerPool::TimerPool() {
         
@@ -25,10 +27,7 @@ namespace nwr {
         });
     }
     void TimerPool::Remove(const TimerPtr & timer) {
-        std::remove_if(timers_.begin(), timers_.end(),
-                       [timer](const TimerPtr & elem) {
-                           return elem == timer;
-                       });
+        nwr::Remove(timers_, timer);
     }
     void TimerPool::SetTimeout(const TimeDuration & delay, const Task & task) {
         Add(Timer::Create(delay, task));

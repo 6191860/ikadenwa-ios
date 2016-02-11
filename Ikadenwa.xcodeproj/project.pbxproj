@@ -46,6 +46,9 @@
 		D6A6906B1C4237F100952A7F /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690691C4237F100952A7F /* libssl.a */; };
 		D6A6906E1C42380100952A7F /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A6906D1C42380100952A7F /* libwebsockets.a */; };
 		D6B9DE2E1C6B862900EBF183 /* any_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE2C1C6B862900EBF183 /* any_test.cpp */; };
+		D6B9DE311C6BDBBD00EBF183 /* any_emitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */; };
+		D6B9DE341C6C8E4700EBF183 /* sio_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE321C6C8E4700EBF183 /* sio_test.cpp */; };
+		D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE351C6C8F4400EBF183 /* io.cpp */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D6F78A461C54110700B21614 /* json.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A441C54110700B21614 /* json.cpp */; };
@@ -162,6 +165,13 @@
 		D6A6906D1C42380100952A7F /* libwebsockets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebsockets.a; path = lib/websockets/lib/libwebsockets.a; sourceTree = "<group>"; };
 		D6B9DE2C1C6B862900EBF183 /* any_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = any_test.cpp; path = app/any_test.cpp; sourceTree = "<group>"; };
 		D6B9DE2D1C6B862900EBF183 /* any_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = any_test.h; path = app/any_test.h; sourceTree = "<group>"; };
+		D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any_emitter.cpp; sourceTree = "<group>"; };
+		D6B9DE301C6BDBBD00EBF183 /* any_emitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any_emitter.h; sourceTree = "<group>"; };
+		D6B9DE321C6C8E4700EBF183 /* sio_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sio_test.cpp; path = app/sio_test.cpp; sourceTree = "<group>"; };
+		D6B9DE331C6C8E4700EBF183 /* sio_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sio_test.h; path = app/sio_test.h; sourceTree = "<group>"; };
+		D6B9DE351C6C8F4400EBF183 /* io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = io.cpp; path = nwr/socketio/io.cpp; sourceTree = "<group>"; };
+		D6B9DE361C6C8F4400EBF183 /* io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = io.h; path = nwr/socketio/io.h; sourceTree = "<group>"; };
+		D6B9DE391C6CB79B00EBF183 /* array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = array.h; sourceTree = "<group>"; };
 		D6F78A381C53E2E400B21614 /* webrtc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = webrtc.xcodeproj; path = "lib/webrtc/framework-project/webrtc.xcodeproj"; sourceTree = "<group>"; };
 		D6F78A441C54110700B21614 /* json.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json.cpp; sourceTree = "<group>"; };
 		D6F78A451C54110700B21614 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
@@ -201,6 +211,8 @@
 				D6155E8B1C64DC3700A8B6CA /* eio_test.cpp */,
 				D6B9DE2D1C6B862900EBF183 /* any_test.h */,
 				D6B9DE2C1C6B862900EBF183 /* any_test.cpp */,
+				D6B9DE331C6C8E4700EBF183 /* sio_test.h */,
+				D6B9DE321C6C8E4700EBF183 /* sio_test.cpp */,
 			);
 			name = app;
 			sourceTree = "<group>";
@@ -320,6 +332,7 @@
 				D6155E971C66273500A8B6CA /* env.cpp */,
 				D66436A91C4A74AB0059A94B /* string.h */,
 				D66436AA1C4A74C20059A94B /* string.cpp */,
+				D6B9DE391C6CB79B00EBF183 /* array.h */,
 				D66436E61C4FD8780059A94B /* none.h */,
 				D6F78A481C543FD900B21614 /* optional.h */,
 				D66436BB1C4D2BA50059A94B /* task.h */,
@@ -352,6 +365,8 @@
 				D6F78A441C54110700B21614 /* json.cpp */,
 				D67CAE401C6A530E0000A3C3 /* any.h */,
 				D67CAE3F1C6A530E0000A3C3 /* any.cpp */,
+				D6B9DE301C6BDBBD00EBF183 /* any_emitter.h */,
+				D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */,
 				D66436A61C4A73240059A94B /* websocket.h */,
 				D66436A71C4A73420059A94B /* websocket.cpp */,
 				D66436DB1C4E94F30059A94B /* websocket_impl.h */,
@@ -394,6 +409,8 @@
 				D6F78A511C55018A00B21614 /* manager.cpp */,
 				D6F78A551C55090600B21614 /* socket.h */,
 				D6F78A541C55090600B21614 /* socket.cpp */,
+				D6B9DE361C6C8F4400EBF183 /* io.h */,
+				D6B9DE351C6C8F4400EBF183 /* io.cpp */,
 			);
 			name = socketio;
 			sourceTree = "<group>";
@@ -501,6 +518,8 @@
 				D66436DC1C4E94F30059A94B /* websocket_impl.cpp in Sources */,
 				D6A690651C42366800952A7F /* AAA.m in Sources */,
 				D664369D1C4A544C0059A94B /* app.cpp in Sources */,
+				D6B9DE341C6C8E4700EBF183 /* sio_test.cpp in Sources */,
+				D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */,
 				D60852A61C50DF6000CEE554 /* data.cpp in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,
@@ -510,6 +529,7 @@
 				D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */,
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
 				D6F78A531C55018A00B21614 /* manager.cpp in Sources */,
+				D6B9DE311C6BDBBD00EBF183 /* any_emitter.cpp in Sources */,
 				D6155E931C66157200A8B6CA /* binary.cpp in Sources */,
 				D67CAE411C6A530E0000A3C3 /* any.cpp in Sources */,
 				D66436CC1C4DC8F10059A94B /* parser.cpp in Sources */,

@@ -31,7 +31,8 @@ namespace sio {
                 value <= static_cast<int>(PacketType::BinaryAck));
     }
     
-    Packet::Packet()
+    Packet::Packet():
+    attachments(0)
     {}
 }
 }

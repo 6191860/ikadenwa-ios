@@ -35,6 +35,7 @@ namespace nwr {
         auto err = std::make_shared<Error>(*this);
         while (err) {
             lines.push_back(Format("%s:%s", err->type_.c_str(), err->message_.c_str()));
+            err = err->causer();
         }
         return Join(lines, "\n");
     }

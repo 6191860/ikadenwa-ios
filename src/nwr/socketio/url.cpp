@@ -14,8 +14,10 @@
 namespace nwr {
 namespace sio {
  
-    Url UrlMake(const std::string & uri, int loc) {
+    Url UrlMake(const std::string & uri) {
         Url ret;
+        
+        ret.source = uri;
         
         auto url_part = ParseUrl(uri);
         

@@ -25,6 +25,7 @@ namespace nwr {
     public:
         using ArrayType = std::vector<Any>;
         using ObjectType = std::map<std::string, Any>;
+        using PointerType = std::shared_ptr<void>;
         
         enum class Type {
             //  value types
@@ -35,7 +36,8 @@ namespace nwr {
             //  ref types
             Data,
             Array,
-            Object
+            Object,
+            Pointer
         };
         Any();
         Any(const Any & copy);
@@ -51,6 +53,7 @@ namespace nwr {
         explicit Any(const DataPtr & value);
         explicit Any(const ArrayType & value);
         explicit Any(const ObjectType & value);
+        explicit Any(const PointerType & value);
         
         Type type() const;
         int count() const;
@@ -63,6 +66,7 @@ namespace nwr {
         Optional<DataPtr> AsData() const;
         Optional<ArrayType> AsArray() const;
         Optional<ObjectType> AsObject() const;
+        Optional<PointerType> AsPointer() const;
         
         Any & operator= (const Any & copy);
         Any & operator= (Any && move);

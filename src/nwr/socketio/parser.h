@@ -22,6 +22,7 @@
 #include <nwr/base/data.h>
 #include <nwr/base/json.h>
 #include <nwr/base/string.h>
+#include <nwr/base/array.h>
 #include <nwr/base/emitter.h>
 #include <nwr/base/any.h>
 
@@ -37,11 +38,11 @@ namespace sio {
     
     class Encoder {
     public:
-        std::vector<DataPtr> Encode(const Packet & obj);
+        std::vector<eio::PacketData> Encode(const Packet & obj);
     };
     
-    DataPtr EncodeAsString(const Packet & obj);
-    std::vector<DataPtr> EncodeAsBinary(const Packet & obj);
+    std::string EncodeAsString(const Packet & obj);
+    std::vector<eio::PacketData> EncodeAsBinary(const Packet & obj);
     
     class Decoder {
     public:
