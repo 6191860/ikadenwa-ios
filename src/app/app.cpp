@@ -13,7 +13,11 @@
 namespace app {
 
     void App::Test1() {
-        sio_test_ = std::make_shared<SioTest>();
-        sio_test_->Run();
+        any_test_ = std::make_shared<AnyTest>();
+        ert_test_ = std::make_shared<ErtTest>();
+        
+        
+//        any_test_->Run();
+        ert_test_->Run();
     }
 }

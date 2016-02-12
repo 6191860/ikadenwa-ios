@@ -48,6 +48,8 @@ namespace sio {
     public:
         std::string id() { return id_; }
         void set_id(const std::string & value) { id_ = value; }
+        
+        bool connected() { return connected_; }
     private:
         void SubEvents();
         void Open();

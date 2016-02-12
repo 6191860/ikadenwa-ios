@@ -57,7 +57,7 @@ namespace sio {
         }
         
         // json data
-        if (packet.data.type() != Any::Type::Null) {
+        if (packet.data) {
             if (nsp) { str += ","; }
             str += JsonFormat(*packet.data.ToJson());
         }

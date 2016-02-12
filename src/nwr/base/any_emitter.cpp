@@ -74,6 +74,9 @@ namespace nwr {
     }
     void AnyEmitter::Off(const std::string & event, const AnyEventListener & listener) {        
         Remove(listeners_map_[event], listener);
+        if (listeners_map_[event].size() == 0) {
+            listeners_map_.erase(event);
+        }
     }
     void AnyEmitter::RemoveAllListenersFor(const std::string & event) {
         listeners_map_.erase(event);

@@ -52,5 +52,14 @@ namespace app {
         ASSERT(c.AsInt() == Some(3));
         ASSERT(b.GetAt("b").AsString() == Some(std::string("bbb")));
         
+        Any d = Any(Any::ObjectType {
+            { "aa", Any(Any::ObjectType {
+                { "bb", Any(1) }
+            }) }
+        });
+        ASSERT(d.GetAt("aa").GetAt("bb").AsInt() == Some(1));
+        d.GetAt("aa").SetAt("bb", Any(2));
+        ASSERT(d.GetAt("aa").GetAt("bb").AsInt() == Some(2));
+        
     }
 }

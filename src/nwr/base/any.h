@@ -59,6 +59,8 @@ namespace nwr {
         int count() const;
         std::vector<std::string> keys() const;
         
+        explicit operator bool() const;
+        
         Optional<bool> AsBoolean() const;
         Optional<int> AsInt() const;
         Optional<double> AsDouble() const;
@@ -70,6 +72,9 @@ namespace nwr {
         
         Any & operator= (const Any & copy);
         Any & operator= (Any && move);
+        
+        // can not clone Pointer
+        Any Clone() const;
                 
         Any GetAt(int index) const;
         void SetAt(int index, const Any & value);

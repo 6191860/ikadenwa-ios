@@ -18,10 +18,24 @@ namespace nwr {
         auto iter = std::remove(array.begin(), array.end(), item);
         array.erase(iter, array.end());
     }
+    template <typename T, typename F>
+    void RemoveIf(std::vector<T> & array, const F & pred) {
+        auto iter = std::remove_if(array.begin(), array.end(), pred);
+        array.erase(iter, array.end());
+    }
     
     template <typename T>
     int IndexOf(const std::vector<T> & array, const T & item) {
         auto iter = std::find(array.begin(), array.end(), item);
+        if (iter != array.end()){
+            return static_cast<int>(iter - array.begin());
+        } else {
+            return -1;
+        }
+    }
+    template <typename T, typename F>
+    int IndexOfIf(const std::vector<T> & array, const F & pred) {
+        auto iter = std::find_if(array.begin(), array.end(), pred);
         if (iter != array.end()){
             return static_cast<int>(iter - array.begin());
         } else {

@@ -9,6 +9,8 @@
 #include "any.h"
 #include "env.h"
 #include "string.h"
+#include "array.h"
+#include "map.h"
 
 #include "json.h"
 
@@ -68,6 +70,10 @@ namespace nwr {
         } else {
             return std::vector<std::string>();
         }
+    }
+    
+    Any::operator bool() const {
+        return type() != Type::Null;
     }
     
     Optional<bool> Any::AsBoolean() const {
@@ -150,6 +156,35 @@ namespace nwr {
         move.type_ = Type::Null;
         move.value_ = nullptr;
         return *this;
+    }
+    
+    Any Any::Clone() const {
+        switch (type_) {
+            case Type::Null:
+                return Any();
+            case Type::Boolean:
+                return Any(*AsBoolean());
+            case Type::Number:
+                return Any(*AsDouble());
+            case Type::String:
+                return Any(*AsString());
+            case Type::Data:
+                return Any(std::make_shared<Data>(*AsData()));
+            case Type::Array: {
+                std::vector<Any> array = Map(*AsArray(), [](const Any & x){
+                    return x.Clone();
+                });
+                return Any(array);
+            }
+            case Type::Object: {
+                std::map<std::string, Any> map = MapToMap(*AsObject(), [](const std::string & key, const Any & x) {
+                    return std::pair(key, x.Clone());
+                });
+                return Any(map)
+            }
+            case Type::Pointer:
+                return Any(*AsPointer());
+        }
     }
     
     Any Any::GetAt(int index) const {

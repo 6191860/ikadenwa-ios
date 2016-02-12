@@ -49,6 +49,11 @@
 		D6B9DE311C6BDBBD00EBF183 /* any_emitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */; };
 		D6B9DE341C6C8E4700EBF183 /* sio_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE321C6C8E4700EBF183 /* sio_test.cpp */; };
 		D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE351C6C8F4400EBF183 /* io.cpp */; };
+		D6B9DE3E1C6CDB3200EBF183 /* easyrtc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */; };
+		D6B9DE411C6CE19A00EBF183 /* ert_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE3F1C6CE19A00EBF183 /* ert_test.cpp */; };
+		D6B9DE4E1C6E2BE300EBF183 /* media_constraints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE4C1C6E2BE300EBF183 /* media_constraints.cpp */; };
+		D6B9DE511C6E38B700EBF183 /* peer_connection_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */; };
+		D6B9DE541C6E44C700EBF183 /* peer_conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D6F78A461C54110700B21614 /* json.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A441C54110700B21614 /* json.cpp */; };
@@ -172,6 +177,17 @@
 		D6B9DE351C6C8F4400EBF183 /* io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = io.cpp; path = nwr/socketio/io.cpp; sourceTree = "<group>"; };
 		D6B9DE361C6C8F4400EBF183 /* io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = io.h; path = nwr/socketio/io.h; sourceTree = "<group>"; };
 		D6B9DE391C6CB79B00EBF183 /* array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = array.h; sourceTree = "<group>"; };
+		D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = easyrtc.cpp; path = nwr/easyrtc/easyrtc.cpp; sourceTree = "<group>"; };
+		D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = easyrtc.h; path = nwr/easyrtc/easyrtc.h; sourceTree = "<group>"; };
+		D6B9DE3F1C6CE19A00EBF183 /* ert_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ert_test.cpp; path = app/ert_test.cpp; sourceTree = "<group>"; };
+		D6B9DE401C6CE19A00EBF183 /* ert_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ert_test.h; path = app/ert_test.h; sourceTree = "<group>"; };
+		D6B9DE471C6E190A00EBF183 /* map.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = map.h; sourceTree = "<group>"; };
+		D6B9DE4C1C6E2BE300EBF183 /* media_constraints.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = media_constraints.cpp; path = nwr/easyrtc/media_constraints.cpp; sourceTree = "<group>"; };
+		D6B9DE4D1C6E2BE300EBF183 /* media_constraints.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = media_constraints.h; path = nwr/easyrtc/media_constraints.h; sourceTree = "<group>"; };
+		D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = peer_connection_observer.cpp; path = nwr/easyrtc/peer_connection_observer.cpp; sourceTree = "<group>"; };
+		D6B9DE501C6E38B700EBF183 /* peer_connection_observer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = peer_connection_observer.h; path = nwr/easyrtc/peer_connection_observer.h; sourceTree = "<group>"; };
+		D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = peer_conn.cpp; path = nwr/easyrtc/peer_conn.cpp; sourceTree = "<group>"; };
+		D6B9DE531C6E44C700EBF183 /* peer_conn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = peer_conn.h; path = nwr/easyrtc/peer_conn.h; sourceTree = "<group>"; };
 		D6F78A381C53E2E400B21614 /* webrtc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = webrtc.xcodeproj; path = "lib/webrtc/framework-project/webrtc.xcodeproj"; sourceTree = "<group>"; };
 		D6F78A441C54110700B21614 /* json.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json.cpp; sourceTree = "<group>"; };
 		D6F78A451C54110700B21614 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
@@ -213,6 +229,8 @@
 				D6B9DE2C1C6B862900EBF183 /* any_test.cpp */,
 				D6B9DE331C6C8E4700EBF183 /* sio_test.h */,
 				D6B9DE321C6C8E4700EBF183 /* sio_test.cpp */,
+				D6B9DE401C6CE19A00EBF183 /* ert_test.h */,
+				D6B9DE3F1C6CE19A00EBF183 /* ert_test.cpp */,
 			);
 			name = app;
 			sourceTree = "<group>";
@@ -231,6 +249,7 @@
 				D6A690711C44CC1100952A7F /* base */,
 				D66436C91C4DC86F0059A94B /* engineio */,
 				D6F78A4A1C54DAD000B21614 /* socketio */,
+				D6B9DE3B1C6CD86600EBF183 /* easyrtc */,
 			);
 			name = nwr;
 			sourceTree = "<group>";
@@ -333,6 +352,7 @@
 				D66436A91C4A74AB0059A94B /* string.h */,
 				D66436AA1C4A74C20059A94B /* string.cpp */,
 				D6B9DE391C6CB79B00EBF183 /* array.h */,
+				D6B9DE471C6E190A00EBF183 /* map.h */,
 				D66436E61C4FD8780059A94B /* none.h */,
 				D6F78A481C543FD900B21614 /* optional.h */,
 				D66436BB1C4D2BA50059A94B /* task.h */,
@@ -374,6 +394,21 @@
 			);
 			name = base;
 			path = nwr/base;
+			sourceTree = "<group>";
+		};
+		D6B9DE3B1C6CD86600EBF183 /* easyrtc */ = {
+			isa = PBXGroup;
+			children = (
+				D6B9DE4D1C6E2BE300EBF183 /* media_constraints.h */,
+				D6B9DE4C1C6E2BE300EBF183 /* media_constraints.cpp */,
+				D6B9DE501C6E38B700EBF183 /* peer_connection_observer.h */,
+				D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */,
+				D6B9DE531C6E44C700EBF183 /* peer_conn.h */,
+				D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */,
+				D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */,
+				D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */,
+			);
+			name = easyrtc;
 			sourceTree = "<group>";
 		};
 		D6F789861C52C8A300B21614 /* webrtc */ = {
@@ -508,6 +543,7 @@
 				D66436A51C4A64110059A94B /* main.m in Sources */,
 				D66436A81C4A73420059A94B /* websocket.cpp in Sources */,
 				D60852A11C50B24D00CEE554 /* socket.cpp in Sources */,
+				D6B9DE4E1C6E2BE300EBF183 /* media_constraints.cpp in Sources */,
 				D66436AB1C4A74C20059A94B /* string.cpp in Sources */,
 				D66436C11C4D40D80059A94B /* ios_looper.mm in Sources */,
 				D66436C31C4D42980059A94B /* looper.mm in Sources */,
@@ -520,6 +556,7 @@
 				D664369D1C4A544C0059A94B /* app.cpp in Sources */,
 				D6B9DE341C6C8E4700EBF183 /* sio_test.cpp in Sources */,
 				D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */,
+				D6B9DE511C6E38B700EBF183 /* peer_connection_observer.cpp in Sources */,
 				D60852A61C50DF6000CEE554 /* data.cpp in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,
@@ -527,6 +564,7 @@
 				D6F78A561C55090600B21614 /* socket.cpp in Sources */,
 				D6155E961C6615B100A8B6CA /* packet.cpp in Sources */,
 				D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */,
+				D6B9DE3E1C6CDB3200EBF183 /* easyrtc.cpp in Sources */,
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
 				D6F78A531C55018A00B21614 /* manager.cpp in Sources */,
 				D6B9DE311C6BDBBD00EBF183 /* any_emitter.cpp in Sources */,
@@ -536,9 +574,11 @@
 				D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */,
 				D6F78A4D1C54DAE900B21614 /* on.cpp in Sources */,
 				D66436E51C4F6C5A0059A94B /* error.cpp in Sources */,
+				D6B9DE411C6CE19A00EBF183 /* ert_test.cpp in Sources */,
 				D6B9DE2E1C6B862900EBF183 /* any_test.cpp in Sources */,
 				D66436F01C5000B40059A94B /* websocket_transport.cpp in Sources */,
 				D6155E991C66273500A8B6CA /* env.cpp in Sources */,
+				D6B9DE541C6E44C700EBF183 /* peer_conn.cpp in Sources */,
 				D6F78A501C54EC2400B21614 /* url.cpp in Sources */,
 				D66436EC1C4FE9EC0059A94B /* yeast.cpp in Sources */,
 				D66436B91C4CEA740059A94B /* task_queue.mm in Sources */,

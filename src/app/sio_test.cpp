@@ -23,10 +23,6 @@ namespace app {
             });
             
         }));
-        socket->emitter()->On("event", AnyEventListenerMake([](const Any & data){
-            printf("socket on event %s\n",
-                   JsonFormat(*data.ToJson()).c_str());
-        }));
         socket->emitter()->On("echo", AnyEventListenerMake([](const Any & data) {
             printf("socket on echo %s\n", JsonFormat(*data.ToJson()).c_str());
         }));
