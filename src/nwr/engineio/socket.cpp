@@ -339,7 +339,7 @@ namespace eio {
         
         if (callback) {
             flush_emitter_->Once([callback](const None & _) {
-                if (callback) { callback(); }
+                FuncCall(callback);
             });
         }
         

@@ -85,9 +85,7 @@ namespace nwr {
         }
         
         ready_state_ = Websocket::ReadyState::Closed;
-        if (on_close_) {
-            on_close_();
-        }
+        FuncCall(on_close_);
     }
     
     void WebsocketImpl::Send(const Websocket::Message & message) {
@@ -255,9 +253,7 @@ namespace nwr {
     void WebsocketImpl::HandleError(const std::string & message) {
         if (is_closed()) { return; }
         
-        if (on_error_) {
-            on_error_(message);
-        }
+        FuncCall(on_error_, message);
         
         Close();
     }
@@ -270,17 +266,13 @@ namespace nwr {
         if (is_closed()) { return; }
         
         ready_state_ = Websocket::ReadyState::Open;
-        if (on_open_) {
-            on_open_();
-        }
+        FuncCall(on_open_);
     }
     
     void WebsocketImpl::HandleMessage(const Websocket::Message & message) {
         if (is_closed()) { return; }
         
-        if (on_message_) {
-            on_message_(message);
-        }
+        FuncCall(on_message_, message);
     }
     
     

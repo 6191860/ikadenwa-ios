@@ -62,11 +62,7 @@ namespace nwr {
     
     std::vector<std::string> Any::keys() const {
         if (type() == Type::Object) {
-            std::vector<std::string> r;
-            for (auto entry : *inner_object()) {
-                r.push_back(entry.first);
-            }
-            return r;
+            return Keys(*inner_object());
         } else {
             return std::vector<std::string>();
         }
@@ -223,7 +219,7 @@ namespace nwr {
     bool Any::HasKey(const std::string & key) const {
         auto dict = inner_object();
         if (dict) {
-            return dict->find(key) != dict->end();
+            return HasKey(*dict, key);
         }
         return false;
     }

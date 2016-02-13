@@ -32,6 +32,9 @@ namespace nwr {
     
     bool IsDigit(const std::string & str);
     
+    int IndexOf(const std::string & str, const std::string & needle);
+    int IndexOf(const std::string & str, const std::string & needle, int pos);
+    
     std::string Replace(const std::string & str, const std::regex & regex,
                         const std::function<std::string(const std::string &)> & func);
 }

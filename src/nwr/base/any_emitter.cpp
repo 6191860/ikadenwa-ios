@@ -18,20 +18,20 @@ namespace nwr {
     
     AnyEventListener AnyEventListenerMake(const std::function<void ()> & func) {
         return AnyEventListenerMake([func](const std::vector<Any> & args){
-            func();
+            FuncCall(func);
         });
     }
     AnyEventListener AnyEventListenerMake(const std::function<void (const Any &)> & func) {
         return AnyEventListenerMake([func](const std::vector<Any> & args){
             Any arg0 = 0 < args.size() ? args[0] : Any();
-            func(arg0);
+            FuncCall(func, arg0);
         });
     }
     AnyEventListener AnyEventListenerMake(const std::function<void (const Any &, const Any &)> & func) {
         return AnyEventListenerMake([func](const std::vector<Any> & args){
             Any arg0 = 0 < args.size() ? args[0] : Any();
             Any arg1 = 1 < args.size() ? args[1] : Any();
-            func(arg0, arg1);
+            FuncCall(func, arg0, arg1);
         });
     }
     AnyEventListener AnyEventListenerMake(const std::function<void (const Any &, const Any &, const Any &)> & func) {
@@ -39,7 +39,7 @@ namespace nwr {
             Any arg0 = 0 < args.size() ? args[0] : Any();
             Any arg1 = 1 < args.size() ? args[1] : Any();
             Any arg2 = 2 < args.size() ? args[2] : Any();
-            func(arg0, arg1, arg2);
+            FuncCall(func, arg0, arg1, arg2);
         });
     }
 
@@ -63,7 +63,8 @@ namespace nwr {
         auto on_handler_ptr = std::make_shared<AnyEventListener>();
         
         auto on_handler = AnyEventListenerMake([this, event, on_handler_ptr, listener]
-                                               (const std::vector<Any> & args){
+                                               (const std::vector<Any> & args)
+        {
             this->Off(event, *on_handler_ptr);
             (*listener)(args);
         });

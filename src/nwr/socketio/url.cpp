@@ -35,7 +35,7 @@ namespace sio {
             ret.path = url_part.path;
         }
 
-        bool ipv6 = url_part.hostname.find(":") != std::string::npos;
+        bool ipv6 = IndexOf(url_part.hostname, ":") != -1;
         
         std::string host = ipv6 ? "[" + url_part.hostname + "]" : url_part.hostname;
 

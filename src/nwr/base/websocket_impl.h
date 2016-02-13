@@ -20,6 +20,7 @@ extern "C" {
 }
 
 #include "data.h"
+#include "func.h"
 #include "looper.h"
 
 #include "websocket.h"

@@ -45,17 +45,17 @@ namespace nwr {
         if (str.length() == 0 || max_count == 0) {
             return ret;
         }
-        std::string::size_type pos = 0;
+        int pos = 0;
         while (true) {
             if (ret.size() + 1 == max_count) {
                 break;
             }
-            std::string::size_type next_pos = str.find(delim, pos);
-            if (next_pos == std::string::npos) {
+            int next_pos = IndexOf(str, delim, pos);
+            if (next_pos == -1) {
                 break;
             }
             ret.push_back(str.substr(pos, next_pos));
-            pos = next_pos + delim.length();
+            pos = next_pos + static_cast<int>(delim.length());
         }
         ret.push_back(str.substr(pos, str.length()));
         return ret;
@@ -86,28 +86,33 @@ namespace nwr {
         return true;
     }
     
+    int IndexOf(const std::string & str, const std::string & needle) {
+        return IndexOf(str, needle, 0);
+    }
+    int IndexOf(const std::string & str, const std::string & needle, int pos) {
+        auto p = str.find(needle, pos);
+        if (p == std::string::npos) { return -1; }
+        return static_cast<int>(p);
+    }
+    
     std::string Replace(const std::string & arg_str, const std::regex & regex,
                         const std::function<std::string(const std::string &)> & func)
     {
         std::string str = arg_str;
-        
+        int pos = 0;
         while (true) {
-            int pos = 0;
             std::smatch mret;
-            
             std::regex_search(str.cbegin() + pos, str.cend(),
                               mret, regex,
                               std::regex_constants::format_first_only);
-            if (mret.size() > 0) {
-                int part_pos = pos + static_cast<int>(mret.position(0));
-                int part_len = static_cast<int>(mret.length(0));
-                std::string part = str.substr(part_pos, part_len);
-                std::string rep = func(part);
-                str.replace(part_pos, part_len, rep);
-                pos = part_pos + static_cast<int>(rep.length());
-            } else {
-                return str;
-            }
+            if (mret.size() == 0) { return str; }
+            
+            int part_pos = pos + static_cast<int>(mret.position(0));
+            int part_len = static_cast<int>(mret.length(0));
+            std::string part = str.substr(part_pos, part_len);
+            std::string rep = func(part);
+            str.replace(part_pos, part_len, rep);
+            pos = part_pos + static_cast<int>(rep.length());
         }
     }
 }

@@ -15,6 +15,7 @@
 #include <functional>
 #include <initializer_list>
 
+#include "func.h"
 #include "any.h"
 
 namespace nwr {
@@ -22,7 +23,7 @@ namespace nwr {
     
     using AnyEmitterPtr = std::shared_ptr<AnyEmitter>;
     
-    using AnyEventListener = std::shared_ptr<std::function<void (const std::vector<Any> &)>>;
+    using AnyEventListener = Func<void (const std::vector<Any> &)>;
 
     AnyEventListener AnyEventListenerMake(const std::function<void (const std::vector<Any> &)> & func);
     

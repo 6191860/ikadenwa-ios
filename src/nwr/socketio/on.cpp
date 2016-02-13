@@ -17,7 +17,7 @@ namespace sio {
     {}
     
     void OnToken::Destroy() const{
-        destroy_func_();
+        FuncCall(destroy_func_);
     }
 }
 }

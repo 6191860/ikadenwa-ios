@@ -16,12 +16,13 @@
 
 #include "env.h"
 #include "array.h"
+#include "func.h"
 
 namespace nwr {
     template <typename Event> class Emitter;
     template <typename Event> using EmitterPtr = std::shared_ptr<Emitter<Event>>;
 
-    template <typename Event> using EventListener = std::shared_ptr<std::function<void (const Event &)>>;
+    template <typename Event> using EventListener = Func<void (const Event &)>;
     template <typename Event>
     EventListener<Event> EventListenerMake(const std::function<void (const Event &)> & func) {
         return std::make_shared<typename EventListener<Event>::element_type>(func);

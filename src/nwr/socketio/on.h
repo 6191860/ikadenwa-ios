@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <nwr/base/func.h>
 #include <nwr/base/emitter.h>
 
 namespace nwr {

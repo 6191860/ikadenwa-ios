@@ -71,7 +71,7 @@ namespace sio {
         if (connected_) { return; }
 
         SubEvents();
-        io_->Open(std::function<void(const Optional<Error> &)>()); // ensure open
+        io_->Open(nullptr); // ensure open
         if (io_->ready_state() == Manager::ReadyState::Open) {
             OnOpen();
         }

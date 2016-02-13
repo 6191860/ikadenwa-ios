@@ -13,6 +13,21 @@
 #include <functional>
 
 namespace nwr {
+    
+    template <typename K, typename V>
+    bool HasKey(const std::map<K, V> & map, const K & key) {
+        return map.find(key) != map.end();
+    }
+    
+    template <typename K, typename V>
+    std::vector<K> Keys(const std::map<K, V> & map) {
+        std::vector<K> r;
+        for (const auto & pair : map) {
+            r.push_back(pair.first);
+        }
+        return r;
+    }
+    
     template <typename K, typename V, typename F>
     std::vector<std::pair<K, V>> Map(const std::map<K, V> & map, const F & mapf) {
         std::vector<std::pair<K, V>> r;

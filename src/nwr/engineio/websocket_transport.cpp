@@ -65,7 +65,7 @@ namespace eio {
             query_str = "?" + query_str;
         }
     
-        bool ipv6 = hostname_.find(":") != std::string::npos;
+        bool ipv6 = IndexOf(hostname_, ":") != -1;
         
         auto hostname_str = ipv6 ? "[" + hostname_ + "]" : hostname_;
         

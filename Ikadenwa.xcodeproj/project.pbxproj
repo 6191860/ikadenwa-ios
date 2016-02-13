@@ -54,6 +54,7 @@
 		D6B9DE4E1C6E2BE300EBF183 /* media_constraints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE4C1C6E2BE300EBF183 /* media_constraints.cpp */; };
 		D6B9DE511C6E38B700EBF183 /* peer_connection_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */; };
 		D6B9DE541C6E44C700EBF183 /* peer_conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */; };
+		D6B9DE5A1C6EF90A00EBF183 /* media_stream_track.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE581C6EF90A00EBF183 /* media_stream_track.cpp */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D6F78A461C54110700B21614 /* json.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A441C54110700B21614 /* json.cpp */; };
@@ -189,6 +190,9 @@
 		D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = peer_conn.cpp; path = nwr/easyrtc/peer_conn.cpp; sourceTree = "<group>"; };
 		D6B9DE531C6E44C700EBF183 /* peer_conn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = peer_conn.h; path = nwr/easyrtc/peer_conn.h; sourceTree = "<group>"; };
 		D6B9DE561C6EC3F700EBF183 /* lib_webrtc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lib_webrtc.h; sourceTree = "<group>"; };
+		D6B9DE571C6ED2CC00EBF183 /* func.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = func.h; sourceTree = "<group>"; };
+		D6B9DE581C6EF90A00EBF183 /* media_stream_track.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = media_stream_track.cpp; path = nwr/easyrtc/media_stream_track.cpp; sourceTree = "<group>"; };
+		D6B9DE591C6EF90A00EBF183 /* media_stream_track.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = media_stream_track.h; path = nwr/easyrtc/media_stream_track.h; sourceTree = "<group>"; };
 		D6F78A381C53E2E400B21614 /* webrtc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = webrtc.xcodeproj; path = "lib/webrtc/framework-project/webrtc.xcodeproj"; sourceTree = "<group>"; };
 		D6F78A441C54110700B21614 /* json.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json.cpp; sourceTree = "<group>"; };
 		D6F78A451C54110700B21614 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
@@ -375,6 +379,7 @@
 				D60852A51C50DF6000CEE554 /* data.cpp */,
 				D66436D81C4E8EA10059A94B /* base64.h */,
 				D66436D71C4E8EA10059A94B /* base64.cpp */,
+				D6B9DE571C6ED2CC00EBF183 /* func.h */,
 				D66436E11C4EC9750059A94B /* emitter.h */,
 				D66436BA1C4D2AA40059A94B /* timer.h */,
 				D66436BC1C4D2BFD0059A94B /* timer.cpp */,
@@ -403,6 +408,8 @@
 			children = (
 				D6B9DE4D1C6E2BE300EBF183 /* media_constraints.h */,
 				D6B9DE4C1C6E2BE300EBF183 /* media_constraints.cpp */,
+				D6B9DE591C6EF90A00EBF183 /* media_stream_track.h */,
+				D6B9DE581C6EF90A00EBF183 /* media_stream_track.cpp */,
 				D6B9DE501C6E38B700EBF183 /* peer_connection_observer.h */,
 				D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */,
 				D6B9DE531C6E44C700EBF183 /* peer_conn.h */,
@@ -541,6 +548,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D6B9DE5A1C6EF90A00EBF183 /* media_stream_track.cpp in Sources */,
 				D66436D91C4E8EA10059A94B /* base64.cpp in Sources */,
 				D66436A51C4A64110059A94B /* main.m in Sources */,
 				D66436A81C4A73420059A94B /* websocket.cpp in Sources */,

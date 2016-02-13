@@ -62,8 +62,7 @@ namespace sio {
         }
     }
     
-    void Manager::EachNsp(const std::function<void(const std::shared_ptr<Socket> &)
-                                > & proc)
+    void Manager::EachNsp(const std::function<void(const std::shared_ptr<Socket> &)> & proc)
     {
         auto nsps = nsps_;
         for(auto iter : nsps) {
@@ -71,10 +70,8 @@ namespace sio {
         }
     }
     
-    void Manager::EachNsp(const std::function<void(
-                                                         const std::string &,
-                                                         const std::shared_ptr<Socket> &)
-                                > & proc)
+    void Manager::EachNsp(const std::function<void(const std::string &,
+                                                   const std::shared_ptr<Socket> &)> & proc)
     {
         auto nsps = nsps_;
         for(auto iter : nsps) {
@@ -158,7 +155,7 @@ namespace sio {
         // emit `open`
         OnToken open_sub = On<None>(socket->open_emitter(), [thiz, callback](None _) {
             thiz->OnOpen();
-            if (callback) { callback(None()); }
+            FuncCall(callback, None());
         });
         
         // emit `connect_error`
