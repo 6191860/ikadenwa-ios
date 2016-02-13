@@ -27,6 +27,7 @@ namespace ert {
     
     bool MediaStreamTrack::enabled() {
         if (audio_) { return audio_->webrtc::MediaStreamTrackInterface::enabled() ; }
+        return video_->webrtc::MediaStreamTrackInterface::enabled();
     }
     void MediaStreamTrack::set_enabled(bool value) {
         

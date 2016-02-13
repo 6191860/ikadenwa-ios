@@ -38,8 +38,8 @@ namespace ert {
         sdp_remote_filter_ = 0;
         ice_candidate_filter_ = 0;
         
-        connection_option_timeout_ = 10000;
-        connection_option_force_new_connection_ = true;
+        connection_options_.timeout = TimeDuration(10.0);
+        connection_options_.force_new = true;
         
         have_audio_ = false;
         have_video_ = false;
@@ -588,15 +588,15 @@ namespace ert {
         return Any(media_map);
     }
     
-    void Easyrtc::RegisterLocalMediaStreamByName(const rtc::scoped_refptr<webrtc::MediaStreamInterface> & stream) {
+    void Easyrtc::RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream) {
         RegisterLocalMediaStreamByName(stream, "default");
     }
     
-    void Easyrtc::RegisterLocalMediaStreamByName(const rtc::scoped_refptr<webrtc::MediaStreamInterface> & stream,
+    void Easyrtc::RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream,
                                                  const std::string & stream_name)
     {
 //        stream.streamName = streamName;
-        named_local_media_streams_[stream_name] = stream;
+        named_local_media_streams_[stream_name] = rtc::scoped_refptr<webrtc::MediaStreamInterface>(&stream);
         
         if (stream_name != "default") {
             auto media_ids = BuildMediaIds();
@@ -681,11 +681,400 @@ namespace ert {
         }
     };
     
+  
+    //  how to clone track?
+#if 0
+    rtc::scoped_refptr<webrtc::MediaStreamInterface>
+    Easyrtc::BuildLocalMediaStream(const std::string & stream_name,
+                                   const webrtc::AudioTrackVector & audio_tracks,
+                                   const webrtc::VideoTrackVector & video_tracks)
+    {
+        webrtc::MediaStreamInterface * stream_to_clone_ = nullptr;
+        for (const auto & key : Keys(named_local_media_streams_)) {
+            stream_to_clone_ = named_local_media_streams_[key].get();
+            if (stream_to_clone_) { break; }
+        }
+        
+        if (!stream_to_clone_) {
+            for (const auto & key : Keys(peer_conns_)) {
+                auto remote_streams = peer_conns_[key].pc->remote_streams();
+                // bug? : if( remoteStreams && remoteStreams.length > 1 ) {
+                if (remote_streams->count() > 0) {
+                    stream_to_clone_ = remote_streams->at(0);
+                }
+            }
+        }
+        
+        if (!stream_to_clone_) {
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      "Attempt to create a mediastream without one to clone from");
+            return nullptr;
+        }
+        
+        //
+        // clone whatever mediastream we found, and remove any of it's
+        // tracks.
+        //
+        
+        auto media_clone = webrtc::MediaStream::Create(stream_name);
 
+        for (auto track : audio_tracks) {
+            media_clone->AddTrack(track.get());
+        }
+        
+        for (auto track : video_tracks) {
+            media_clone->AddTrack(track.get());
+        }
+        
+        RegisterLocalMediaStreamByName(media_clone, stream_name);
+        return media_clone;
+    }
+#endif
     
+    std::string Easyrtc::FormatError(const Any & error) {
+        return error.ToJsonString();
+    }
     
+    void Easyrtc::InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
+                                  const std::function<void(const std::string &,
+                                                           const std::string &)> & arg_error_callback)
+    {
+        InitMediaSource(success_callback, arg_error_callback, "default");
+    }
     
+    void Easyrtc::InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
+                                  const std::function<void(const std::string &,
+                                                           const std::string &)> & arg_error_callback,
+                                  const std::string & stream_name)
+    {
+        auto thiz = shared_from_this();
+        
+        auto error_callback = arg_error_callback;
+        
+        FuncCall(debug_printer_, "about to request local media");
+
+        have_audio_ = audio_enabled_;
+        have_video_ = video_enabled_;
+
+        if (!error_callback) {
+            error_callback = [thiz](const std::string & error_code, const std::string & error_text) {
+                std::string message = "easyrtc.initMediaSource: " + error_text;
+                FuncCall(thiz->debug_printer_, message);
+                thiz->ShowError(err_codes_MEDIA_ERR_, message);
+            };
+        }
+        
+        if (!SupportsGetUserMedia()) {
+            FuncCall(error_callback, err_codes_MEDIA_ERR_, GetConstantString("noWebrtcSupport"));
+            return;
+        }
+        
+        if (!success_callback) {
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      "easyrtc.initMediaSource not supplied a successCallback");
+            return;
+        }
+
+        auto mode = GetUserMediaConstraints();
+        
+        auto on_user_media_success = FuncMake
+        ([thiz, stream_name, success_callback]
+         (webrtc::MediaStreamInterface & stream){
+             FuncCall(thiz->debug_printer_, "getUserMedia success callback entered");
+             FuncCall(thiz->debug_printer_, "successfully got local media");
+             
+             //            stream.streamName = streamName;
+             thiz->RegisterLocalMediaStreamByName(stream, stream_name);
+             
+             if (thiz->have_video_) {
+                 //                videoObj = document.createElement('video');
+                 //                videoObj.muted = true;
+                 //                triesLeft = 30;
+                 //                tryToGetSize = function() {
+                 //                    if (videoObj.videoWidth > 0 || triesLeft < 0) {
+                 //
+                 //                        self.nativeVideoWidth = videoObj.videoWidth; [TODO]
+                 //                        self.nativeVideoHeight = videoObj.videoHeight; [TODO]
+                 //                        if (self._desiredVideoProperties.height &&
+                 //                            (self.nativeVideoHeight !== self._desiredVideoProperties.height ||
+                 //                             self.nativeVideoWidth !== self._desiredVideoProperties.width)) {
+                 //                                [TODO]
+                 //                                self.showError(self.errCodes.MEDIA_WARNING,
+                 //                                               self.format(self.getConstantString("resolutionWarning"),
+                 //                                                           self._desiredVideoProperties.width, self._desiredVideoProperties.height,
+                 //                                                           self.nativeVideoWidth, self.nativeVideoHeight));
+                 //                            }
+                 //                        self.setVideoObjectSrc(videoObj, "");
+                 //                        if (videoObj.removeNode) {
+                 //                            videoObj.removeNode(true);
+                 //                        }
+                 //                        else {
+                 //                            ele = document.createElement('div');
+                 //                            ele.appendChild(videoObj);
+                 //                            ele.removeChild(videoObj);
+                 //                        }
+                 //
+                 //                        updateConfigurationInfo(); [TODO]
+                 //                        if (successCallback) {
+                 //                            successCallback(stream); [TODO]
+                 //                        }
+                 //                    }
+                 //                    else {
+                 //                        triesLeft -= 1;
+                 //                        setTimeout(tryToGetSize, 300); [TODO]
+                 //                    }
+                 //                };
+                 //                self.setVideoObjectSrc(videoObj, stream);
+                 //                tryToGetSize();
+                 
+#warning TODO
+                 
+                 FuncCall(thiz->update_configuration_info_);
+                 if (success_callback) {
+                     success_callback(stream);
+                 }
+             }
+             else {
+                 FuncCall(thiz->update_configuration_info_);
+                 if (success_callback) {
+                     success_callback(stream);
+                 }
+             }
+         });
+        
+#warning todo
+//        var onUserMediaError = function(error) {
+//            console.log("getusermedia failed");
+//            if (self.debugPrinter) {
+//                self.debugPrinter("failed to get local media");
+//            }
+//            var errText;
+//            if (typeof error === 'string') {
+//                errText = error;
+//            }
+//            else if (error.name) {
+//                errText = error.name;
+//            }
+//            else {
+//                errText = "Unknown";
+//            }
+//            if (errorCallback) {
+//                console.log("invoking error callback", errText);
+//                errorCallback(self.errCodes.MEDIA_ERR, self.format(self.getConstantString("gumFailed"), errText));
+//            }
+//            closeLocalMediaStreamByName(streamName);
+//            haveAudioVideo = {
+//            audio: false,
+//            video: false
+//            };
+//            updateConfigurationInfo();
+//        };
+//        if (!self.audioEnabled && !self.videoEnabled) {
+//            onUserMediaError(self.getConstantString("requireAudioOrVideo"));
+//            return;
+//        }
+//        
+//        function getCurrentTime() {
+//            return (new Date()).getTime();
+//        }
+//        
+//        var firstCallTime;
+//        function tryAgain(error) {
+//            var currentTime = getCurrentTime();
+//            if (currentTime < firstCallTime + 1000) {
+//                console.log("Trying getUserMedia a second time");
+//                setTimeout(function() {
+//                    getUserMedia(mode, onUserMediaSuccess, onUserMediaError);
+//                }, 3000);
+//            }
+//            else {
+//                onUserMediaError(error);
+//            }
+//        }
+        
+        if (video_enabled_ || audio_enabled_) {
+            //
+            // getUserMedia sometimes fails the first time I call it. I suspect it's a page loading
+            // issue. So I'm going to try adding a 3 second delay to allow things to settle down first.
+            // In addition, I'm going to try again after 3 seconds.
+            //
+            
+//            
+//            
+//            setTimeout(function() {
+//                try {
+//                    firstCallTime = getCurrentTime();
+//                    getUserMedia(mode, onUserMediaSuccess, tryAgain);[TODO]
+//                } catch (e) {
+//                    tryAgain(e);
+//                }
+//            }, 1000);
+        }
+        else {
+            Fatal("bug?");
+//            FuncCall(on_user_media_success, nullptr);
+        }
+    };
     
+    void Easyrtc::set_accept_checker(const Func<void()> & accept_check) {
+        accept_check_ = accept_check;
+    }
+    
+    void Easyrtc::set_stream_acceptor(const Func<void()> & acceptor) {
+        stream_acceptor_ = acceptor;
+    }
+    
+    void Easyrtc::set_on_error(const Func<void(const Any &)> & err_listener) {
+        on_error_ = err_listener;
+    }
+    
+    void Easyrtc::set_call_canceled(const Func<void()> & call_canceled) {
+        call_cancelled_ = call_canceled;
+    }
+    
+    void Easyrtc::set_on_stream_closed(const Func<void()> & on_stream_closed) {
+        on_stream_closed_ = on_stream_closed;
+    }
+    
+    bool Easyrtc::SupportsDataChannels() {
+        return true;
+    }
+    
+    void Easyrtc::set_peer_listener(const Func<void()> & listener,
+                                    const Optional<std::string> & msg_type,
+                                    const Optional<std::string> & source)
+    {
+        if (!msg_type) {
+            receive_peer_.cb = listener;
+        }
+        else {
+            if (!source) {
+                receive_peer_.msg_types[*msg_type].cb = listener;
+            }
+            else {
+                receive_peer_.msg_types[*msg_type].sources[*source] = {
+                    listener
+                };
+            }
+        }
+    }
+    
+    void Easyrtc::ReceivePeerDistribute(const std::string & easyrtcid,
+                                        const Any & msg,
+                                        const Any & targeting)
+    {
+        Optional<std::string> msg_type_opt = msg.GetAt("msgType").AsString();
+        Any msg_data = msg.GetAt("msgData");
+        if (!msg_type_opt) {
+            printf("received peer message without msgType; %s\n", msg.ToJsonString().c_str());
+            return;
+        }
+        std::string msg_type = msg_type_opt.value();
+        
+        if (HasKey(receive_peer_.msg_types, msg_type)) {
+            auto & msg_entry = receive_peer_.msg_types[msg_type];
+            
+            if (HasKey(msg_entry.sources, easyrtcid) &&
+                msg_entry.sources[easyrtcid].cb)
+            {
+                (*msg_entry.sources[easyrtcid].cb)(easyrtcid, msg_type, msg_data, targeting);
+                return;
+            }
+            if (msg_entry.cb) {
+                (*msg_entry.cb)(easyrtcid, msg_type, msg_data, targeting);
+                return;
+            }
+        }
+        if (receive_peer_.cb) {
+            (*receive_peer_.cb)(easyrtcid, msg_type, msg_data, targeting);
+        }
+    }
+    
+    void Easyrtc::set_server_listener(const Func<void()> & listener) {
+        receive_server_cb_ = listener;
+    }
+    
+    void Easyrtc::set_socket_url(const std::string & socket_url,
+                                 const Optional<eio::Socket::ConstructorParams> & options)
+    {
+        FuncCall(debug_printer_, "WebRTC signaling server URL set to " + socket_url);
+        
+        server_path_ = socket_url;
+        if (options) {
+            connection_options_ = *options;
+        }
+    }
+    
+    bool Easyrtc::set_user_name(const std::string & username) {
+        if (my_easyrtcid_) {
+            ShowError(err_codes_DEVELOPER_ERR_, "easyrtc.setUsername called after authentication");
+            return false;
+        }
+        else if (IsNameValid(username)) {
+            username_ = username;
+            return true;
+        }
+        else {
+            ShowError(err_codes_BAD_NAME_,
+                      Format(GetConstantString("badUserName"), { username }));
+            return false;
+        }
+    }
+    
+    std::vector<std::tuple<std::string, std::string>>
+    Easyrtc::UsernameToIds(const std::string & username,
+                           const Optional<std::string> & room)
+    {
+        std::vector<std::tuple<std::string, std::string>> results;
+        
+        for (const auto & room_name : Keys(last_loggged_in_list_)) {
+            if (room && room_name != *room) {
+                continue;
+            }
+            
+            for (const std::string & id : Keys(last_loggged_in_list_[room_name])) {
+                if (last_loggged_in_list_[room_name][id].username == username) {
+                    results.push_back(std::tuple<std::string, std::string>(id, room_name));
+                }
+            }
+        }
+        return results;
+    }
+    
+    Any Easyrtc::GetRoomApiField(const std::string & room_name,
+                                 const std::string & easyrtcid,
+                                 const std::string & field_name)
+    {
+        if (HasKey(last_loggged_in_list_, room_name) &&
+            HasKey(last_loggged_in_list_[room_name], easyrtcid))
+        {
+            auto & info = last_loggged_in_list_[room_name][easyrtcid];
+            if (HasKey(info.api_field, field_name)) {
+                return info.api_field[field_name].GetAt("fieldValue");
+            }
+        }
+        return nullptr;
+    }
+    
+    void Easyrtc::set_credential(const Any & credential_param) {
+        credential_ = credential_param.ToJsonString();
+    }
+    
+    void Easyrtc::set_disconnect_listener(const Func<void()> & disconnect_listener) {
+        disconnect_listener_ = disconnect_listener;
+    }
+    
+    std::string Easyrtc::IdToName(const std::string & easyrtcid) {
+        for (const std::string & room_name : Keys(last_loggged_in_list_)) {
+            if (HasKey(last_loggged_in_list_[room_name], easyrtcid)) {
+                auto & entry = last_loggged_in_list_[room_name][easyrtcid];
+                if (entry.username) {
+                    return *entry.username;
+                }
+            }
+        }
+        return easyrtcid;
+    }
     
     Easyrtc::ConnectStatus Easyrtc::GetConnectStatus(const std::string & other_user) {
 #warning todo

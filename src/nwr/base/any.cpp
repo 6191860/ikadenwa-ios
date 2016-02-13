@@ -219,7 +219,7 @@ namespace nwr {
     bool Any::HasKey(const std::string & key) const {
         auto dict = inner_object();
         if (dict) {
-            return HasKey(*dict, key);
+            return nwr::HasKey(*dict, key);
         }
         return false;
     }

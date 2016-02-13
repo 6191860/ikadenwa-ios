@@ -38,14 +38,14 @@ namespace nwr {
     }
     
     template <typename F, typename ...Args>
-    void FuncCall(const std::function<F> & func, Args... args) {
+    void FuncCall(const std::function<F> & func, Args ... args) {
         if (func) {
             func(args...);
         }
     }
     
     template <typename F, typename ...Args>
-    void FuncCall(const Func<F> & func, Args... args) {
+    void FuncCall(const Func<F> & func, Args ... args) {
         if (func && *func) {
             (*func)(args...);
         }

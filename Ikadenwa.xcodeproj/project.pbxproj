@@ -55,6 +55,8 @@
 		D6B9DE511C6E38B700EBF183 /* peer_connection_observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */; };
 		D6B9DE541C6E44C700EBF183 /* peer_conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */; };
 		D6B9DE5A1C6EF90A00EBF183 /* media_stream_track.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE581C6EF90A00EBF183 /* media_stream_track.cpp */; };
+		D6B9DE5D1C6F2A0B00EBF183 /* receive_peer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */; };
+		D6B9DE601C6F324900EBF183 /* logged_in_info.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE5E1C6F324900EBF183 /* logged_in_info.cpp */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D6F78A461C54110700B21614 /* json.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F78A441C54110700B21614 /* json.cpp */; };
@@ -193,6 +195,10 @@
 		D6B9DE571C6ED2CC00EBF183 /* func.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = func.h; sourceTree = "<group>"; };
 		D6B9DE581C6EF90A00EBF183 /* media_stream_track.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = media_stream_track.cpp; path = nwr/easyrtc/media_stream_track.cpp; sourceTree = "<group>"; };
 		D6B9DE591C6EF90A00EBF183 /* media_stream_track.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = media_stream_track.h; path = nwr/easyrtc/media_stream_track.h; sourceTree = "<group>"; };
+		D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = receive_peer.cpp; path = nwr/easyrtc/receive_peer.cpp; sourceTree = "<group>"; };
+		D6B9DE5C1C6F2A0B00EBF183 /* receive_peer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = receive_peer.h; path = nwr/easyrtc/receive_peer.h; sourceTree = "<group>"; };
+		D6B9DE5E1C6F324900EBF183 /* logged_in_info.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = logged_in_info.cpp; path = nwr/easyrtc/logged_in_info.cpp; sourceTree = "<group>"; };
+		D6B9DE5F1C6F324900EBF183 /* logged_in_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = logged_in_info.h; path = nwr/easyrtc/logged_in_info.h; sourceTree = "<group>"; };
 		D6F78A381C53E2E400B21614 /* webrtc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = webrtc.xcodeproj; path = "lib/webrtc/framework-project/webrtc.xcodeproj"; sourceTree = "<group>"; };
 		D6F78A441C54110700B21614 /* json.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json.cpp; sourceTree = "<group>"; };
 		D6F78A451C54110700B21614 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
@@ -414,6 +420,10 @@
 				D6B9DE4F1C6E38B700EBF183 /* peer_connection_observer.cpp */,
 				D6B9DE531C6E44C700EBF183 /* peer_conn.h */,
 				D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */,
+				D6B9DE5C1C6F2A0B00EBF183 /* receive_peer.h */,
+				D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */,
+				D6B9DE5F1C6F324900EBF183 /* logged_in_info.h */,
+				D6B9DE5E1C6F324900EBF183 /* logged_in_info.cpp */,
 				D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */,
 				D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */,
 			);
@@ -560,6 +570,7 @@
 				D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */,
 				D6155E901C660EBD00A8B6CA /* parser.cpp in Sources */,
 				D66436EF1C4FEF330059A94B /* time.cpp in Sources */,
+				D6B9DE5D1C6F2A0B00EBF183 /* receive_peer.cpp in Sources */,
 				D66436AE1C4A805F0059A94B /* url.cpp in Sources */,
 				D66436DC1C4E94F30059A94B /* websocket_impl.cpp in Sources */,
 				D6A690651C42366800952A7F /* AAA.m in Sources */,
@@ -569,6 +580,7 @@
 				D6B9DE511C6E38B700EBF183 /* peer_connection_observer.cpp in Sources */,
 				D60852A61C50DF6000CEE554 /* data.cpp in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
+				D6B9DE601C6F324900EBF183 /* logged_in_info.cpp in Sources */,
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,
 				D60852A41C50B95100CEE554 /* path.cpp in Sources */,
 				D6F78A561C55090600B21614 /* socket.cpp in Sources */,
