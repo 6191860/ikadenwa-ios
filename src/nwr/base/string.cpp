@@ -85,5 +85,30 @@ namespace nwr {
         }
         return true;
     }
+    
+    std::string Replace(const std::string & arg_str, const std::regex & regex,
+                        const std::function<std::string(const std::string &)> & func)
+    {
+        std::string str = arg_str;
+        
+        while (true) {
+            int pos = 0;
+            std::smatch mret;
+            
+            std::regex_search(str.cbegin() + pos, str.cend(),
+                              mret, regex,
+                              std::regex_constants::format_first_only);
+            if (mret.size() > 0) {
+                int part_pos = pos + static_cast<int>(mret.position(0));
+                int part_len = static_cast<int>(mret.length(0));
+                std::string part = str.substr(part_pos, part_len);
+                std::string rep = func(part);
+                str.replace(part_pos, part_len, rep);
+                pos = part_pos + static_cast<int>(rep.length());
+            } else {
+                return str;
+            }
+        }
+    }
 }
 

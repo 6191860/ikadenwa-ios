@@ -11,8 +11,13 @@
 namespace app {
     using namespace nwr;
     void ErtTest::Run() {
-        auto e = std::make_shared<ert::Easyrtc>();
-        auto s = e->Format("aa={0},{0}, bb={1}", { "aa", "bb" });
-        printf("%s\n", s.c_str());
+//        auto e = std::make_shared<ert::Easyrtc>();
+//        auto s = e->Format("aa={0},{0}, bb={1}", { "aa", "bb" });
+//        printf("%s\n", s.c_str());
+        
+        auto y = Replace("aaaa", std::regex("aa"), [](const std::string & x) {
+            return "aaaa";
+        });
+        printf("y\n");
     }
 }

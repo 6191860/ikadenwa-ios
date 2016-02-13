@@ -9,7 +9,9 @@
 #pragma once
 
 namespace nwr {
-    namespace ert {
-        
-    }
+namespace ert {
+    struct PeerConn {
+        PeerConn();
+    };
+}
 }

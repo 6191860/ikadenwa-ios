@@ -80,8 +80,11 @@ namespace ert {
         application_name_ = "";
         data_enabled_ = false;
         
-        on_error_ = [](const Any & error) {
-            printf("[Easyrtc::on_error_] %s\n", JsonFormat(*error.ToJson()).c_str());
+        on_error_ = [this](const Any & error) {
+            if (debug_printer_) {
+                debug_printer_("saw error" + (error.GetAt("errorText").AsString() || std::string("")));
+            }
+            printf("[Easyrtc::on_error_] %s\n", error.ToJsonString().c_str());
         };
         
         
@@ -187,14 +190,6 @@ namespace ert {
         }
     }
     
-    void Easyrtc::EnableAudioReceive(bool value) {
-        received_media_constraints_.GetAt("mandatory").SetAt("OfferToReceiveAudio", Any(value));
-    }
-    
-    void Easyrtc::EnableVideoReceive(bool value) {
-        received_media_constraints_.GetAt("mandatory").SetAt("OfferToReceiveVideo", Any(value));
-    }
-    
     std::string Easyrtc::err_codes_BAD_NAME_ = "BAD_NAME";
     std::string Easyrtc::err_codes_CALL_ERR_ = "CALL_ERR";
     std::string Easyrtc::err_codes_DEVELOPER_ERR_ = "DEVELOPER_ERR";
@@ -207,6 +202,14 @@ namespace ert {
     std::string Easyrtc::err_codes_ALREADY_CONNECTED_ = "ALREADY_CONNECTED";
     std::string Easyrtc::err_codes_BAD_CREDENTIAL_ = "BAD_CREDENTIAL";
     std::string Easyrtc::err_codes_ICECANDIDATE_ERROR_ = "ICECANDIDATE_ERROR";
+    
+    void Easyrtc::EnableAudioReceive(bool value) {
+        received_media_constraints_.GetAt("mandatory").SetAt("OfferToReceiveAudio", Any(value));
+    }
+    
+    void Easyrtc::EnableVideoReceive(bool value) {
+        received_media_constraints_.GetAt("mandatory").SetAt("OfferToReceiveVideo", Any(value));
+    }
     
     bool Easyrtc::IsNameValid(const std::string & name) {
         return std::regex_match(name, username_regexp_);
@@ -226,12 +229,12 @@ namespace ert {
         auto thiz = shared_from_this();
         
         if (room_join_.find(room_name) != room_join_.end()) {
-            printf("Developer error: attempt to join room " + room_name + " which you are already in.\n");
+            printf("Developer error: attempt to join room %s which you are already in.\n", room_name.c_str());
             return;
         }
         
         Any new_room_data(Any::ObjectType {
-            { "roomName": Any(room_name) }
+            { "roomName", Any(room_name) }
         });
         if (room_parameters.type() == Any::Type::Object) {
             Any parameters(Any::ObjectType(room_parameters.AsObject().value()));
@@ -239,18 +242,16 @@ namespace ert {
         }
         
         Any msg_data(Any::ObjectType {
-            { "roomJoin": Any(Any::ObjectType()) }
+            { "roomJoin", Any(Any::ObjectType()) }
         });
         
-        var signallingSuccess, signallingFailure;
-        
-        if (web_socket_) {
+        if (websocket_) {
             
             msg_data.GetAt("roomJoin").SetAt(room_name, new_room_data);
             
-            std::function<void(int, const Any &)> signalling_success =
+            std::function<void(const std::string &, const Any &)> signaling_success =
             [thiz, room_name, new_room_data, success_cb]
-            (int msg_type, const Any & msg_data) {
+            (const std::string & msg_type, const Any & msg_data) {
                 
                 Any room_data = msg_data.GetAt("roomData");
     
@@ -263,7 +264,8 @@ namespace ert {
                 thiz->ProcessRoomData(room_data);
             };
             
-            std::function<void()> signaling_failure =
+            std::function<void(const std::string &,
+                               const std::string &)> signaling_failure =
             [thiz, room_name, failure_cb]
             (const std::string & error_code, const std::string & error_text) {
                 if (failure_cb) {
@@ -275,7 +277,7 @@ namespace ert {
                 }
             };
             
-            SendSignalling(None(), "roomJoin", msg_data, signalling_success, signalling_failure);
+            SendSignaling(None(), "roomJoin", msg_data, signaling_success, signaling_failure);
         }
         else {
             room_join_[room_name] = new_room_data;
@@ -290,31 +292,31 @@ namespace ert {
     {
         auto thiz = shared_from_this();
         
-        if (room_join_[room_name] != room_join_.end()) {
-            if (!web_socket_) {
+        if (room_join_.find(room_name) != room_join_.end()) {
+            if (!websocket_) {
                 room_join_.erase(room_name);
             }
             else {
-                Any room_item(Any::ObjectType());
+                Any room_item(Any::ObjectType{});
                 
-                room_item.SetAt(room_name) = Any(Any::ObjectType {
-                    { "roomName": Any(room_name) }
-                });
+                room_item.SetAt(room_name, Any(Any::ObjectType {
+                    { "roomName", Any(room_name) }
+                }));
                 
-                SendSignalling(None(), "roomLeave",
-                               Any(Any::ObjectType { "roomLeave": room_item }),
-                               [thiz, success_callback](const std::string & msg_type, const Any & msg_data) {
-                                   Any room_data = msg_data.GetAt("roomData");
-                                   thiz->ProcessRoomData(room_data);
-                                   if (success_callback) {
-                                       success_callback(room_name);
-                                   }
-                               },
-                               [room_name, failure_callback](const std::string & error_code, const std::string & error_text) {
-                                   if (failure_callback) {
-                                       failure_callback(error_code, error_text, room_name);
-                                   }
-                               });
+                SendSignaling(None(), "roomLeave",
+                              Any(Any::ObjectType { { "roomLeave", room_item } }),
+                              [thiz, room_name, success_callback](const std::string & msg_type, const Any & msg_data) {
+                                  Any room_data = msg_data.GetAt("roomData");
+                                  thiz->ProcessRoomData(room_data);
+                                  if (success_callback) {
+                                      success_callback(room_name);
+                                  }
+                              },
+                              [room_name, failure_callback](const std::string & error_code, const std::string & error_text) {
+                                  if (failure_callback) {
+                                      failure_callback(error_code, error_text, room_name);
+                                  }
+                              });
             }
         }
     }
@@ -328,7 +330,7 @@ namespace ert {
         desired_video_properties_.SetAt("width", Any(width));
         desired_video_properties_.SetAt("height", Any(height));
         if (frame_rate) {
-            desired_video_properties_.SetAt("frameRate", Any(frame_rate));
+            desired_video_properties_.SetAt("frameRate", Any(*frame_rate));
         }
     }
     
@@ -352,19 +354,19 @@ namespace ert {
             
             if (desired_video_properties_.GetAt("width").AsInt()){
                 MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxWidth,
-                                    Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
+                                    nwr::Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
                 MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMinWidth,
-                                    Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
+                                    nwr::Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
             }
             if (desired_video_properties_.GetAt("height").AsInt()) {
                 MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
-                                    Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
+                                    nwr::Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
                 MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
-                                    Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
+                                    nwr::Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
             }
             if (desired_video_properties_.GetAt("frameRate").AsDouble()) {
                 MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxFrameRate,
-                                    Format("%f", desired_video_properties_.GetAt("frameRate").AsDouble().value()));
+                                    nwr::Format("%f", desired_video_properties_.GetAt("frameRate").AsDouble().value()));
             }
 //            if (self._desiredVideoProperties.videoSrcId) {
 //                constraints.video.optional.push({sourceId: self._desiredVideoProperties.videoSrcId});
@@ -415,9 +417,9 @@ namespace ert {
     }
     
     rtc::scoped_refptr<webrtc::PeerConnectionInterface>
-    Easyrtc::CreateRtcPeerConnection(const PeerConnectionInterface::RTCConfiguration & configuration,
-                                     const MediaConstraintsInterface * constraints,
-                                     PeerConnectionObserver * observer)
+    Easyrtc::CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
+                                     const webrtc::MediaConstraintsInterface * constraints,
+                                     webrtc::PeerConnectionObserver * observer)
     {
         return peer_connection_factory_->CreatePeerConnection(configuration,
                                                               constraints,
@@ -429,7 +431,98 @@ namespace ert {
     void Easyrtc::Disconnect() {
         
     }
-    void Easyrtc::AcceptCheck() {
+    
+    void Easyrtc::set_room_api_field(const std::string & room_name)
+    {
+        room_api_fields_.erase(room_name);
+    }
+    
+    void Easyrtc::set_room_api_field(const std::string & room_name,
+                                     const std::string & field_name)
+    {
+        room_api_fields_[room_name].erase(field_name);
+    }
+    
+    void Easyrtc::set_room_api_field(const std::string & room_name,
+                                     const std::string & field_name,
+                                     const Any & field_value)
+    {
+        room_api_fields_[room_name][field_name] = Any(Any::ObjectType {
+            { "fieldName", Any(field_name) },
+            { "fieldValue", field_value }
+        });
+        
+        if (websocket_connected_) {
+            EnqueueSendRoomApi(room_name);
+        }
+    }
+    
+    void Easyrtc::EnqueueSendRoomApi(const std::string & room_name) {
+        auto thiz = shared_from_this();
+        
+        if (room_api_field_timer_) {
+            room_api_field_timer_->Cancel();
+        }
+
+        room_api_field_timer_ = Timer::Create(TimeDuration(0.01), [thiz, room_name]{
+            thiz->SendRoomApiFields(room_name, thiz->room_api_fields_[room_name]);
+            thiz->room_api_field_timer_->Cancel();
+            thiz->room_api_field_timer_ = nullptr;
+        });
+    }
+    
+    void Easyrtc::SendRoomApiFields(const std::string & roomName,
+                                    const std::map<std::string, Any> & fields)
+    {
+        auto thiz = shared_from_this();
+        
+        Any data_to_ship(Any::ObjectType {
+            { "msgType", Any("setRoomApiField") },
+            { "msgData", Any(Any::ObjectType {
+                { "setRoomApiField", Any(Any::ObjectType {
+                    { "roomName", Any(roomName) },
+                    { "field", Any(fields) }
+                }) }
+            }) }
+        });
+        
+        websocket_->Emit("easyrtcCmd", { data_to_ship },
+                         [thiz](const Any & ack_msg) {
+                             if (ack_msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
+                                 thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(""),
+                                                 ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string(""));
+                             }
+                         });
+    }
+    
+    void Easyrtc::ShowError(const std::string & message_code, const std::string & message) {
+        if (on_error_) {
+            on_error_( Any(Any::ObjectType {
+                { "errorCode", Any(message_code) },
+                { "errorText", Any(message) }
+            }) );
+        }
+    }
+    
+    void Easyrtc::CleanId(const std::string & id_string) {
+        
+    }
+//    this.cleanId = function(idString) {
+//        var MAP = {
+//            '&': '&amp;',
+//            '<': '&lt;',
+//            '>': '&gt;'
+//        };
+//        return idString.replace(/[&<>]/g, function(c) {
+//            return MAP[c];
+//        });
+//    };
+    
+    void Easyrtc::SendSignaling(const Optional<std::string> & dest_user,
+                                const std::string & msg_type,
+                                const Any & msg_data,
+                                const std::function<void (const std::string &, const Any &)> & success_callback,
+                                const std::function<void (const std::string &, const std::string &)> & error_callback) {
         
     }
     
@@ -437,14 +530,7 @@ namespace ert {
         
     }
     
-    void Easyrtc::ShowError(const std::string & message_code, const std::string & message) {
-        if (on_error_ && *on_error_) {
-            (*on_error_)( Any(Any::ObjectType {
-                "errorCode": Any(message_code),
-                "errorText": Any(message)
-            }) );
-        }
-    }
+
     
     std::map<std::string, std::string> Easyrtc::constant_strings_ = {
         { "unableToEnterRoom", "Unable to enter room {0} because {1}" },

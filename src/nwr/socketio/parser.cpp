@@ -59,7 +59,7 @@ namespace sio {
         // json data
         if (packet.data) {
             if (nsp) { str += ","; }
-            str += JsonFormat(*packet.data.ToJson());
+            str += packet.data.ToJsonString();
         }
         
 //        debug('encoded %j as %s', obj, str);

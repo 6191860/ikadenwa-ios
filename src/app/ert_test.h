@@ -10,6 +10,8 @@
 
 #include <nwr/easyrtc/easyrtc.h>
 
+#include <nwr/base/string.h>
+
 namespace app {
     class ErtTest{
     public:

@@ -84,8 +84,12 @@ namespace nwr {
         
         bool HasKey(const std::string & key) const;
         
-        static Any FromJson(const Json::Value & json);
+
         std::shared_ptr<Json::Value> ToJson() const;
+        static Any FromJson(const Json::Value & json);
+        
+        std::string ToJsonString() const;
+        static Any FromJsonString(const std::string & str);
     private:
         std::shared_ptr<ArrayType> inner_array() const;
         std::shared_ptr<ObjectType> inner_object() const;

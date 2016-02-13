@@ -17,7 +17,7 @@ namespace nwr {
     std::vector<std::pair<K, V>> Map(const std::map<K, V> & map, const F & mapf) {
         std::vector<std::pair<K, V>> r;
         for (const auto & pair : map) {
-            r.push_back(mapf(pair));
+            r.push_back(mapf(pair.first, pair.second));
         }
         return r;
     }

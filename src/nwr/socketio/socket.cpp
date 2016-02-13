@@ -189,7 +189,7 @@ namespace sio {
     void Socket::OnEvent(const Packet & packet) {
         std::vector<Any> args = packet.data.AsArray() || std::vector<Any>();
         printf("[%s] emitting event %s\n", __PRETTY_FUNCTION__,
-               JsonFormat(*packet.data.ToJson()).c_str());
+               packet.data.ToJsonString().c_str());
         
         if (args.size() <= 1) {
             printf("no event name\n");

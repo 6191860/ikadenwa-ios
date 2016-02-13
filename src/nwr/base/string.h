@@ -12,6 +12,8 @@
 #include <vector>
 #include <cstdlib>
 #include <cctype>
+#include <regex>
+#include <functional>
 
 #include "data.h"
 
@@ -29,4 +31,7 @@ namespace nwr {
     Data ToData(const std::string & string);
     
     bool IsDigit(const std::string & str);
+    
+    std::string Replace(const std::string & str, const std::regex & regex,
+                        const std::function<std::string(const std::string &)> & func);
 }

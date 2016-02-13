@@ -6,7 +6,7 @@
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
-#include "peer_connection_func_observer.h"
+#include "peer_connection_observer.h"
 
 namespace nwr {
 namespace ert {

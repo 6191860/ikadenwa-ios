@@ -188,6 +188,7 @@
 		D6B9DE501C6E38B700EBF183 /* peer_connection_observer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = peer_connection_observer.h; path = nwr/easyrtc/peer_connection_observer.h; sourceTree = "<group>"; };
 		D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = peer_conn.cpp; path = nwr/easyrtc/peer_conn.cpp; sourceTree = "<group>"; };
 		D6B9DE531C6E44C700EBF183 /* peer_conn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = peer_conn.h; path = nwr/easyrtc/peer_conn.h; sourceTree = "<group>"; };
+		D6B9DE561C6EC3F700EBF183 /* lib_webrtc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lib_webrtc.h; sourceTree = "<group>"; };
 		D6F78A381C53E2E400B21614 /* webrtc.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = webrtc.xcodeproj; path = "lib/webrtc/framework-project/webrtc.xcodeproj"; sourceTree = "<group>"; };
 		D6F78A441C54110700B21614 /* json.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = json.cpp; sourceTree = "<group>"; };
 		D6F78A451C54110700B21614 /* json.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = json.h; sourceTree = "<group>"; };
@@ -391,6 +392,7 @@
 				D66436A71C4A73420059A94B /* websocket.cpp */,
 				D66436DB1C4E94F30059A94B /* websocket_impl.h */,
 				D66436DA1C4E94F30059A94B /* websocket_impl.cpp */,
+				D6B9DE561C6EC3F700EBF183 /* lib_webrtc.h */,
 			);
 			name = base;
 			path = nwr/base;

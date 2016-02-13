@@ -24,7 +24,7 @@ namespace app {
             
         }));
         socket->emitter()->On("echo", AnyEventListenerMake([](const Any & data) {
-            printf("socket on echo %s\n", JsonFormat(*data.ToJson()).c_str());
+            printf("socket on echo %s\n", data.ToJsonString().c_str());
         }));
         socket->emitter()->On("disconnect", AnyEventListenerMake([](){
             printf("socket on disconnect\n");

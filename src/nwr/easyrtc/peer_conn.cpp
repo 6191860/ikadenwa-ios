@@ -7,3 +7,10 @@
 //
 
 #include "peer_conn.h"
+
+namespace nwr {
+namespace ert {
+    PeerConn::PeerConn()
+    {}
+}
+}

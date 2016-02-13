@@ -169,18 +169,19 @@ namespace nwr {
             case Type::String:
                 return Any(*AsString());
             case Type::Data:
-                return Any(std::make_shared<Data>(*AsData()));
+                return Any(std::make_shared<Data>(**AsData()));
             case Type::Array: {
-                std::vector<Any> array = Map(*AsArray(), [](const Any & x){
+                std::vector<Any> array = Map<Any, Any>(*AsArray(), [](const Any & x){
                     return x.Clone();
                 });
                 return Any(array);
             }
             case Type::Object: {
-                std::map<std::string, Any> map = MapToMap(*AsObject(), [](const std::string & key, const Any & x) {
-                    return std::pair(key, x.Clone());
+                std::map<std::string, Any> map =
+                MapToMap(*AsObject(), [](const std::string & key, const Any & x) {
+                    return std::pair<std::string, Any>(key, x.Clone());
                 });
-                return Any(map)
+                return Any(map);
             }
             case Type::Pointer:
                 return Any(*AsPointer());
@@ -227,6 +228,37 @@ namespace nwr {
         return false;
     }
     
+    std::shared_ptr<Json::Value> Any::ToJson() const {
+        switch (type()) {
+            case Type::Null:
+                return std::make_shared<Json::Value>();
+            case Type::Boolean:
+                return std::make_shared<Json::Value>(*AsBoolean());
+            case Type::Number:
+                return std::make_shared<Json::Value>(*AsDouble());
+            case Type::String:
+                return std::make_shared<Json::Value>(*AsString());
+            case Type::Data:
+                return std::make_shared<Json::Value>(DataFormat(**AsData()));
+            case Type::Array: {
+                auto json = std::make_shared<Json::Value>(Json::arrayValue);
+                for (int i = 0; i < count(); i++) {
+                    json->append(*GetAt(i).ToJson());
+                }
+                return json;
+            }
+            case Type::Object: {
+                auto json = std::make_shared<Json::Value>(Json::objectValue);
+                for (auto key : keys()) {
+                    (*json)[key] = *GetAt(key).ToJson();
+                }
+                return json;
+            }
+            case Type::Pointer:
+                return std::make_shared<Json::Value>(Format("%p", value_.get()));
+        }
+    }
+    
     Any Any::FromJson(const Json::Value & json) {
         switch (json.type()) {
             case Json::nullValue:
@@ -258,35 +290,13 @@ namespace nwr {
         }
     }
     
-    std::shared_ptr<Json::Value> Any::ToJson() const {
-        switch (type()) {
-            case Type::Null:
-                return std::make_shared<Json::Value>();
-            case Type::Boolean:
-                return std::make_shared<Json::Value>(*AsBoolean());
-            case Type::Number:
-                return std::make_shared<Json::Value>(*AsDouble());
-            case Type::String:
-                return std::make_shared<Json::Value>(*AsString());
-            case Type::Data:
-                return std::make_shared<Json::Value>(DataFormat(**AsData()));
-            case Type::Array: {
-                auto json = std::make_shared<Json::Value>(Json::arrayValue);
-                for (int i = 0; i < count(); i++) {
-                    json->append(*GetAt(i).ToJson());
-                }
-                return json;
-            }
-            case Type::Object: {
-                auto json = std::make_shared<Json::Value>(Json::objectValue);
-                for (auto key : keys()) {
-                    (*json)[key] = *GetAt(key).ToJson();
-                }
-                return json;
-            }
-            case Type::Pointer:
-                return std::make_shared<Json::Value>(Format("%p", value_.get()));
-        }
+    std::string Any::ToJsonString() const {
+        return JsonFormat(*ToJson());
+    }
+    Any Any::FromJsonString(const std::string & str) {
+        auto json = JsonParse(str);
+        if (!json) { return nullptr; }
+        return FromJson(*json);
     }
     
     std::shared_ptr<Any::ArrayType> Any::inner_array() const {

@@ -12,10 +12,9 @@
 #include <algorithm>
 #include <functional>
 
-#include <talk/app/webrtc/mediaconstraintsinterface.h>
-
 #include <nwr/base/array.h>
 #include <nwr/base/optional.h>
+#include <nwr/base/lib_webrtc.h>
 
 namespace nwr {
 namespace ert {
