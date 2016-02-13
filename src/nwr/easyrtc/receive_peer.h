@@ -13,6 +13,7 @@
 #include <functional>
 
 #include <nwr/base/func.h>
+#include <nwr/base/any.h>
 
 namespace nwr {
 namespace ert {

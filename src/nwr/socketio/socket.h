@@ -69,8 +69,9 @@ namespace sio {
         void EmitBuffered();
         void OnDisconnect();
         void Destroy();
+    public:
         void Close();
-
+    private:
         AnyEmitterPtr emitter_;
         
         std::string id_;

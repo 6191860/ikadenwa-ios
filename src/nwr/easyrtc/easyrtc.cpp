@@ -68,23 +68,21 @@ namespace ert {
         video_enabled_ = true;
         data_channel_name_ = "dc";
         debug_printer_ = nullptr;
-        my_easyrtcid_ = "";
         old_config_ = 0;
         offers_pending_ = 0;
         native_video_height_ = 0;
         max_p2p_message_length_ = 1000;
         native_video_width_ = 0;
-        credential_ = 0;
         desired_video_properties_ = Any(Any::ObjectType {
         });
         application_name_ = "";
         data_enabled_ = false;
-        
         on_error_ = FuncMake([this](const Any & error) {
             FuncCall(debug_printer_,
                      "saw error" + (error.GetAt("errorText").AsString() || std::string("")));
             printf("[Easyrtc::on_error_] %s\n", error.ToJsonString().c_str());
         });
+        use_fresh_ice_each_peer_ = false;
         
     }
     
@@ -426,10 +424,6 @@ namespace ert {
                                                               observer);
     }
     
-    void Easyrtc::Disconnect() {
-        
-    }
-    
     void Easyrtc::SetRoomApiField(const std::string & room_name)
     {
         room_api_fields_.erase(room_name);
@@ -515,7 +509,9 @@ namespace ert {
         room_entry_listener_ = handler;
     }
     
-    void Easyrtc::set_room_occupant_listener(const Func<void()> & listener) {
+    void Easyrtc::set_room_occupant_listener(const Func<void(const Optional<std::string> &,
+                                                             const Any &,
+                                                             bool)> & listener) {
         room_occupant_listener_ = listener;
     }
     
@@ -562,12 +558,9 @@ namespace ert {
     }
     
     rtc::scoped_refptr<webrtc::MediaStreamInterface>
-    Easyrtc::GetLocalMediaStreamByName() {
-        return GetLocalMediaStreamByName("default");
-    }
-    
-    rtc::scoped_refptr<webrtc::MediaStreamInterface>
-    Easyrtc::GetLocalMediaStreamByName(const std::string & stream_name) {
+    Easyrtc::GetLocalMediaStreamByName(const Optional<std::string> & arg_stream_name) {
+        std::string stream_name = arg_stream_name || std::string("default");
+        
         if (HasKey(named_local_media_streams_, stream_name)) {
             return named_local_media_streams_[stream_name];
         } else {
@@ -583,18 +576,15 @@ namespace ert {
         std::map<std::string, Any> media_map;
         for (auto iter : named_local_media_streams_) {
             auto id = iter.second->label();
-            media_map[iter.first] = Any(id != "" ? id : "default");
+            media_map[iter.first] = Any(std::string(id != "" ? id : "default"));
         }
         return Any(media_map);
     }
     
-    void Easyrtc::RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream) {
-        RegisterLocalMediaStreamByName(stream, "default");
-    }
-    
     void Easyrtc::RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream,
-                                                 const std::string & stream_name)
+                                                 const Optional<std::string> & arg_stream_name)
     {
+        std::string stream_name = arg_stream_name || std::string("default");
 //        stream.streamName = streamName;
         named_local_media_streams_[stream_name] = rtc::scoped_refptr<webrtc::MediaStreamInterface>(&stream);
         
@@ -605,20 +595,20 @@ namespace ert {
             }
         }
     }
-
-    Optional<std::string> Easyrtc::GetNameOfRemoteStream(const std::string & easyrtcid) {
-        return GetNameOfRemoteStream(easyrtcid);
-    }
     
-    Optional<std::string> Easyrtc::GetNameOfRemoteStream(const std::string & easyrtc_id, const std::string & webrtc_stream_id) {
-        if (HasKey(peer_conns_, easyrtc_id)) {
-            return Some(peer_conns_[easyrtc_id].remote_stream_id_to_name[webrtc_stream_id]);
+    Optional<std::string> Easyrtc::GetNameOfRemoteStream(const std::string & easyrtcid,
+                                                         const Optional<std::string> & arg_webrtc_stream_id)
+    {
+        std::string webrtc_stream_id = arg_webrtc_stream_id || std::string("default");
+        
+        if (HasKey(peer_conns_, easyrtcid)) {
+            return Some(peer_conns_[easyrtcid]->remote_stream_id_to_name()[webrtc_stream_id]);
         }
         
         for (const auto & i : room_data_) {
             const std::string & room_name = i.first;
             
-            Any media_ids = GetRoomApiField(room_name, easyrtc_id, "mediaIds");
+            Any media_ids = GetRoomApiField(room_name, easyrtcid, "mediaIds");
             if (!media_ids) {
                 continue;
             }
@@ -633,11 +623,8 @@ namespace ert {
         return None();
     }
     
-    void Easyrtc::CloseLocalMediaStreamByName() {
-        CloseLocalMediaStreamByName("default");
-    }
-    
-    void Easyrtc::CloseLocalMediaStreamByName(const std::string & stream_name) {
+    void Easyrtc::CloseLocalMediaStreamByName(const Optional<std::string> & arg_stream_name) {
+        std::string stream_name = arg_stream_name || std::string("default");
         
         rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = GetLocalStream(stream_name);
         if (!stream) {
@@ -648,7 +635,7 @@ namespace ert {
         
         if (HasKey(named_local_media_streams_, stream_name)) {
             for (const auto & id : Keys(peer_conns_)) {
-                peer_conns_[id].pc->RemoveStream(stream.get());
+                peer_conns_[id]->pc()->RemoveStream(stream.get());
                 SendPeerMessage(id, "__closingMediaStream", Any(Any::ObjectType {
                     { "streamId", Any(stream_id) },
                     { "streamName", Any(stream_name) }
@@ -667,14 +654,14 @@ namespace ert {
         }
     }
     
-    void Easyrtc::EnableCamera(bool enable, const std::string & stream_name) {
+    void Easyrtc::EnableCamera(bool enable, const Optional<std::string> & stream_name) {
         auto stream = GetLocalMediaStreamByName(stream_name);
         if (stream) {
             EnableMediaTracks(enable, ToMediaStreamTrackVector(stream->GetVideoTracks()));
         }
     }
     
-    void Easyrtc::EnableMicrophone(bool enable, const std::string & stream_name) {
+    void Easyrtc::EnableMicrophone(bool enable, const Optional<std::string> & stream_name) {
         auto stream = GetLocalMediaStreamByName(stream_name);
         if (stream) {
             EnableMediaTracks(enable, ToMediaStreamTrackVector(stream->GetAudioTracks()));
@@ -737,16 +724,11 @@ namespace ert {
     
     void Easyrtc::InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
                                   const std::function<void(const std::string &,
-                                                           const std::string &)> & arg_error_callback)
-    {
-        InitMediaSource(success_callback, arg_error_callback, "default");
-    }
-    
-    void Easyrtc::InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
-                                  const std::function<void(const std::string &,
                                                            const std::string &)> & arg_error_callback,
-                                  const std::string & stream_name)
+                                  const Optional<std::string> & arg_stream_name)
     {
+        std::string stream_name = arg_stream_name || std::string("default");
+        
         auto thiz = shared_from_this();
         
         auto error_callback = arg_error_callback;
@@ -784,7 +766,7 @@ namespace ert {
              FuncCall(thiz->debug_printer_, "successfully got local media");
              
              //            stream.streamName = streamName;
-             thiz->RegisterLocalMediaStreamByName(stream, stream_name);
+             thiz->RegisterLocalMediaStreamByName(stream, Some(stream_name));
              
              if (thiz->have_video_) {
                  //                videoObj = document.createElement('video');
@@ -940,7 +922,7 @@ namespace ert {
         return true;
     }
     
-    void Easyrtc::set_peer_listener(const Func<void()> & listener,
+    void Easyrtc::set_peer_listener(const ReceivePeerCallback & listener,
                                     const Optional<std::string> & msg_type,
                                     const Optional<std::string> & source)
     {
@@ -1033,7 +1015,7 @@ namespace ert {
             }
             
             for (const std::string & id : Keys(last_loggged_in_list_[room_name])) {
-                if (last_loggged_in_list_[room_name][id].username == username) {
+                if (last_loggged_in_list_[room_name][id].username == Some(username)) {
                     results.push_back(std::tuple<std::string, std::string>(id, room_name));
                 }
             }
@@ -1076,18 +1058,268 @@ namespace ert {
         return easyrtcid;
     }
     
-    Easyrtc::ConnectStatus Easyrtc::GetConnectStatus(const std::string & other_user) {
-#warning todo
-        return ConnectStatus::IsConnected;
+    void Easyrtc::set_use_fresh_ice_each_peer_connection(bool value) {
+        use_fresh_ice_each_peer_ = value;
+    }
+    
+    MediaConstraints Easyrtc::server_ice() {
+        return pc_config_;
+    }
+    
+    bool Easyrtc::HaveTracks(const Optional<std::string> & easyrtcid,
+                             bool check_audio,
+                             const Optional<std::string> & stream_name)
+    {
+        
+        rtc::scoped_refptr<webrtc::MediaStreamInterface> stream;
+        
+        if (!easyrtcid) {
+            stream = GetLocalMediaStreamByName(stream_name);
+        }
+        else {
+            if (!HasKey(peer_conns_, easyrtcid.value())) {
+                printf("Developer error: haveTracks called about a peer you don't have a connection to\n");
+                return false;
+            }
+            auto peer_conn_obj = peer_conns_[easyrtcid.value()];
+            
+            stream = peer_conn_obj->GetRemoteStreamByName(*this, stream_name);
+        }
+        if (!stream) {
+            return false;
+        }
+        
+        MediaStreamTrackVector tracks;
+        if (check_audio) {
+            tracks = ToMediaStreamTrackVector(stream->GetAudioTracks());
+        }
+        else {
+            tracks = ToMediaStreamTrackVector(stream->GetVideoTracks());
+        }
+
+        return tracks.size() > 0;
+    }
+    
+    bool Easyrtc::HaveAudioTrack(const Optional<std::string> & easyrtcid, const Optional<std::string> & stream_name) {
+        return HaveTracks(easyrtcid, true, stream_name);
+    }
+    
+    bool Easyrtc::HaveVideoTrack(const Optional<std::string> & easyrtcid, const Optional<std::string> & stream_name) {
+        return HaveTracks(easyrtcid, false, stream_name);
+    }
+    
+    Any Easyrtc::GetRoomField(const std::string & room_name, const std::string & field_name) {
+        Any fields = GetRoomFields(room_name);
+        return fields.GetAt(field_name).GetAt("fieldValue");
+    }
+    
+    bool Easyrtc::SupportsStatistics() {
+        return false;
+    }
+    
+    bool Easyrtc::IsEmptyObj(const Any & obj) {
+        if (!obj) {
+            return true;
+        }
+        return obj.count() == 0;
+    }
+    
+    void Easyrtc::DisconnectBody() {
+        logging_out_ = true;
+        offers_pending_ = 0;
+        acceptance_pending_.clear();
+        disconnecting_ = true;
+        closed_channel_ = websocket_;
+        if (websocket_connected_) {
+            if (!preallocated_socket_io_) {
+                websocket_->Close();
+            }
+            websocket_connected_ = false;
+        }
+        HangupAll();
+        if (room_occupant_listener_) {
+            for (const auto & key : Keys(last_loggged_in_list_)) {
+                (*room_occupant_listener_)(Some(key), Any(Any::ObjectType{}), false);
+            }
+        }
+        last_loggged_in_list_.clear();
+        
+        EmitEvent("roomOccupant", Any(Any::ObjectType{}));
+        room_data_.clear();
+        room_join_.clear();
+        logging_out_ = false;
+        my_easyrtcid_ = None();
+        disconnecting_ = false;
+        old_config_ = 0;
+    }
+    
+    void Easyrtc::Disconnect() {
+        auto thiz = shared_from_this();
+        
+        FuncCall(debug_printer_, "attempt to disconnect from WebRTC signalling server");
+
+        disconnecting_ = true;
+        HangupAll();
+        logging_out_ = true;
+
+        //
+        // The hangupAll may try to send configuration information back to the server.
+        // Collecting that information is asynchronous, we don't actually close the
+        // connection until it's had a chance to be sent. We allocate 100ms for collecting
+        // the info, so 250ms should be sufficient for the disconnecting.
+        //
+        
+        Timer::Create(TimeDuration(0.25), [thiz](){
+            if (thiz->websocket_) {
+                thiz->websocket_->Close();
+                
+                thiz->closed_channel_ = thiz->websocket_;
+                thiz->websocket_ = nullptr;
+            }
+            thiz->logging_out_ = false;
+            thiz->disconnecting_ = false;
+            
+            if (thiz->room_occupant_listener_) {
+                (*thiz->room_occupant_listener_)(None(), Any(Any::ObjectType{}), false);
+            }
+            
+            thiz->EmitEvent("roomOccupant", Any(Any::ObjectType{}));
+            thiz->old_config_ = 0;
+        });
     }
     
     void Easyrtc::SendSignaling(const Optional<std::string> & dest_user,
                                 const std::string & msg_type,
                                 const Any & msg_data,
-                                const std::function<void (const std::string &, const Any &)> & success_callback,
-                                const std::function<void (const std::string &, const std::string &)> & error_callback)
+                                const std::function<void (const std::string &,
+                                                          const Any &)> & success_callback,
+                                const std::function<void (const std::string &,
+                                                          const std::string &)> & error_callback)
     {
+        auto thiz = shared_from_this();
         
+        if (!websocket_) {
+            Fatal("Attempt to send message without a valid connection to the server.");
+        }
+        else {
+            Any data_to_ship(Any::ObjectType {
+                { "msgType", Any(msg_type) }
+            });
+            
+            if (dest_user) {
+                data_to_ship.SetAt("targetEasyrtcid", Any(dest_user.value()));
+            }
+            if (msg_data) {
+                data_to_ship.SetAt("msgData", msg_data);
+            }
+
+            FuncCall(debug_printer_,
+                     std::string("sending socket message ") + data_to_ship.ToJsonString());
+
+            websocket_->Emit("easyrtcCmd", { data_to_ship },
+                             [thiz, success_callback, error_callback]
+                             (const Any & arg_ack_msg) {
+                                 Any ack_msg = arg_ack_msg;
+                                 
+                                 if (ack_msg.GetAt("msgType").AsString() != Some(std::string("error")) ) {
+                                     if (!ack_msg.HasKey("msgData")) {
+                                         ack_msg.SetAt("msgData", nullptr);
+                                     }
+                                     FuncCall(success_callback,
+                                              ack_msg.GetAt("msgType").AsString() || std::string(""),
+                                              ack_msg.GetAt("msgData"));
+                                 }
+                                 else {
+                                     auto msg_data = ack_msg.GetAt("msgData");
+                                     auto error_code = msg_data.GetAt("errorCode").AsString() || std::string("");
+                                     auto error_text = msg_data.GetAt("errorText").AsString() || std::string("");
+                                     
+                                     if (error_callback) {
+                                         error_callback(error_code, error_text);
+                                     } else {
+                                         thiz->ShowError(error_code, error_text);
+                                     }
+                                 }
+                             });
+        }
+    }
+    
+    void Easyrtc::SendByChunkHelper(const std::string & dest_user, const std::string & msg_data) {
+        std::string transfer_id = nwr::Format("%s-%d", dest_user.c_str(), send_by_chunk_uid_counter_);
+
+        int number_of_chunks = static_cast<int>(ceil(static_cast<double>(msg_data.length()) / max_p2p_message_length_));
+
+        Any start_message(Any::ObjectType {
+            { "transfer", Any("start") },
+            { "transferId", Any(transfer_id) },
+            { "parts", Any(number_of_chunks) }
+        });
+        
+        Any end_message(Any::ObjectType {
+            { "transfer", Any("end") },
+            { "transfer_id", Any(transfer_id) }
+        });
+        
+        peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(start_message.ToJsonString()));
+        
+        int pos = 0;
+        int len = static_cast<int>(msg_data.length());
+        for (; pos < len; pos += max_p2p_message_length_) {
+            Any message(Any::ObjectType {
+                { "transfer_id", Any(transfer_id) },
+                { "data", Any(msg_data.substr(pos, max_p2p_message_length_)) },
+                { "transfer", Any("chunk") }
+            });
+
+            peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(message.ToJsonString()));
+        }
+        
+        peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(end_message.ToJsonString()));
+    }
+    
+    void Easyrtc::SendDataP2P(const std::string & dest_user,
+                              const std::string & msg_type,
+                              const Any & msg_data)
+    {
+        std::string flattened_data = Any(Any::ObjectType {
+            { "msgType", Any(msg_type) }, { "msgData", msg_data }
+        }).ToJsonString();
+        
+        FuncCall(debug_printer_,
+                 nwr::Format("sending p2p message to %s with data=%s",
+                             dest_user.c_str(), flattened_data.c_str()));
+
+        if (!HasKey(peer_conns_, dest_user)) {
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      std::string("Attempt to send data peer to peer without a connection to ") + dest_user + " first.");
+        }
+        else if (!peer_conns_[dest_user]->data_channel_s()) {
+            
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      std::string("Attempt to send data peer to peer without establishing a data channel to ") + dest_user + " first.");
+        }
+        else if (!peer_conns_[dest_user]->data_channel_ready()) {
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      std::string("Attempt to use data channel to ") +
+                      dest_user + " before it's ready to send.");
+        }
+        else {
+            if (flattened_data.length() > max_p2p_message_length_) {
+                SendByChunkHelper(dest_user, flattened_data);
+            } else {
+                peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(flattened_data));
+            }
+        }
+    }
+    
+    
+    Any Easyrtc::GetRoomFields(const std::string & room_name) {
+        return fields_.GetAt("rooms").GetAt(room_name);
+    }
+    
+    Easyrtc::ConnectStatus Easyrtc::GetConnectStatus(const std::string & other_user) {
+#warning todo
+        return ConnectStatus::IsConnected;
     }
     
     void Easyrtc::ProcessRoomData(const Any & room_data) {

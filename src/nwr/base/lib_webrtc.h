@@ -18,6 +18,8 @@
 #include <webrtc/base/thread.h>
 
 #include <talk/app/webrtc/audiotrack.h>
+#include <talk/app/webrtc/datachannel.h>
+#include <talk/app/webrtc/datachannelinterface.h>
 #include <talk/app/webrtc/mediaconstraintsinterface.h>
 #include <talk/app/webrtc/mediastream.h>
 #include <talk/app/webrtc/mediastreamtrack.h>

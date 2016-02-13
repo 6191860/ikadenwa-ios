@@ -6,4 +6,4 @@
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
-#include "logged_in_info.hpp"
+#include "logged_in_info.h"

@@ -14,6 +14,7 @@
 #include <regex>
 #include <memory>
 #include <functional>
+#include <cmath>
 
 #include <nwr/base/string.h>
 #include <nwr/base/array.h>
@@ -37,6 +38,7 @@ namespace nwr {
 namespace ert {
     class Easyrtc: public std::enable_shared_from_this<Easyrtc> {
     public:
+        friend PeerConn;
     private:
         Easyrtc();
         void Init();
@@ -143,9 +145,8 @@ namespace ert {
         std::map<std::string, std::map<std::string, LoggedInInfo>> last_loggged_in_list_;
         ReceivePeer receive_peer_;
         Func<void ()> update_configuration_info_;
-        std::map<std::string, PeerConn> peer_conns_;
+        std::map<std::string, std::shared_ptr<PeerConn>> peer_conns_;
         std::vector<std::string> acceptance_pending_;
-        void Disconnect();
         //  GetPeerStatistics
         std::map<std::string, std::map<std::string, Any>> room_api_fields_;
         bool websocket_connected_;
@@ -164,8 +165,12 @@ namespace ert {
         std::string CleanId(const std::string & id_string);
         Func<void()> room_entry_listener_;
         void set_room_entry_listener(const Func<void()> & handler);
-        Func<void()> room_occupant_listener_;
-        void set_room_occupant_listener(const Func<void()> & listener);
+        Func<void(const Optional<std::string> &,
+                  const Any &,
+                  bool)> room_occupant_listener_;
+        void set_room_occupant_listener(const Func<void(const Optional<std::string> &,
+                                                        const Any &,
+                                                        bool)> & listener);
         Func<void()> on_data_channel_open_;
         void set_data_channel_open_listener(const Func<void()> & listener);
         Func<void()> on_data_channel_close_;
@@ -188,21 +193,18 @@ namespace ert {
         void EnableMediaTracks(bool enable,
                                const MediaStreamTrackVector & tracks);
         std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface>> named_local_media_streams_;
-        rtc::scoped_refptr<webrtc::MediaStreamInterface> GetLocalMediaStreamByName();
-        rtc::scoped_refptr<webrtc::MediaStreamInterface> GetLocalMediaStreamByName(const std::string & stream_name);
+        rtc::scoped_refptr<webrtc::MediaStreamInterface> GetLocalMediaStreamByName(const Optional<std::string> & stream_name);
         std::vector<std::string> GetLocalMediaIds();
         Any BuildMediaIds();
         std::map<std::string, int> room_data_;
-        void RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream);
         void RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream,
-                                            const std::string & stream_name);
+                                            const Optional<std::string> & stream_name);
         //  register3rdPartyLocalMediaStream
-        Optional<std::string> GetNameOfRemoteStream(const std::string & easyrtcid);
-        Optional<std::string> GetNameOfRemoteStream(const std::string & easyrtcid, const std::string & webrtc_stream_id);
-        void CloseLocalMediaStreamByName();
-        void CloseLocalMediaStreamByName(const std::string & stream_name);
-        void EnableCamera(bool enable, const std::string & stream_name);
-        void EnableMicrophone(bool enable, const std::string & stream_name);
+        Optional<std::string> GetNameOfRemoteStream(const std::string & easyrtcid,
+                                                    const Optional<std::string> & webrtc_stream_id);
+        void CloseLocalMediaStreamByName(const Optional<std::string> & stream_name);
+        void EnableCamera(bool enable, const Optional<std::string> & stream_name);
+        void EnableMicrophone(bool enable, const Optional<std::string> & stream_name);
         //  muteVideoObject (DOM)
         //  getLocalStreamAsUrl ; for <video>, <canvas>
         //  clearMediaStream(DOM)
@@ -211,11 +213,8 @@ namespace ert {
         std::string FormatError(const Any & error);
         void InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
                              const std::function<void(const std::string &,
-                                                      const std::string &)> & arg_error_callback);
-        void InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
-                             const std::function<void(const std::string &,
                                                       const std::string &)> & arg_error_callback,
-                             const std::string & stream_name);
+                             const Optional<std::string> & stream_name);
         Func<void ()> accept_check_;
         void set_accept_checker(const Func<void()> & accept_check);
         Func<void ()> stream_acceptor_;
@@ -228,7 +227,7 @@ namespace ert {
         void set_on_stream_closed(const Func<void()> & on_stream_closed);
         //  setVideoBandwidth ; deprecated in original
         bool SupportsDataChannels();
-        void set_peer_listener(const Func<void()> & listener,
+        void set_peer_listener(const ReceivePeerCallback & listener,
                                const Optional<std::string> & msg_type,
                                const Optional<std::string> & source);
         void ReceivePeerDistribute(const std::string & easyrtcid,
@@ -250,19 +249,57 @@ namespace ert {
         Func<void()> disconnect_listener_;
         void set_disconnect_listener(const Func<void()> & disconnect_listener);
         std::string IdToName(const std::string & easyrtcid);
+        std::shared_ptr<sio::Socket> websocket_;
+        MediaConstraints pc_config_;
+        //  MediaConstraints pc_config_to_use_;
+        bool use_fresh_ice_each_peer_;
+        void set_use_fresh_ice_each_peer_connection(bool value);
+        MediaConstraints server_ice();
+        //  setIceUsedInCalls
+        std::shared_ptr<sio::Socket> closed_channel_;
+        bool HaveTracks(const Optional<std::string> & easyrtcid,
+                        bool check_audio,
+                        const Optional<std::string> & stream_name);
+        bool HaveAudioTrack(const Optional<std::string> & easyrtcid, const Optional<std::string> & stream_name);
+        bool HaveVideoTrack(const Optional<std::string> & easyrtcid, const Optional<std::string> & stream_name);
+        Any GetRoomField(const std::string & room_name, const std::string & field_name);
+        bool SupportsStatistics();
+        Any fields_;
+        bool IsEmptyObj(const Any & obj);
+        std::shared_ptr<sio::Socket> preallocated_socket_io_;
+        void DisconnectBody();
+        void Disconnect();
+        void SendSignaling(const Optional<std::string> & dest_user,
+                           const std::string & msg_type,
+                           const Any & msg_data,
+                           const std::function<void (const std::string &,
+                                                     const Any &)> & success_callback,
+                           const std::function<void (const std::string &,
+                                                     const std::string &)> & error_callback);
+        int send_by_chunk_uid_counter_;
+        void SendByChunkHelper(const std::string & dest_user, const std::string & msg_data);
+        void SendDataP2P(const std::string & dest_user,
+                         const std::string & msg_type,
+                         const Any & msg_data);
         
+        
+        
+        
+        void HangupAll();
         
         void SendPeerMessage(const std::string & id, const std::string key, const Any & data);
         
         webrtc::MediaStreamInterface * GetLocalStream(const std::string & stream_name);
         
-        void SendSignaling(const Optional<std::string> & dest_user,
-                           const std::string & msg_type,
-                           const Any & msg_data,
-                           const std::function<void (const std::string &, const Any &)> & success_callback,
-                           const std::function<void (const std::string &, const std::string &)> & error_callback);
         
         void ProcessRoomData(const Any & room_data);
+        
+        
+        Any GetRoomFields(const std::string & room_name);
+
+        static std::map<std::string, std::string> constant_strings_;
+
+        
         
         bool closed_;
         rtc::scoped_ptr<rtc::Thread> rtc_signaling_thread_;
@@ -272,11 +309,7 @@ namespace ert {
         
 
         
-        std::shared_ptr<sio::Socket> websocket_;
         
-        
-        
-        static std::map<std::string, std::string> constant_strings_;
     };
 }
 }
