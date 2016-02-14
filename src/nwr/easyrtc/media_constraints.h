@@ -24,9 +24,11 @@ namespace ert {
     
     struct MediaConstraints: public webrtc::MediaConstraintsInterface {
         MediaConstraints();
+        MediaConstraints(const webrtc::MediaConstraintsInterface::Constraints & mangatory,
+                         const webrtc::MediaConstraintsInterface::Constraints & optional);
         
-        const webrtc::MediaConstraintsInterface::Constraints& GetMandatory() const override;
-        const webrtc::MediaConstraintsInterface::Constraints& GetOptional() const override;
+        const webrtc::MediaConstraintsInterface::Constraints & GetMandatory() const override;
+        const webrtc::MediaConstraintsInterface::Constraints & GetOptional() const override;
 
         webrtc::MediaConstraintsInterface::Constraints mandatory;
         webrtc::MediaConstraintsInterface::Constraints optional;

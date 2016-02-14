@@ -105,7 +105,7 @@ namespace ert {
         Func<void (const std::string &)> debug_printer_;
         Optional<std::string> my_easyrtcid_;
         int old_config_;
-        int offers_pending_;
+        std::map<std::string, bool> offers_pending_;
         int native_video_height_;
         int native_video_width_;
         std::map<std::string, Any> room_join_;
@@ -146,7 +146,7 @@ namespace ert {
         ReceivePeer receive_peer_;
         Func<void ()> update_configuration_info_;
         std::map<std::string, std::shared_ptr<PeerConn>> peer_conns_;
-        std::vector<std::string> acceptance_pending_;
+        std::map<std::string, bool> acceptance_pending_;
         //  GetPeerStatistics
         std::map<std::string, std::map<std::string, Any>> room_api_fields_;
         bool websocket_connected_;
@@ -176,12 +176,6 @@ namespace ert {
         Func<void()> on_data_channel_close_;
         void set_data_channel_close_listener(const Func<void()> & listener);
         int connection_count();
-        enum class ConnectStatus {
-            NotConnected,
-            BecomingConnected,
-            IsConnected
-        };
-        ConnectStatus GetConnectStatus(const std::string & other_user);
         int max_p2p_message_length_;
         void set_max_p2p_message_length(int max_length);
         bool audio_enabled_;
@@ -281,15 +275,62 @@ namespace ert {
         void SendDataP2P(const std::string & dest_user,
                          const std::string & msg_type,
                          const Any & msg_data);
+        void SendDataWS(const Any & destination,
+                        const std::string & msg_type,
+                        const Any & msg_data,
+                        const std::function<void(const Any &)> & arg_ack_handler);
+        void SendData(const std::string & dest_user,
+                      const std::string & msg_type,
+                      const Any & msg_data,
+                      const std::function<void(const Any &)> & ack_handler);
+        void SendPeerMessage(const Any & destination,
+                             const std::string & msg_type,
+                             const Any & msg_data,
+                             const std::function<void(const std::string &,
+                                                      const Any &)> & success_cb,
+                             const std::function<void(const std::string &,
+                                                      const std::string &)> & failure_cb);
+        void SendServerMessage(const std::string & msg_type,
+                               const Any & msg_data,
+                               const std::function<void()> & success_cb,
+                               const std::function<void(const std::string &,
+                                                        const std::string &)> & failure_cb);
+        void GetRoomList(const std::function<void(const Any &)> & callback,
+                         const std::function<void(const std::string &,
+                                                  const std::string &)> & error_callback);
+        enum class ConnectStatus {
+            NotConnected,
+            BecomingConnected,
+            IsConnected
+        };
+        ConnectStatus GetConnectStatus(const std::string & other_user);
+        MediaConstraints BuildPeerConstraints();
+        void Call(const std::string & other_user,
+                  const std::function<void()> & call_success_cb,
+                  const std::function<void(const std::string &,
+                                           const std::string &)> & call_failure_cb,
+                  const std::function<void(bool)> & was_accepted_cb,
+                  const Optional<std::vector<std::string>> & stream_names);
         
         
+        rtc::scoped_refptr<webrtc::PeerConnectionInterface>
+        BuildPeerConnection(const std::string & other_user,
+                            bool b,
+                            const std::function<void(const std::string &,
+                                                     const std::string &)> & call_failure_cb,
+                            const Optional<std::vector<std::string>> & stream_names);
         
+        void GetFreshIceConfig(const std::function<void(bool)> & cb);
+        void DoAnswer(const std::string & other_user, bool a,
+                      const Optional<std::vector<std::string>> & stream_names);
+        void CallCanceled(const std::string & other_user, bool a);
         
         void HangupAll();
+                
+        webrtc::MediaStreamInterface * GetLocalStream(const Optional<std::string> & stream_name);
         
-        void SendPeerMessage(const std::string & id, const std::string key, const Any & data);
         
-        webrtc::MediaStreamInterface * GetLocalStream(const std::string & stream_name);
+        
         
         
         void ProcessRoomData(const Any & room_data);

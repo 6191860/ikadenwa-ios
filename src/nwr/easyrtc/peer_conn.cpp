@@ -13,7 +13,11 @@
 namespace nwr {
 namespace ert {
     PeerConn::PeerConn():
-    data_channel_ready_(false)
+    started_av_(false),
+    data_channel_ready_(false),
+    sharing_audio_(false),
+    sharing_video_(false),
+    sharing_data_(false)
     {}
     
     rtc::scoped_refptr<webrtc::MediaStreamInterface>

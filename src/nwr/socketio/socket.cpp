@@ -234,7 +234,7 @@ namespace sio {
             packet.type = type;
             packet.id = Some(id);
             packet.data = args;
-
+            
             thiz->SendPacket(packet);
         };
     }
@@ -244,9 +244,7 @@ namespace sio {
             auto packet_id = packet.id.value();
             AckFunc ack = acks_[packet_id];
             printf("[%s] calling ack %d\n", __PRETTY_FUNCTION__, packet_id);
-            if (ack) {
-                ack(packet.data);
-            }
+            FuncCall(ack, packet.data);
             acks_.erase(packet_id);
         }
     }

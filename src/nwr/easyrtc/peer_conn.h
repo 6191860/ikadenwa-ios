@@ -12,6 +12,7 @@
 #include <map>
 
 #include <nwr/base/map.h>
+#include <nwr/base/func.h>
 #include <nwr/base/optional.h>
 #include <nwr/base/lib_webrtc.h>
 
@@ -23,10 +24,27 @@ namespace ert {
     public:
         PeerConn();
         
+        bool started_av() const { return started_av_; }
         rtc::scoped_refptr<webrtc::DataChannel> data_channel_s() const { return data_channel_s_; }
         bool data_channel_ready() const { return data_channel_ready_; }
+        bool sharing_audio() const { return sharing_audio_; }
+        bool sharing_video() const { return sharing_video_; }
+        bool sharing_data() const { return sharing_data_; }
         rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc() const { return pc_; }
         std::map<std::string, std::string> remote_stream_id_to_name() const { return remote_stream_id_to_name_; }
+        
+        Func<void(const std::string &)> call_success_cb() const { return call_success_cb_; }
+        void set_call_success_cb(const Func<void(const std::string &)> & value) { call_success_cb_ = value; }
+        Func<void(const std::string &,
+                  const std::string &)> call_failure_cb() const { return call_failure_cb_; }
+        void set_call_failure_cb(const Func<void(const std::string &,
+                                                 const std::string &)> & value) { call_failure_cb_ = value; }
+        Func<void(bool, const std::string &)> was_accepted_cb() const {
+            return was_accepted_cb_;
+        }
+        void set_was_accepted_cb(const Func<void(bool, const std::string &)> & value) {
+            was_accepted_cb_ = value;
+        }
         
         rtc::scoped_refptr<webrtc::MediaStreamInterface>
         GetRemoteStreamByName(Easyrtc & ert,
@@ -37,13 +55,14 @@ namespace ert {
         //  emulate lambda capture
         std::string other_user_;
         
-        //  startedAV
+        bool started_av_;
         rtc::scoped_refptr<webrtc::DataChannel> data_channel_s_;
         //  data_channel_r
         bool data_channel_ready_;
         //  connect_time
-        //  sharing_audio
-        //  sharing_video
+        bool sharing_audio_;
+        bool sharing_video_;
+        bool sharing_data_;
         //  cancelled
         //  candidates_to_send
         //  streams_added_acks
@@ -53,6 +72,11 @@ namespace ert {
         //  is_initiator
         std::map<std::string, std::string> remote_stream_id_to_name_;
         //  live_remote_streams
+        
+        Func<void(const std::string &)> call_success_cb_;
+        Func<void(const std::string &,
+                  const std::string &)> call_failure_cb_;
+        Func<void(bool, const std::string &)> was_accepted_cb_;
         
 //    {  startedAV: boolean,  -- true if we have traded audio/video streams
 //        dataChannelS: RTPDataChannel for outgoing messages if present

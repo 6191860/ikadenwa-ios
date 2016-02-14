@@ -481,8 +481,8 @@ namespace ert {
         websocket_->Emit("easyrtcCmd", { data_to_ship },
                          [thiz](const Any & ack_msg) {
                              if (ack_msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
-                                 thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(""),
-                                                 ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string(""));
+                                 thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                                                 ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
                              }
                          });
     }
@@ -636,10 +636,10 @@ namespace ert {
         if (HasKey(named_local_media_streams_, stream_name)) {
             for (const auto & id : Keys(peer_conns_)) {
                 peer_conns_[id]->pc()->RemoveStream(stream.get());
-                SendPeerMessage(id, "__closingMediaStream", Any(Any::ObjectType {
+                SendPeerMessage(Any(id), "__closingMediaStream", Any(Any::ObjectType {
                     { "streamId", Any(stream_id) },
                     { "streamName", Any(stream_name) }
-                }));
+                }), nullptr, nullptr);
             }
             
             StopStream(named_local_media_streams_[stream_name].get());
@@ -1226,13 +1226,13 @@ namespace ert {
                                          ack_msg.SetAt("msgData", nullptr);
                                      }
                                      FuncCall(success_callback,
-                                              ack_msg.GetAt("msgType").AsString() || std::string(""),
+                                              ack_msg.GetAt("msgType").AsString() || std::string(),
                                               ack_msg.GetAt("msgData"));
                                  }
                                  else {
                                      auto msg_data = ack_msg.GetAt("msgData");
-                                     auto error_code = msg_data.GetAt("errorCode").AsString() || std::string("");
-                                     auto error_text = msg_data.GetAt("errorText").AsString() || std::string("");
+                                     auto error_code = msg_data.GetAt("errorCode").AsString() || std::string();
+                                     auto error_text = msg_data.GetAt("errorText").AsString() || std::string();
                                      
                                      if (error_callback) {
                                          error_callback(error_code, error_text);
@@ -1312,14 +1312,334 @@ namespace ert {
         }
     }
     
+    void Easyrtc::SendDataWS(const Any & destination,
+                             const std::string & msg_type,
+                             const Any & msg_data,
+                             const std::function<void(const Any &)> & arg_ack_handler)
+    {
+        auto thiz = shared_from_this();
+        
+        std::function<void(const Any &)> ack_handler = arg_ack_handler;
+        
+        FuncCall(debug_printer_,
+                 std::string("sending client message via websockets to ") + destination.ToJsonString() +
+                 " with data=" + msg_data.ToJsonString());
+        
+        if (!ack_handler) {
+            ack_handler = [thiz](const Any & msg){
+                if (msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
+                    thiz->ShowError(msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                                    msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
+                }
+            };
+        }
+        
+        Any outgoing_message(Any::ObjectType {
+            { "msgType", Any(msg_type) },
+            { "msgData", msg_data }
+        });
+        
+        if (destination) {
+            if (destination.type() == Any::Type::String) {
+                outgoing_message.SetAt("targetEasyrtcid", destination);
+            }
+            else if (destination.type() == Any::Type::Object) {
+                if (destination.GetAt("targetEasyrtcid")) {
+                    outgoing_message.SetAt("targetEasyrtcid", destination.GetAt("targetEasyrtcid"));
+                }
+                if (destination.GetAt("targetRoom")) {
+                    outgoing_message.SetAt("targetRoom", destination.GetAt("targetRoom"));
+                }
+                if (destination.GetAt("targetGroup")) {
+                    outgoing_message.SetAt("targetGroup", destination.GetAt("targetGroup"));
+                }
+            }
+        }
+        
+        if (websocket_) {
+            websocket_->Emit("easyrtcMsg", { outgoing_message }, ack_handler);
+        }
+        else {
+            FuncCall(debug_printer_,
+                     "websocket failed because no connection to server");
+            Fatal("Attempt to send message without a valid connection to the server.");
+        }
+    }
     
-    Any Easyrtc::GetRoomFields(const std::string & room_name) {
-        return fields_.GetAt("rooms").GetAt(room_name);
+    void Easyrtc::SendData(const std::string & dest_user,
+                           const std::string & msg_type,
+                           const Any & msg_data,
+                           const std::function<void(const Any &)> & ack_handler)
+    {
+        if (HasKey(peer_conns_, dest_user) && peer_conns_[dest_user]->data_channel_ready()) {
+            SendDataP2P(dest_user, msg_type, msg_data);
+        }
+        else {
+            SendDataWS(Any(dest_user), msg_type, msg_data, ack_handler);
+        }
+    }
+    
+    void Easyrtc::SendPeerMessage(const Any & destination,
+                                  const std::string & msg_type,
+                                  const Any & msg_data,
+                                  const std::function<void(const std::string &,
+                                                           const Any &)> & success_cb,
+                                  const std::function<void(const std::string &,
+                                                           const std::string &)> & failure_cb)
+    {
+        if (!destination) {
+            printf("Developer error, destination was null in sendPeerMessage\n");
+        }
+
+        FuncCall(debug_printer_, std::string("sending peer message ") + msg_data.ToJsonString());
+
+        auto ack_handler = [success_cb, failure_cb](const Any & response) {
+            if (response.GetAt("msgType").AsString() == Some(std::string("error"))) {
+                FuncCall(failure_cb,
+                         response.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                         response.GetAt("msgData").GetAt("errorText").AsString() || std::string());
+            }
+            else {
+                FuncCall(success_cb,
+                         response.GetAt("msgType").AsString() || std::string(),
+                         response.GetAt("msgData"));
+            }
+        };
+        
+        SendDataWS(destination, msg_type, msg_data, ack_handler);
+    }
+    
+    void Easyrtc::SendServerMessage(const std::string & msg_type,
+                                    const Any & msg_data,
+                                    const std::function<void()> & success_cb,
+                                    const std::function<void(const std::string &,
+                                                             const std::string &)> & failure_cb)
+    {
+        if (debug_printer_) {
+            Any data_to_ship(Any::ObjectType {
+                { "msgType", Any(msg_type) },
+                { "msgData", msg_data }
+            });
+            FuncCall(debug_printer_, std::string("sending server message ") + data_to_ship.ToJsonString());
+        }
+        
+        auto ack_handler = [success_cb, failure_cb](const Any & response){
+            if (response.GetAt("msgType").AsString() == Some(std::string("error"))) {
+                FuncCall(failure_cb,
+                         response.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                         response.GetAt("msgData").GetAt("errorText").AsString() || std::string());
+            }
+            else {
+                FuncCall(success_cb,
+                         response.GetAt("msgType").AsString() || std::string(),
+                         response.GetAt("msgData"));
+            }
+        };
+        
+        SendDataWS(nullptr, msg_type, msg_data, ack_handler);
+    }
+    
+    void Easyrtc::GetRoomList(const std::function<void(const Any &)> & callback,
+                              const std::function<void(const std::string &,
+                                                       const std::string &)> & error_callback)
+    {
+        auto thiz = shared_from_this();
+        
+        SendSignaling(None(), "getRoomList", nullptr,
+                      [callback](const std::string & msg_type, const Any & msg_data) {
+                          FuncCall(callback, msg_data.GetAt("roomList"));
+                      },
+                      [thiz, error_callback](const std::string & error_code, const std::string & error_text){
+                          if (error_callback) {
+                              FuncCall(error_callback, error_code, error_text);
+                          }
+                          else {
+                              thiz->ShowError(error_code, error_text);
+                          }
+                      });
     }
     
     Easyrtc::ConnectStatus Easyrtc::GetConnectStatus(const std::string & other_user) {
-#warning todo
-        return ConnectStatus::IsConnected;
+        if (!HasKey(peer_conns_, other_user)) {
+            return ConnectStatus::NotConnected;
+        }
+        auto peer = peer_conns_[other_user];
+        
+        if ((peer->sharing_audio() || peer->sharing_video()) && !peer->started_av()) {
+            return ConnectStatus::BecomingConnected;
+        }
+        else if (peer->sharing_data() && !peer->data_channel_ready()) {
+            return ConnectStatus::BecomingConnected;
+        }
+        else {
+            return ConnectStatus::IsConnected;
+        }
+    }
+    
+    MediaConstraints Easyrtc::BuildPeerConstraints() {
+        webrtc::MediaConstraintsInterface::Constraints options;
+        
+        //  TODO: google
+        //        options.push({'DtlsSrtpKeyAgreement': 'true'}); // for interoperability
+        
+        return MediaConstraints(webrtc::MediaConstraintsInterface::Constraints(),
+                                options);
+    }
+    
+    void Easyrtc::Call(const std::string & other_user,
+                       const std::function<void()> & call_success_cb,
+                       const std::function<void(const std::string &,
+                                                const std::string &)> & call_failure_cb,
+                       const std::function<void(bool)> & was_accepted_cb,
+                       const Optional<std::vector<std::string>> & stream_names)
+    {
+        auto thiz = shared_from_this();
+        
+        FuncCall(debug_printer_,
+                 nwr::Format("initiating peer to peer call to %s audio=%d video=%d data=%d",
+                             other_user.c_str(), audio_enabled_, video_enabled_, data_enabled_));
+
+        if (!SupportsPeerConnections()) {
+            FuncCall(call_failure_cb,
+                     err_codes_CALL_ERR_,
+                     GetConstantString("noWebrtcSupport"));
+            return;
+        }
+        
+        //
+        // If we are sharing audio/video and we haven't allocated the local media stream yet,
+        // we'll do so, recalling our self on success.
+        //
+        
+        
+        if (!stream_names && auto_init_user_media_) {
+            auto stream = GetLocalStream(None());
+            if (!stream && (audio_enabled_ || video_enabled_)) {
+                
+                InitMediaSource([thiz, other_user, call_success_cb, call_failure_cb, was_accepted_cb]
+                                (webrtc::MediaStreamInterface & stream){
+                                    thiz->Call(other_user,
+                                               call_success_cb,
+                                               call_failure_cb,
+                                               was_accepted_cb,
+                                               None());
+                                },
+                                call_failure_cb,
+                                None());
+                return;
+            }
+        }
+        
+        if (!websocket_) {
+            std::string message("Attempt to make a call prior to connecting to service");
+            FuncCall(debug_printer_, message);
+            Fatal(message);
+        }
+        
+        //
+        // If B calls A, and then A calls B before accepting, then A should treat the attempt to
+        // call B as a positive offer to B's offer.
+        //
+        if (HasKey(offers_pending_, other_user)) {
+            FuncCall(was_accepted_cb, true);
+            DoAnswer(other_user, offers_pending_[other_user], stream_names);
+            offers_pending_.erase(other_user);
+            CallCanceled(other_user, false);
+            return;
+        }
+        
+        // do we already have a pending call?
+        if (HasKey(acceptance_pending_, other_user)) {
+            std::string message("Call already pending acceptance");
+            FuncCall(debug_printer_, message);
+            FuncCall(call_failure_cb, err_codes_ALREADY_CONNECTED_, message);
+            return;
+        }
+        
+        if (use_fresh_ice_each_peer_) {
+            GetFreshIceConfig([thiz, other_user,
+                               call_success_cb, call_failure_cb,
+                               was_accepted_cb,
+                               stream_names]
+                              (bool succeeded) {
+                                  if (succeeded) {
+                                      thiz->CallBody(other_user, call_success_cb, call_failure_cb, was_accepted_cb, stream_names);
+                                  }
+                                  else {
+                                      FuncCall(call_failure_cb,
+                                               thiz->err_codes_CALL_ERR_,
+                                               "Attempt to get fresh ice configuration failed");
+                                  }
+                              });
+        }
+        else {
+            CallBody(other_user, call_success_cb, call_failure_cb, was_accepted_cb, stream_names);
+        }
+    }
+    
+    void Easyrtc::CallBody(const std::string & other_user,
+                           const std::function<void()> & call_success_cb,
+                           const std::function<void(const std::string &,
+                                                    const std::string &)> & call_failure_cb,
+                           const std::function<void(bool)> & was_accepted_cb,
+                           const Optional<std::vector<std::string>> & stream_names)
+    {
+        acceptance_pending_[other_user] = true;
+        
+        auto pc = BuildPeerConnection(other_user, true, call_failure_cb, stream_names);
+
+        if (!pc) {
+            std::string message("buildPeerConnection failed, call not completed");
+            FuncCall(debug_printer_, message);
+            Fatal(message);
+        }
+        
+        peer_conns_[other_user]->set_call_success_cb(call_success_cb);
+        
+        peerConns[otherUser].callSuccessCB = callSuccessCB;
+        peerConns[otherUser].callFailureCB = callFailureCB;
+        peerConns[otherUser].wasAcceptedCB = wasAcceptedCB;
+        var peerConnObj = peerConns[otherUser];
+        var setLocalAndSendMessage0 = function(sessionDescription) {
+            if (peerConnObj.cancelled) {
+                return;
+            }
+            var sendOffer = function() {
+                
+                sendSignalling(otherUser, "offer", sessionDescription, null, callFailureCB);
+            };
+            if (sdpLocalFilter) {
+                sessionDescription.sdp = sdpLocalFilter(sessionDescription.sdp);
+            }
+            pc.setLocalDescription(sessionDescription, sendOffer,
+                                   function(errorText) {
+                                       callFailureCB(self.errCodes.CALL_ERR, errorText);
+                                   });
+        };
+        setTimeout(function() {
+            //
+            // if the call was cancelled, we don't want to continue getting the offer.
+            // we can tell the call was cancelled because there won't be a peerConn object
+            // for it.
+            //
+            if( !peerConns[otherUser]) {
+                return;
+            }
+            pc.createOffer(setLocalAndSendMessage0, function(errorObj) {
+                callFailureCB(self.errCodes.CALL_ERR, JSON.stringify(errorObj));
+            },
+                           receivedMediaConstraints);
+        }, 100);
+    }
+    
+    
+    
+    
+    
+    
+    
+    Any Easyrtc::GetRoomFields(const std::string & room_name) {
+        return fields_.GetAt("rooms").GetAt(room_name);
     }
     
     void Easyrtc::ProcessRoomData(const Any & room_data) {

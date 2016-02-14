@@ -17,6 +17,7 @@
 #include <nwr/base/emitter.h>
 #include <nwr/base/none.h>
 #include <nwr/base/error.h>
+#include <nwr/base/func.h>
 #include <nwr/base/time.h>
 #include <nwr/base/any.h>
 #include <nwr/base/any_emitter.h>

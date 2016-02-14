@@ -24,6 +24,11 @@ namespace ert {
         
     }
     
+    MediaConstraints::MediaConstraints(const webrtc::MediaConstraintsInterface::Constraints & mangatory,
+                                       const webrtc::MediaConstraintsInterface::Constraints & optional):
+    mandatory(mandatory),
+    optional(optional){}
+    
     const webrtc::MediaConstraintsInterface::Constraints& MediaConstraints::GetMandatory() const {
         return mandatory;
     }
