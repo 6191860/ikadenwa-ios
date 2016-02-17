@@ -20,6 +20,10 @@ namespace jsrtc {
     {
         id_ = GetRandomString(20);
         
+        track_change_listener_ = FuncMake([this](const None & _){
+            this->OnTracksUpdate();
+        });
+        
         for (const auto & inner_track : inner_stream.GetAudioTracks()) {
             auto track = std::make_shared<MediaStreamTrack>(*inner_track);
             audio_tracks_.push_back(track);
@@ -130,17 +134,7 @@ namespace jsrtc {
         on_inactive_ = value;
     }
     
-    MediaStream::TrackChangeObserver::TrackChangeObserver(MediaStream & owner,
-                                                          MediaStreamTrack & track):
-    owner(owner),
-    track(track)
-    {}
-        
-    void MediaStream::TrackChangeObserver::OnChanged() {
-        owner.OnInnerTrackUpdate();
-    }
-    
-    void MediaStream::OnInnerTrackUpdate() {
+    void MediaStream::OnTracksUpdate() {
         bool new_active = ComputeActive();
         if (active_ != new_active) {
             active_ = new_active;
@@ -159,34 +153,22 @@ namespace jsrtc {
             Fatal("already added");
         }
         tracks.push_back(track);
-        
         SubscribeTrackChange(track);
-        
-        OnInnerTrackUpdate();
+        OnTracksUpdate();
     }
     void MediaStream::RemoveTrackFrom(const std::shared_ptr<MediaStreamTrack> & track,
                                       std::vector<std::shared_ptr<MediaStreamTrack>> & tracks)
     {
         Remove(tracks, track);
-        
         UnsubscribeTrackChange(track);
-
-        OnInnerTrackUpdate();
+        OnTracksUpdate();
     }
     
     void MediaStream::SubscribeTrackChange(const std::shared_ptr<MediaStreamTrack> & track) {
-        auto observer = std::make_shared<TrackChangeObserver>(*this, *track);
-        track->inner_track().RegisterObserver(observer.get());
-        track_change_observers_.push_back(observer);
+        track->change_emitter()->On(track_change_listener_);
     }
     void MediaStream::UnsubscribeTrackChange(const std::shared_ptr<MediaStreamTrack> & track) {
-        auto observers = Filter(track_change_observers_, [track](const std::shared_ptr<TrackChangeObserver> & observer){
-            return &observer->track == track.get();
-        });
-        for (const auto & observer : observers) {
-            track->inner_track().UnregisterObserver(observer.get());
-            Remove(track_change_observers_, observer);
-        }
+        track->change_emitter()->Off(track_change_listener_);
     }
     
     bool MediaStream::ComputeActive() {

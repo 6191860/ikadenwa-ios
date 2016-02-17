@@ -16,6 +16,8 @@
 #include <nwr/base/func.h>
 #include <nwr/base/any.h>
 #include <nwr/base/optional.h>
+
+#include <nwr/jsrtc/rtc_data_channel.h>
 #include <nwr/jsrtc/rtc_peer_connection.h>
 
 namespace nwr {
@@ -31,7 +33,10 @@ namespace ert {
         
         bool started_av() const { return started_av_; }
         void set_started_av(bool value) { started_av_ = value; }
-        rtc::scoped_refptr<webrtc::DataChannel> data_channel_s() const { return data_channel_s_; }
+        std::shared_ptr<RtcDataChannel> data_channel_s() const { return data_channel_s_; }
+        void set_data_channel_s(const std::shared_ptr<RtcDataChannel> & value) { data_channel_s_ = value; }
+        std::shared_ptr<RtcDataChannel> data_channel_r() const { return data_channel_r_; }
+        void set_data_channel_r(const std::shared_ptr<RtcDataChannel> & value) { data_channel_r_ = value; }
         bool data_channel_ready() const { return data_channel_ready_; }
         Optional<std::chrono::system_clock::time_point> connect_time() const { return connect_time_; }
         void set_connect_time(const Optional<std::chrono::system_clock::time_point> & value) { connect_time_ = value; }
@@ -83,8 +88,8 @@ namespace ert {
         std::string other_user_;
         
         bool started_av_;
-        rtc::scoped_refptr<webrtc::DataChannel> data_channel_s_;
-        //  data_channel_r
+        std::shared_ptr<RtcDataChannel> data_channel_s_;
+        std::shared_ptr<RtcDataChannel> data_channel_r_;
         bool data_channel_ready_;
         Optional<std::chrono::system_clock::time_point> connect_time_;
         bool sharing_audio_;

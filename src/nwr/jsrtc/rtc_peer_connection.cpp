@@ -9,6 +9,7 @@
 #include "rtc_peer_connection.h"
 
 #include "media_stream.h"
+#include "rtc_data_channel.h"
 #include "rtc_session_description.h"
 
 namespace nwr {
@@ -128,6 +129,7 @@ namespace jsrtc {
         inner_connection_ = nullptr;
         inner_observer_ = nullptr;
         
+        ClosePostTarget();
         closed_ = true;
     }
     
@@ -173,6 +175,17 @@ namespace jsrtc {
         return inner_connection_->RemoveTrack(sender);
     }
     
+    std::shared_ptr<RtcDataChannel> RtcPeerConnection::CreateDataChannel(const std::string & label,
+                                                                         const webrtc::DataChannelInit * config)
+    {
+        auto inner_channel = inner_connection_->CreateDataChannel(label, config);
+        return std::make_shared<RtcDataChannel>(*inner_channel);
+    }
+    void RtcPeerConnection::set_on_data_channel(const std::function<void(const std::shared_ptr<RtcDataChannel> &)> & value) {
+        on_data_channel_ = value;
+    }
+    
+    
     std::vector<std::shared_ptr<MediaStream>> RtcPeerConnection::local_streams() {
         return local_streams_;
     }
@@ -194,32 +207,17 @@ namespace jsrtc {
     void RtcPeerConnection::set_on_remove_stream(const std::function<void(const std::shared_ptr<MediaStream> &)> & value) {
         on_remove_stream_ = value;
     }
-
-    
-    RtcPeerConnection::ObserverBase::
-    ObserverBase(const std::shared_ptr<RtcPeerConnection> & owner):
-    owner(owner)
-    {}
-    
-    void RtcPeerConnection::ObserverBase::
-    Post(const std::function<void(const std::shared_ptr<RtcPeerConnection> &)> & task) {
-        auto owner = this->owner;
-        owner->queue_->PostTask([owner, task](){
-            if (owner->closed_) { return; }
-            task(owner);
-        });
-    }
     
     RtcPeerConnection::InnerObserver::
     InnerObserver(const std::shared_ptr<RtcPeerConnection> & owner):
-    ObserverBase(owner)
+    owner(owner)
     {}
     
     void RtcPeerConnection::InnerObserver::
     OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState new_state)
     {
-        Post([new_state](const std::shared_ptr<RtcPeerConnection> & owner) {
-            FuncCall(owner->on_signaling_state_change_, new_state);
+        owner->Post([new_state](const RtcPeerConnection & owner) {
+            FuncCall(owner.on_signaling_state_change_, new_state);
         });
     }
     void RtcPeerConnection::InnerObserver::
@@ -231,45 +229,48 @@ namespace jsrtc {
     OnAddStream(webrtc::MediaStreamInterface* inner_stream)
     {
         auto stream = std::make_shared<MediaStream>(*inner_stream);
-        Post([stream](const std::shared_ptr<RtcPeerConnection> & owner){
-            owner->remote_streams_.push_back(stream);
-            FuncCall(owner->on_add_stream_, stream);
+        owner->Post([stream](RtcPeerConnection & owner){
+            owner.remote_streams_.push_back(stream);
+            FuncCall(owner.on_add_stream_, stream);
         });
     }
     void RtcPeerConnection::InnerObserver::
     OnRemoveStream(webrtc::MediaStreamInterface* arg_inner_stream)
     {
         rtc::scoped_refptr<webrtc::MediaStreamInterface> inner_stream(arg_inner_stream);
-        Post([inner_stream](const std::shared_ptr<RtcPeerConnection> & owner) {
-            auto stream = owner->FindRemoteStreamByInnerStream(inner_stream.get());
-            Remove(owner->remote_streams_, stream);
-            FuncCall(owner->on_remove_stream_, stream);
+        owner->Post([inner_stream](RtcPeerConnection & owner) {
+            auto stream = owner.FindRemoteStreamByInnerStream(inner_stream.get());
+            Remove(owner.remote_streams_, stream);
+            FuncCall(owner.on_remove_stream_, stream);
         });
     }
     void RtcPeerConnection::InnerObserver::
-    OnDataChannel(webrtc::DataChannelInterface* data_channel)
+    OnDataChannel(webrtc::DataChannelInterface* inner_channel)
     {
-        
+        auto channel = std::make_shared<RtcDataChannel>(*inner_channel);
+        owner->Post([channel](RtcPeerConnection & owner) {
+            FuncCall(owner.on_data_channel_, channel);
+        });
     }
     void RtcPeerConnection::InnerObserver::
     OnRenegotiationNeeded()
     {
-        Post([](const std::shared_ptr<RtcPeerConnection> & owner) {
-            FuncCall(owner->on_negotiation_needed_);
+        owner->Post([](RtcPeerConnection & owner) {
+            FuncCall(owner.on_negotiation_needed_);
         });
     }
     void RtcPeerConnection::InnerObserver::
     OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state)
     {
-        Post([new_state](const std::shared_ptr<RtcPeerConnection> & owner) {
-            FuncCall(owner->on_ice_connection_state_change_, new_state);
+        owner->Post([new_state](RtcPeerConnection & owner) {
+            FuncCall(owner.on_ice_connection_state_change_, new_state);
         });
     }
     void RtcPeerConnection::InnerObserver::
     OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState new_state)
     {
-        Post([new_state](const std::shared_ptr<RtcPeerConnection> & owner) {
-            FuncCall(owner->on_ice_gathering_state_change_, new_state);
+        owner->Post([new_state](RtcPeerConnection & owner) {
+            FuncCall(owner.on_ice_gathering_state_change_, new_state);
         });
     }
     void RtcPeerConnection::InnerObserver::
@@ -285,8 +286,8 @@ namespace jsrtc {
                                              sdp,
                                              nullptr));
         
-        Post([candidate](const std::shared_ptr<RtcPeerConnection> & owner) {
-            FuncCall(owner->on_ice_candidate_, candidate);
+        owner->Post([candidate](RtcPeerConnection & owner) {
+            FuncCall(owner.on_ice_candidate_, candidate);
         });
     }
     void RtcPeerConnection::InnerObserver::OnIceComplete()
@@ -302,7 +303,7 @@ namespace jsrtc {
     CreateSessionDescriptionObserver(const std::shared_ptr<RtcPeerConnection> & owner,
                                      const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> &  success,
                                      const std::function<void(const std::string &)> & failure):
-    ObserverBase(owner),
+    owner(owner),
     success(success),
     failure(failure)
     {}
@@ -312,7 +313,7 @@ namespace jsrtc {
         rtc::scoped_refptr<CreateSessionDescriptionObserver> thiz(this);
         std::shared_ptr<RtcSessionDescription> desc = RtcSessionDescription::FromWebrtc(*arg_desc);
         
-        Post([thiz, desc](const std::shared_ptr<RtcPeerConnection> & owner) {
+        owner->Post([thiz, desc](RtcPeerConnection & owner) {
             FuncCall(thiz->success, desc);
         });
     }
@@ -320,7 +321,7 @@ namespace jsrtc {
     OnFailure(const std::string& error) {
         rtc::scoped_refptr<CreateSessionDescriptionObserver> thiz(this);
 
-        Post([thiz, error](const std::shared_ptr<RtcPeerConnection> & owner) {
+        owner->Post([thiz, error](RtcPeerConnection & owner) {
             FuncCall(thiz->failure, error);
         });
     }
@@ -329,7 +330,7 @@ namespace jsrtc {
     SetSessionDescriptionObserver(const std::shared_ptr<RtcPeerConnection> & owner,
                                   const std::function<void()> & success,
                                   const std::function<void(const std::string &)> & failure):
-    ObserverBase(owner),
+    owner(owner),
     success(success),
     failure(failure)
     {}
@@ -338,7 +339,7 @@ namespace jsrtc {
     OnSuccess() {
         rtc::scoped_refptr<SetSessionDescriptionObserver> thiz(this);
         
-        Post([thiz](const std::shared_ptr<RtcPeerConnection> & owner) {
+        owner->Post([thiz](RtcPeerConnection & owner) {
             FuncCall(thiz->success);
         });
     }
@@ -346,14 +347,13 @@ namespace jsrtc {
     OnFailure(const std::string& error) {
         rtc::scoped_refptr<SetSessionDescriptionObserver> thiz(this);
         
-        Post([thiz, error](const std::shared_ptr<RtcPeerConnection> & owner) {
+        owner->Post([thiz, error](RtcPeerConnection & owner) {
             FuncCall(thiz->failure, error);
         });
     }
     
     
     RtcPeerConnection::RtcPeerConnection():
-    queue_(TaskQueue::system_current_queue()),
     closed_(false)
     {}
     

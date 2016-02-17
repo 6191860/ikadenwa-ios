@@ -12,7 +12,10 @@
 #include <nwr/base/env.h>
 #include <nwr/base/string.h>
 #include <nwr/base/func.h>
+#include <nwr/base/none.h>
+#include <nwr/base/emitter.h>
 #include <nwr/jsrtc/lib_webrtc.h>
+#include "post_target.h"
 
 namespace nwr {
 namespace jsrtc {
@@ -24,9 +27,11 @@ namespace jsrtc {
         Ended
     };
     
-    class MediaStreamTrack {
+    class MediaStreamTrack : public PostTarget<MediaStreamTrack> {
     public:
         MediaStreamTrack(webrtc::MediaStreamTrackInterface & inner_track);
+        virtual ~MediaStreamTrack();
+        
         webrtc::MediaStreamTrackInterface & inner_track();
         webrtc::AudioTrackInterface * inner_audio_track();
         webrtc::VideoTrackInterface * inner_video_track();
@@ -54,6 +59,8 @@ namespace jsrtc {
         webrtc::MediaSourceInterface * inner_source();
         webrtc::AudioSourceInterface * inner_audio_source();
         webrtc::VideoSourceInterface * inner_video_source();
+        
+        EmitterPtr<None> change_emitter() const { return change_emitter_; }
     private:
         struct ChangeObserver: public webrtc::ObserverInterface {
             ChangeObserver(MediaStreamTrack & owner);
@@ -62,11 +69,11 @@ namespace jsrtc {
             
             MediaStreamTrack & owner;
         };
-        friend ChangeObserver;
         
+        void inner_set_enabled(bool value);
+        void inner_set_ready_state(MediaStreamTrackState value);
         void OnInnerUpdate();
-        bool ComputeEnabled();
-        MediaStreamTrackState ComputeState();
+        MediaStreamTrackState ComputeState(webrtc::MediaStreamTrackInterface::TrackState state);
         
         rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> inner_track_;
         std::shared_ptr<ChangeObserver> inner_observer_;
@@ -75,6 +82,8 @@ namespace jsrtc {
         bool enabled_;
         MediaStreamTrackState ready_state_;
         std::function<void()> on_ended_;
+        
+        EmitterPtr<None> change_emitter_;
     };
 }
 }

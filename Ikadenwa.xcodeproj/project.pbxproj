@@ -16,6 +16,8 @@
 		D6155E961C6615B100A8B6CA /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E941C6615B100A8B6CA /* packet.cpp */; };
 		D6155E991C66273500A8B6CA /* env.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E971C66273500A8B6CA /* env.cpp */; };
 		D65236D61C74A1C600D399F6 /* rtc_session_description.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */; };
+		D65236D91C74E4B500D399F6 /* rtc_data_channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D71C74E4B500D399F6 /* rtc_data_channel.cpp */; };
+		D65236DF1C75136F00D399F6 /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236DD1C75136F00D399F6 /* packet.cpp */; };
 		D664369D1C4A544C0059A94B /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D664369B1C4A544C0059A94B /* app.cpp */; };
 		D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D664369F1C4A5F070059A94B /* AppDelegate.mm */; };
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
@@ -120,6 +122,11 @@
 		D65236D21C73812800D399F6 /* type_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = type_helper.h; sourceTree = "<group>"; };
 		D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_session_description.cpp; path = nwr/jsrtc/rtc_session_description.cpp; sourceTree = "<group>"; };
 		D65236D51C74A1C600D399F6 /* rtc_session_description.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_session_description.h; path = nwr/jsrtc/rtc_session_description.h; sourceTree = "<group>"; };
+		D65236D71C74E4B500D399F6 /* rtc_data_channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_data_channel.cpp; path = nwr/jsrtc/rtc_data_channel.cpp; sourceTree = "<group>"; };
+		D65236D81C74E4B500D399F6 /* rtc_data_channel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_data_channel.h; path = nwr/jsrtc/rtc_data_channel.h; sourceTree = "<group>"; };
+		D65236DB1C7500FC00D399F6 /* post_target.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = post_target.h; path = nwr/jsrtc/post_target.h; sourceTree = "<group>"; };
+		D65236DD1C75136F00D399F6 /* packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = packet.cpp; path = nwr/engineio/packet.cpp; sourceTree = "<group>"; };
+		D65236DE1C75136F00D399F6 /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = nwr/engineio/packet.h; sourceTree = "<group>"; };
 		D664369B1C4A544C0059A94B /* app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = app/app.cpp; sourceTree = "<group>"; };
 		D664369C1C4A544C0059A94B /* app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = app.h; path = app/app.h; sourceTree = "<group>"; };
 		D664369E1C4A5F070059A94B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -284,6 +291,8 @@
 			children = (
 				D66436EB1C4FE9EC0059A94B /* yeast.h */,
 				D66436EA1C4FE9EC0059A94B /* yeast.cpp */,
+				D65236DE1C75136F00D399F6 /* packet.h */,
+				D65236DD1C75136F00D399F6 /* packet.cpp */,
 				D66436CB1C4DC8F10059A94B /* parser.h */,
 				D66436CA1C4DC8F10059A94B /* parser.cpp */,
 				D66436DE1C4EBCCD0059A94B /* transport.h */,
@@ -444,6 +453,7 @@
 			isa = PBXGroup;
 			children = (
 				D6B9DE6E1C72C83B00EBF183 /* lib_webrtc.h */,
+				D65236DB1C7500FC00D399F6 /* post_target.h */,
 				D6B9DE6B1C72C53000EBF183 /* media_constraints.h */,
 				D6B9DE6A1C72C53000EBF183 /* media_constraints.cpp */,
 				D6B9DE701C72C8D200EBF183 /* media_stream_track.h */,
@@ -452,6 +462,8 @@
 				D6B9DE721C72D5DB00EBF183 /* media_stream.cpp */,
 				D65236D51C74A1C600D399F6 /* rtc_session_description.h */,
 				D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */,
+				D65236D81C74E4B500D399F6 /* rtc_data_channel.h */,
+				D65236D71C74E4B500D399F6 /* rtc_data_channel.cpp */,
 				D6B9DE671C7220A300EBF183 /* rtc_peer_connection.h */,
 				D6B9DE661C7220A300EBF183 /* rtc_peer_connection.cpp */,
 				D6B9DE641C720E4200EBF183 /* rtc_peer_connection_factory.h */,
@@ -591,6 +603,7 @@
 				D66436D91C4E8EA10059A94B /* base64.cpp in Sources */,
 				D66436A51C4A64110059A94B /* main.m in Sources */,
 				D66436A81C4A73420059A94B /* websocket.cpp in Sources */,
+				D65236DF1C75136F00D399F6 /* packet.cpp in Sources */,
 				D60852A11C50B24D00CEE554 /* socket.cpp in Sources */,
 				D6B9DE4E1C6E2BE300EBF183 /* video_audio_constraints.cpp in Sources */,
 				D66436AB1C4A74C20059A94B /* string.cpp in Sources */,
@@ -611,6 +624,7 @@
 				D60852A61C50DF6000CEE554 /* data.cpp in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
 				D6B9DE601C6F324900EBF183 /* logged_in_info.cpp in Sources */,
+				D65236D91C74E4B500D399F6 /* rtc_data_channel.cpp in Sources */,
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,
 				D60852A41C50B95100CEE554 /* path.cpp in Sources */,
 				D6F78A561C55090600B21614 /* socket.cpp in Sources */,

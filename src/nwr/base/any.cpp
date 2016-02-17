@@ -167,7 +167,7 @@ namespace nwr {
             case Type::Data:
                 return Any(std::make_shared<Data>(**AsData()));
             case Type::Array: {
-                std::vector<Any> array = Map<Any, Any>(*AsArray(), [](const Any & x){
+                std::vector<Any> array = Map(*AsArray(), [](const Any & x) -> Any {
                     return x.Clone();
                 });
                 return Any(array);

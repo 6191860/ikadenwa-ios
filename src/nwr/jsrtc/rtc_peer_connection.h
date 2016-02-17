@@ -15,16 +15,16 @@
 #include <nwr/base/func.h>
 #include <nwr/base/task_queue.h>
 #include "lib_webrtc.h"
+#include "post_target.h"
 
 namespace nwr {
     namespace jsrtc {
         class RtcSessionDescription;
-        
         class RtcPeerConnectionFactory;
-        
+        class RtcDataChannel;
         class MediaStream;
         
-        class RtcPeerConnection : public std::enable_shared_from_this<RtcPeerConnection> {
+        class RtcPeerConnection : public PostTarget<RtcPeerConnection> {
             friend RtcPeerConnectionFactory;
         public:
             void CreateOffer(const webrtc::MediaConstraintsInterface * options,
@@ -69,7 +69,12 @@ namespace nwr {
             bool RemoveTrack(webrtc::RtpSenderInterface* sender);
 //            RTCRtpTransceiver           addTransceiver ((MediaStreamTrack or DOMString) trackOrKind, RTCRtpTransceiverInit init);
 //            attribute EventHandler ontrack;
-
+            
+//            readonly        attribute RTCSctpTransport? sctp;
+            std::shared_ptr<RtcDataChannel> CreateDataChannel(const std::string & label,
+                                                              const webrtc::DataChannelInit * config);
+            void set_on_data_channel(const std::function<void(const std::shared_ptr<RtcDataChannel> &)> & value);
+            
             std::vector<std::shared_ptr<MediaStream>> local_streams();
             std::vector<std::shared_ptr<MediaStream>> remote_streams();
             void AddStream(const std::shared_ptr<MediaStream> & stream);
@@ -77,17 +82,9 @@ namespace nwr {
             void set_on_add_stream(const std::function<void(const std::shared_ptr<MediaStream> &)> & value);
             void set_on_remove_stream(const std::function<void(const std::shared_ptr<MediaStream> &)> & value);
         private:
-            struct ObserverBase {
-                ObserverBase(const std::shared_ptr<RtcPeerConnection> & owner);
-                virtual ~ObserverBase(){}
-                
-                void Post(const std::function<void(const std::shared_ptr<RtcPeerConnection> &)> & task);
-                std::shared_ptr<RtcPeerConnection> owner;
-            };
-            
             struct InnerObserver:
-            public webrtc::PeerConnectionObserver,
-            public ObserverBase {
+            public webrtc::PeerConnectionObserver
+            {
                 InnerObserver(const std::shared_ptr<RtcPeerConnection> & owner);
                 
                 void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState new_state) override;
@@ -101,11 +98,12 @@ namespace nwr {
                 void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
                 void OnIceComplete() override;
                 void OnIceConnectionReceivingChange(bool receiving) override;
+                
+                std::shared_ptr<RtcPeerConnection> owner;
             };
             
             struct CreateSessionDescriptionObserver:
-            public rtc::RefCountedObject<webrtc::CreateSessionDescriptionObserver>,
-            public ObserverBase
+            public rtc::RefCountedObject<webrtc::CreateSessionDescriptionObserver>
             {
                 CreateSessionDescriptionObserver(const std::shared_ptr<RtcPeerConnection> & owner,
                                                  const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
@@ -114,13 +112,13 @@ namespace nwr {
                 void OnSuccess(webrtc::SessionDescriptionInterface* desc) override;
                 void OnFailure(const std::string& error) override;
                 
+                std::shared_ptr<RtcPeerConnection> owner;
                 std::function<void(const std::shared_ptr<RtcSessionDescription> &)> success;
                 std::function<void(const std::string &)> failure;
             };
             
             struct SetSessionDescriptionObserver:
-            public rtc::RefCountedObject<webrtc::SetSessionDescriptionObserver>,
-            public ObserverBase
+            public rtc::RefCountedObject<webrtc::SetSessionDescriptionObserver>
             {
                 SetSessionDescriptionObserver(const std::shared_ptr<RtcPeerConnection> & owner,
                                               const std::function<void()> & success,
@@ -129,6 +127,7 @@ namespace nwr {
                 void OnSuccess() override;
                 void OnFailure(const std::string& error) override;
                 
+                std::shared_ptr<RtcPeerConnection> owner;
                 std::function<void()> success;
                 std::function<void(const std::string &)> failure;
             };
@@ -139,9 +138,7 @@ namespace nwr {
             
             std::shared_ptr<MediaStream> FindRemoteStreamByInnerStream(webrtc::MediaStreamInterface * inner_stream);
             
-            
             bool closed_;
-            std::shared_ptr<TaskQueue> queue_;
             rtc::scoped_refptr<webrtc::PeerConnectionInterface> inner_connection_;
             std::shared_ptr<InnerObserver> inner_observer_;
             
@@ -156,6 +153,8 @@ namespace nwr {
             std::function<void(webrtc::PeerConnectionInterface::IceConnectionState)> on_ice_connection_state_change_;
             std::function<void(webrtc::PeerConnectionInterface::IceGatheringState)> on_ice_gathering_state_change_;
 //            std::function<void()> on_connection_state_change_;
+            
+            std::function<void(const std::shared_ptr<RtcDataChannel> &)> on_data_channel_;
             
             std::vector<std::shared_ptr<MediaStream>> local_streams_;
             std::vector<std::shared_ptr<MediaStream>> remote_streams_;

@@ -386,7 +386,6 @@ namespace ert {
     }
     
     bool Easyrtc::SupportsGetUserMedia() {
-//        return !!getUserMedia;
         return true;
     }
     
@@ -394,14 +393,6 @@ namespace ert {
         if (!SupportsGetUserMedia()) {
             return false;
         }
-//        if (!window.RTCPeerConnection) {
-//            return false;
-//        }
-//        try {
-//            self.createRTCPeerConnection({"iceServers": []}, null);
-//        } catch (oops) {
-//            return false;
-//        }
         return true;
     }
     
@@ -411,6 +402,12 @@ namespace ert {
     {
         return peer_connection_factory_->CreatePeerConnection(configuration,
                                                               constraints);
+    }
+    
+    webrtc::DataChannelInit Easyrtc::GetDataChannelConstraints() {
+        webrtc::DataChannelInit config;
+        config.reliable = true;
+        return config;
     }
     
     void Easyrtc::SetRoomApiField(const std::string & room_name)
@@ -1244,7 +1241,7 @@ namespace ert {
             { "transfer_id", Any(transfer_id) }
         });
         
-        peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(start_message.ToJsonString()));
+        peer_conns_[dest_user]->data_channel_s()->Send(eio::PacketData(start_message.ToJsonString()));
         
         int pos = 0;
         int len = static_cast<int>(msg_data.length());
@@ -1255,10 +1252,10 @@ namespace ert {
                 { "transfer", Any("chunk") }
             });
 
-            peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(message.ToJsonString()));
+            peer_conns_[dest_user]->data_channel_s()->Send(eio::PacketData(message.ToJsonString()));
         }
         
-        peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(end_message.ToJsonString()));
+        peer_conns_[dest_user]->data_channel_s()->Send(eio::PacketData(end_message.ToJsonString()));
     }
     
     void Easyrtc::SendDataP2P(const std::string & dest_user,
@@ -1291,7 +1288,7 @@ namespace ert {
             if (flattened_data.length() > max_p2p_message_length_) {
                 SendByChunkHelper(dest_user, flattened_data);
             } else {
-                peer_conns_[dest_user]->data_channel_s()->Send(webrtc::DataBuffer(flattened_data));
+                peer_conns_[dest_user]->data_channel_s()->Send(eio::PacketData(flattened_data));
             }
         }
     }
@@ -2286,14 +2283,18 @@ namespace ert {
             }
         };
 
-        auto init_out_going_channel = [thiz](const std::string & other_user){
+        auto init_out_going_channel = [thiz, other_user, pc](const std::string & other_user){
             FuncCall(thiz->debug_printer_, "saw initOutgoingChannel call");
             
+            webrtc::DataChannelInit data_channel_config = thiz->GetDataChannelConstraints();
+            auto data_channel = pc->CreateDataChannel(thiz->data_channel_name_, &data_channel_config);
+            
 #warning todo pc create data channel
-//            var dataChannel = pc.createDataChannel(dataChannelName, self.getDatachannelConstraints());
-//            peerConns[otherUser].dataChannelS = dataChannel;
-//            peerConns[otherUser].dataChannelR = dataChannel;
-//            dataChannel.onmessage = dataChannelMessageHandler;
+            thiz->peer_conns_[other_user]->set_data_channel_s(data_channel);
+            thiz->peer_conns_[other_user]->set_data_channel_r(data_channel);
+            
+            
+            //            dataChannel.onmessage = dataChannelMessageHandler;
 //            dataChannel.onopen = function(event) {
 //                if (self.debugPrinter) {
 //                    self.debugPrinter("saw dataChannel.onopen event");

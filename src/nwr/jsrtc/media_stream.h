@@ -14,15 +14,17 @@
 #include <nwr/base/string.h>
 #include <nwr/base/optional.h>
 #include <nwr/base/array.h>
+#include <nwr/base/emitter.h>
 #include <nwr/jsrtc/lib_webrtc.h>
 
+#include "post_target.h"
 #include "media_stream_track.h"
 
 namespace nwr {
 namespace jsrtc {
     class RtcPeerConnection;
     
-    class MediaStream {
+    class MediaStream : public PostTarget<MediaStream> {
     public:
         MediaStream(webrtc::MediaStreamInterface & inner_stream);
         webrtc::MediaStreamInterface & inner_stream();
@@ -42,16 +44,7 @@ namespace jsrtc {
 //        attribute EventHandler onaddtrack;
 //        attribute EventHandler onremovetrack;
     private:
-        struct TrackChangeObserver: public webrtc::ObserverInterface {
-            TrackChangeObserver(MediaStream & owner, MediaStreamTrack & track);
-            
-            void OnChanged() override;
-            
-            MediaStream & owner;
-            MediaStreamTrack & track;
-        };
-        
-        void OnInnerTrackUpdate();
+        void OnTracksUpdate();
 
         void AddTrackTo(const std::shared_ptr<MediaStreamTrack> & track,
                         std::vector<std::shared_ptr<MediaStreamTrack>> & tracks);
@@ -68,11 +61,10 @@ namespace jsrtc {
         std::string id_;
         std::vector<std::shared_ptr<MediaStreamTrack>> audio_tracks_;
         std::vector<std::shared_ptr<MediaStreamTrack>> video_tracks_;
-        std::vector<std::shared_ptr<TrackChangeObserver>> track_change_observers_;
         bool active_;
         std::function<void()> on_active_;
         std::function<void()> on_inactive_;
-        
+        Func<void(const None &)> track_change_listener_;
         
     };
 }

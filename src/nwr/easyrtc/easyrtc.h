@@ -151,7 +151,7 @@ namespace ert {
         std::shared_ptr<RtcPeerConnection>
         CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
                                 const webrtc::MediaConstraintsInterface & constraints);
-        //  GetDataChannelConstraints
+        webrtc::DataChannelInit GetDataChannelConstraints();
         std::string server_path_;
         std::map<std::string, std::map<std::string, LoggedInInfo>> last_loggged_in_list_;
         ReceivePeer receive_peer_;
@@ -395,7 +395,7 @@ namespace ert {
         
         bool closed_;
         std::shared_ptr<RtcPeerConnectionFactory> peer_connection_factory_;
-        void SetPeerConn(const std::string & other_user, const shared_ptr<PeerConn> & peer_conn);
+        void SetPeerConn(const std::string & other_user, const std::shared_ptr<PeerConn> & peer_conn);
         void DeletePeerConn(const std::string & other_user);
         
 

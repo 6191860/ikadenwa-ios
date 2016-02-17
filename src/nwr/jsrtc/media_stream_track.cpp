@@ -12,15 +12,20 @@
 namespace nwr {
 namespace jsrtc {
     MediaStreamTrack::MediaStreamTrack(webrtc::MediaStreamTrackInterface & inner_track):
-    inner_track_(&inner_track)
+    inner_track_(&inner_track),
+    change_emitter_(std::make_shared<decltype(change_emitter_)::element_type>())
     {
         inner_observer_ = std::make_shared<ChangeObserver>(*this);
         inner_track_->RegisterObserver(inner_observer_.get());
         
         id_ = GetRandomString(20);
         
-        enabled_ = ComputeEnabled();
-        ready_state_ = ComputeState();
+        enabled_ = inner_track_->enabled();
+        ready_state_ = ComputeState(inner_track_->state());
+    }
+    
+    MediaStreamTrack::~MediaStreamTrack() {
+        inner_track_->UnregisterObserver(inner_observer_.get());
     }
     
     webrtc::MediaStreamTrackInterface & MediaStreamTrack::inner_track() {
@@ -57,6 +62,7 @@ namespace jsrtc {
     }
     
     void MediaStreamTrack::set_enabled(bool value) {
+        inner_set_enabled(value);
         inner_track_->set_enabled(value);
     }
     
@@ -118,36 +124,39 @@ namespace jsrtc {
         return nullptr;
     }
 
-    
     MediaStreamTrack::ChangeObserver::
     ChangeObserver(MediaStreamTrack & owner):
     owner(owner)
     {}
     
     void MediaStreamTrack::ChangeObserver::OnChanged() {
+        bool enabled = owner.inner_track_->enabled();
+        MediaStreamTrackState state = owner.ComputeState(owner.inner_track_->state());
         
+        owner.Post([enabled, state](MediaStreamTrack & owner){
+            owner.inner_set_enabled(enabled);
+            owner.inner_set_ready_state(state);
+        });
     }
     
-    void MediaStreamTrack::OnInnerUpdate() {
-        auto new_enabled = ComputeEnabled();
-        if (enabled_ != new_enabled) {
-            enabled_ = new_enabled;
+    void MediaStreamTrack::inner_set_enabled(bool value) {
+        if (enabled_ != value) {
+            enabled_ = value;
+            change_emitter_->Emit(None());
         }
-        
-        auto new_state = ComputeState();
-        if (ready_state_ != new_state) {
-            ready_state_ = new_state;
-            if (new_state == MediaStreamTrackState::Ended) {
+    }
+    
+    void MediaStreamTrack::inner_set_ready_state(MediaStreamTrackState value) {
+        if (ready_state_ != value) {
+            ready_state_ = value;
+            if (value == MediaStreamTrackState::Ended) {
                 FuncCall(on_ended_);
             }
+            change_emitter_->Emit(None());
         }
     }
     
-    bool MediaStreamTrack::ComputeEnabled() {
-        return inner_track_->enabled();
-    }
-    
-    MediaStreamTrackState MediaStreamTrack::ComputeState() {
+    MediaStreamTrackState MediaStreamTrack::ComputeState(webrtc::MediaStreamTrackInterface::TrackState state) {
         switch (inner_track_->state()) {
             case webrtc::MediaStreamTrackInterface::kInitializing:
             case webrtc::MediaStreamTrackInterface::kLive:
