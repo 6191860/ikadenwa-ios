@@ -11,24 +11,9 @@
 #include <memory>
 #include <functional>
 
-namespace nwr {
-    template <typename T>
-    struct member_func_capture
-    {
-        using no_this_func_type = void;
-    };
-    
-    template<typename R, typename K, typename ...Args>
-    struct member_func_capture<R(K::*)(Args...) const>
-    {
-        using no_this_func_type = std::function<R(Args...)>;
-    };
-    
-    template <typename LM>
-    struct lambda_to_function {
-        using type = typename member_func_capture<decltype(&LM::operator())>::no_this_func_type;
-    };
-    
+#include "type_helper.h"
+
+namespace nwr {    
     template <typename F> using Func = std::shared_ptr<std::function<F>>;
     
     template <typename F>

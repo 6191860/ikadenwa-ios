@@ -60,6 +60,10 @@ namespace nwr {
         ret.push_back(str.substr(pos, str.length()));
         return ret;
     }
+    
+    std::string Join(const std::vector<std::string> & parts) {
+        return Join(parts, "");
+    }
     std::string Join(const std::vector<std::string> & parts, const std::string & glue) {
         std::string str;
         for (int i = 0; i < parts.size(); i++) {
@@ -114,6 +118,20 @@ namespace nwr {
             str.replace(part_pos, part_len, rep);
             pos = part_pos + static_cast<int>(rep.length());
         }
+    }
+    
+    std::string GetRandomString(int len) {
+        std::string chars("1234567890"
+                          "abcdefghijklmnopqrstuvwxyz"
+                          "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        std::default_random_engine random;
+        std::uniform_int_distribution<int> distribution(0, static_cast<int>(chars.length()));
+        std::stringstream ss;
+        for (int i = 0; i < len; i++) {
+            int dice = distribution(random);
+            ss << chars[dice];
+        }
+        return ss.str();
     }
 }
 

@@ -17,10 +17,10 @@
 
 namespace nwr {
 namespace ert {
-    using ReceivePeerCallback = Func<void(const std::string &,
-                                          const std::string &,
-                                          const Any &,
-                                          const Any &)>;
+    using ReceivePeerCallback = std::function<void(const std::string &,
+                                                   const std::string &,
+                                                   const Any &,
+                                                   const Any &)>;
     
     struct ReceivePeerSourceEntry {
         ReceivePeerCallback cb;

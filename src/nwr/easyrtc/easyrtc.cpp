@@ -15,28 +15,9 @@ namespace ert {
     }
     
     void Easyrtc::Init() {
-        rtc_signaling_thread_ = rtc::scoped_ptr<rtc::Thread>(new rtc::Thread());
-        bool ret = rtc_signaling_thread_->Start();
-        if (!ret) { Fatal("signaling thread start failed"); }
-        
-        rtc_worker_thread_ = rtc::scoped_ptr<rtc::Thread>(new rtc::Thread());
-        ret = rtc_worker_thread_->Start();
-        if (!ret) { Fatal("worker thread start failed"); }
-        
-        peer_connection_factory_ =
-        webrtc::CreatePeerConnectionFactory(rtc_signaling_thread_.get(),
-                                            rtc_worker_thread_.get(),
-                                            nullptr,
-                                            nullptr,
-                                            nullptr);
-        if (!peer_connection_factory_) {
-            Fatal("CreatePeerConnectionFactory failed");
-        }
+        peer_connection_factory_ = std::make_shared<RtcPeerConnectionFactory>();
         
         auto_init_user_media_ = true;
-        sdp_local_filter_ = 0;
-        sdp_remote_filter_ = 0;
-        ice_candidate_filter_ = 0;
         
         connection_options_.timeout = TimeDuration(10.0);
         connection_options_.force_new = true;
@@ -58,18 +39,17 @@ namespace ert {
         username_ = "";
         logging_out_ = false;
         disconnecting_ = false;
-        received_media_constraints_ = Any(Any::ObjectType {
-            { "mandatory", Any(Any::ObjectType {
-                { "OfferToReceiveAudio", Any(true) },
-                { "OfferToReceiveVideo", Any(true) }
-            }) }
-        });
+        
+        received_media_constraints_ = MediaConstraints();
+        MediaConstraintsSet(received_media_constraints_.mandatory(),
+                            webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, MediaConstraintsBoolValue(true));
+        MediaConstraintsSet(received_media_constraints_.mandatory(),
+                            webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, MediaConstraintsBoolValue(true));
         audio_enabled_ = true;
         video_enabled_ = true;
         data_channel_name_ = "dc";
         debug_printer_ = nullptr;
         old_config_ = 0;
-        offers_pending_ = 0;
         native_video_height_ = 0;
         max_p2p_message_length_ = 1000;
         native_video_width_ = 0;
@@ -77,11 +57,12 @@ namespace ert {
         });
         application_name_ = "";
         data_enabled_ = false;
-        on_error_ = FuncMake([this](const Any & error) {
+        on_error_ = [this](const Any & error) {
             FuncCall(debug_printer_,
                      "saw error" + (error.GetAt("errorText").AsString() || std::string("")));
             printf("[Easyrtc::on_error_] %s\n", error.ToJsonString().c_str());
-        });
+        };
+        pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();
         use_fresh_ice_each_peer_ = false;
         
     }
@@ -96,34 +77,41 @@ namespace ert {
         if (closed_) { return; }
         
         peer_connection_factory_ = nullptr;
-        rtc_worker_thread_ = nullptr;
-        rtc_signaling_thread_ = nullptr;
         
         closed_ = true;
     }
     
-#warning TODO
-    void Easyrtc::StopStream(webrtc::MediaStreamInterface * stream) {
-
+    void Easyrtc::StopStream(const std::shared_ptr<MediaStream> & stream) {
+        auto tracks = stream->audio_tracks();
+        for (int i = 0; i < tracks.size(); i++) {
+            tracks[i]->Stop();
+        }
+        tracks = stream->video_tracks();
+        for (int i = 0; i < tracks.size(); i++) {
+            tracks[i]->Stop();
+        }
     }
     
-    void Easyrtc::set_sdp_filters(int local_filter, int remote_filter) {
+    void Easyrtc::set_sdp_filters(const std::function<std::string(const std::string &)> & local_filter,
+                                  const std::function<std::string(const std::string &)> & remote_filter) {
         sdp_local_filter_ = local_filter;
         sdp_remote_filter_ = remote_filter;
     }
     
-    void Easyrtc::set_peer_closed_listener(const Func<void()> & handler) {
+    void Easyrtc::set_peer_closed_listener(const std::function<void(const std::string &)> & handler) {
         on_peer_closed_ = handler;
     }
     
-    void Easyrtc::set_peer_failing_listener(const Func<void()> & failing_handler,
-                                            const Func<void()> & recovered_handler)
+    void Easyrtc::set_peer_failing_listener(const std::function<void(const std::string &)> & failing_handler,
+                                            const std::function<void(const std::string &,
+                                                                     const std::chrono::system_clock::time_point &,
+                                                                     const std::chrono::system_clock::time_point &)> & recovered_handler)
     {
         on_peer_failing_ = failing_handler;
         on_peer_recovered_ = recovered_handler;
     }
     
-    void Easyrtc::set_ice_candidate_filter(int filter) {
+    void Easyrtc::set_ice_candidate_filter(const std::function<Any(const Any &, bool)> & filter) {
         ice_candidate_filter_ = filter;
     }
     
@@ -140,7 +128,7 @@ namespace ert {
         return formatted;
     }
     
-    bool Easyrtc::IsSocketConnected(const std::shared_ptr<sio::Socket> & socket) {
+    bool Easyrtc::IsSocketConnected(const std::shared_ptr<const sio::Socket> & socket) {
         return socket->connected();
     }
     
@@ -200,11 +188,15 @@ namespace ert {
     std::string Easyrtc::err_codes_ICECANDIDATE_ERROR_ = "ICECANDIDATE_ERROR";
     
     void Easyrtc::EnableAudioReceive(bool value) {
-        received_media_constraints_.GetAt("mandatory").SetAt("OfferToReceiveAudio", Any(value));
+        MediaConstraintsSet(received_media_constraints_.mandatory(),
+                            webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
+                            MediaConstraintsBoolValue(value));
     }
     
     void Easyrtc::EnableVideoReceive(bool value) {
-        received_media_constraints_.GetAt("mandatory").SetAt("OfferToReceiveVideo", Any(value));
+        MediaConstraintsSet(received_media_constraints_.mandatory(),
+                            webrtc::MediaConstraintsInterface::kOfferToReceiveVideo,
+                            MediaConstraintsBoolValue(value));
     }
     
     bool Easyrtc::IsNameValid(const std::string & name) {
@@ -330,8 +322,8 @@ namespace ert {
         }
     }
     
-    VideoAudioMediaConstraints Easyrtc::GetUserMediaConstraints() {
-        VideoAudioMediaConstraints constraints;
+    VideoAudioConstraints Easyrtc::GetUserMediaConstraints() {
+        VideoAudioConstraints constraints;
         //
         // _presetMediaConstraints allow you to provide your own constraints to be used
         // with initMediaSource.
@@ -347,21 +339,22 @@ namespace ert {
         }
         else {
             constraints.video = Some(MediaConstraints());
+            auto & mandatory = constraints.video->mandatory();
             
             if (desired_video_properties_.GetAt("width").AsInt()){
-                MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxWidth,
+                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxWidth,
                                     nwr::Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
-                MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMinWidth,
+                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMinWidth,
                                     nwr::Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
             }
             if (desired_video_properties_.GetAt("height").AsInt()) {
-                MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
+                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
                                     nwr::Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
-                MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
+                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
                                     nwr::Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
             }
             if (desired_video_properties_.GetAt("frameRate").AsDouble()) {
-                MediaConstraintsSet(constraints.video->mandatory, webrtc::MediaConstraintsInterface::kMaxFrameRate,
+                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxFrameRate,
                                     nwr::Format("%f", desired_video_properties_.GetAt("frameRate").AsDouble().value()));
             }
 //            if (self._desiredVideoProperties.videoSrcId) {
@@ -378,9 +371,9 @@ namespace ert {
     }
     void Easyrtc::EnableDebug(bool enable) {
         if (enable) {
-            debug_printer_ = FuncMake([](const std::string & message) {
+            debug_printer_ = [](const std::string & message) {
                 printf("[Easyrtc::debug_printer_] %s\n", message.c_str());
-            });
+            };
         }
         else {
             debug_printer_ = nullptr;
@@ -412,16 +405,12 @@ namespace ert {
         return true;
     }
     
-    rtc::scoped_refptr<webrtc::PeerConnectionInterface>
+    std::shared_ptr<RtcPeerConnection>
     Easyrtc::CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                                     const webrtc::MediaConstraintsInterface * constraints,
-                                     webrtc::PeerConnectionObserver * observer)
+                                     const webrtc::MediaConstraintsInterface & constraints)
     {
         return peer_connection_factory_->CreatePeerConnection(configuration,
-                                                              constraints,
-                                                              nullptr,
-                                                              nullptr,
-                                                              observer);
+                                                              constraints);
     }
     
     void Easyrtc::SetRoomApiField(const std::string & room_name)
@@ -505,21 +494,21 @@ namespace ert {
         });
     }
     
-    void Easyrtc::set_room_entry_listener(const Func<void()> & handler) {
+    void Easyrtc::set_room_entry_listener(const std::function<void()> & handler) {
         room_entry_listener_ = handler;
     }
     
-    void Easyrtc::set_room_occupant_listener(const Func<void(const Optional<std::string> &,
-                                                             const Any &,
-                                                             bool)> & listener) {
+    void Easyrtc::set_room_occupant_listener(const std::function<void(const Optional<std::string> &,
+                                                                      const Any &,
+                                                                      bool)> & listener) {
         room_occupant_listener_ = listener;
     }
     
-    void Easyrtc::set_data_channel_open_listener(const Func<void()> & listener) {
+    void Easyrtc::set_data_channel_open_listener(const std::function<void()> & listener) {
         on_data_channel_open_ = listener;
     }
     
-    void Easyrtc::set_data_channel_close_listener(const Func<void()> & listener) {
+    void Easyrtc::set_data_channel_close_listener(const std::function<void()> & listener) {
         on_data_channel_close_ = listener;
     }
     
@@ -550,14 +539,14 @@ namespace ert {
     }
     
     void Easyrtc::EnableMediaTracks(bool enable,
-                                    const std::vector<rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>> & tracks)
+                                    const std::vector<std::shared_ptr<MediaStreamTrack>> & tracks)
     {
         for (const auto & track : tracks) {
             track->set_enabled(enable);
         }
     }
     
-    rtc::scoped_refptr<webrtc::MediaStreamInterface>
+    std::shared_ptr<MediaStream>
     Easyrtc::GetLocalMediaStreamByName(const Optional<std::string> & arg_stream_name) {
         std::string stream_name = arg_stream_name || std::string("default");
         
@@ -575,18 +564,18 @@ namespace ert {
     Any Easyrtc::BuildMediaIds() {
         std::map<std::string, Any> media_map;
         for (auto iter : named_local_media_streams_) {
-            auto id = iter.second->label();
+            auto id = iter.second->id();
             media_map[iter.first] = Any(std::string(id != "" ? id : "default"));
         }
         return Any(media_map);
     }
     
-    void Easyrtc::RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream,
+    void Easyrtc::RegisterLocalMediaStreamByName(const std::shared_ptr<MediaStream> & stream,
                                                  const Optional<std::string> & arg_stream_name)
     {
         std::string stream_name = arg_stream_name || std::string("default");
 //        stream.streamName = streamName;
-        named_local_media_streams_[stream_name] = rtc::scoped_refptr<webrtc::MediaStreamInterface>(&stream);
+        named_local_media_streams_[stream_name] = stream;
         
         if (stream_name != "default") {
             auto media_ids = BuildMediaIds();
@@ -626,23 +615,23 @@ namespace ert {
     void Easyrtc::CloseLocalMediaStreamByName(const Optional<std::string> & arg_stream_name) {
         std::string stream_name = arg_stream_name || std::string("default");
         
-        rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = GetLocalStream(stream_name);
+        std::shared_ptr<MediaStream> stream = GetLocalStream(Some(stream_name));
         if (!stream) {
             return;
         }
         
-        std::string stream_id = stream->label();
+        std::string stream_id = stream->id();
         
         if (HasKey(named_local_media_streams_, stream_name)) {
             for (const auto & id : Keys(peer_conns_)) {
-                peer_conns_[id]->pc()->RemoveStream(stream.get());
+                peer_conns_[id]->pc()->RemoveStream(stream);
                 SendPeerMessage(Any(id), "__closingMediaStream", Any(Any::ObjectType {
                     { "streamId", Any(stream_id) },
                     { "streamName", Any(stream_name) }
                 }), nullptr, nullptr);
             }
             
-            StopStream(named_local_media_streams_[stream_name].get());
+            StopStream(named_local_media_streams_[stream_name]);
             named_local_media_streams_.erase(stream_name);
             
             if (stream_name != "default") {
@@ -657,42 +646,39 @@ namespace ert {
     void Easyrtc::EnableCamera(bool enable, const Optional<std::string> & stream_name) {
         auto stream = GetLocalMediaStreamByName(stream_name);
         if (stream) {
-            EnableMediaTracks(enable, ToMediaStreamTrackVector(stream->GetVideoTracks()));
+            EnableMediaTracks(enable, stream->video_tracks());
         }
     }
     
     void Easyrtc::EnableMicrophone(bool enable, const Optional<std::string> & stream_name) {
         auto stream = GetLocalMediaStreamByName(stream_name);
         if (stream) {
-            EnableMediaTracks(enable, ToMediaStreamTrackVector(stream->GetAudioTracks()));
+            EnableMediaTracks(enable, stream->audio_tracks());
         }
-    };
+    }
     
-  
-    //  how to clone track?
-#if 0
-    rtc::scoped_refptr<webrtc::MediaStreamInterface>
+    std::shared_ptr<MediaStream>
     Easyrtc::BuildLocalMediaStream(const std::string & stream_name,
-                                   const webrtc::AudioTrackVector & audio_tracks,
-                                   const webrtc::VideoTrackVector & video_tracks)
+                                   const std::vector<std::shared_ptr<MediaStreamTrack>> & audio_tracks,
+                                   const std::vector<std::shared_ptr<MediaStreamTrack>> & video_tracks)
     {
-        webrtc::MediaStreamInterface * stream_to_clone_ = nullptr;
+        std::shared_ptr<MediaStream> stream_to_clone = nullptr;
         for (const auto & key : Keys(named_local_media_streams_)) {
-            stream_to_clone_ = named_local_media_streams_[key].get();
-            if (stream_to_clone_) { break; }
+            stream_to_clone = named_local_media_streams_[key];
+            if (stream_to_clone) { break; }
         }
         
-        if (!stream_to_clone_) {
+        if (!stream_to_clone) {
             for (const auto & key : Keys(peer_conns_)) {
-                auto remote_streams = peer_conns_[key].pc->remote_streams();
+                auto remote_streams = peer_conns_[key]->pc()->remote_streams();
                 // bug? : if( remoteStreams && remoteStreams.length > 1 ) {
-                if (remote_streams->count() > 0) {
-                    stream_to_clone_ = remote_streams->at(0);
+                if (remote_streams.size() > 0) {
+                    stream_to_clone = remote_streams[0];
                 }
             }
         }
         
-        if (!stream_to_clone_) {
+        if (!stream_to_clone) {
             ShowError(err_codes_DEVELOPER_ERR_,
                       "Attempt to create a mediastream without one to clone from");
             return nullptr;
@@ -703,26 +689,26 @@ namespace ert {
         // tracks.
         //
         
-        auto media_clone = webrtc::MediaStream::Create(stream_name);
+        auto media_clone = peer_connection_factory_->CreateMediaStream(stream_name);
 
-        for (auto track : audio_tracks) {
-            media_clone->AddTrack(track.get());
+        for (const auto & track : audio_tracks) {
+            media_clone->AddTrack(track);
         }
         
-        for (auto track : video_tracks) {
-            media_clone->AddTrack(track.get());
+        for (const auto & track : video_tracks) {
+            media_clone->AddTrack(track);
         }
         
-        RegisterLocalMediaStreamByName(media_clone, stream_name);
+        RegisterLocalMediaStreamByName(media_clone, Some(stream_name));
+        
         return media_clone;
     }
-#endif
     
     std::string Easyrtc::FormatError(const Any & error) {
         return error.ToJsonString();
     }
     
-    void Easyrtc::InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
+    void Easyrtc::InitMediaSource(const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
                                   const std::function<void(const std::string &,
                                                            const std::string &)> & arg_error_callback,
                                   const Optional<std::string> & arg_stream_name)
@@ -761,10 +747,11 @@ namespace ert {
         
         auto on_user_media_success = FuncMake
         ([thiz, stream_name, success_callback]
-         (webrtc::MediaStreamInterface & stream){
+         (const std::shared_ptr<MediaStream> & stream){
              FuncCall(thiz->debug_printer_, "getUserMedia success callback entered");
              FuncCall(thiz->debug_printer_, "successfully got local media");
              
+#warning todo : port [getUserMedia]
              //            stream.streamName = streamName;
              thiz->RegisterLocalMediaStreamByName(stream, Some(stream_name));
              
@@ -808,23 +795,22 @@ namespace ert {
                  //                };
                  //                self.setVideoObjectSrc(videoObj, stream);
                  //                tryToGetSize();
+            
                  
-#warning TODO
-                 
-                 FuncCall(thiz->update_configuration_info_);
+                 thiz->UpdateConfigurationInfo();
                  if (success_callback) {
                      success_callback(stream);
                  }
              }
              else {
-                 FuncCall(thiz->update_configuration_info_);
+                 thiz->UpdateConfigurationInfo();
                  if (success_callback) {
                      success_callback(stream);
                  }
              }
          });
         
-#warning todo
+#warning todo : port [getUserMedia]
 //        var onUserMediaError = function(error) {
 //            console.log("getusermedia failed");
 //            if (self.debugPrinter) {
@@ -898,23 +884,25 @@ namespace ert {
         }
     };
     
-    void Easyrtc::set_accept_checker(const Func<void()> & accept_check) {
+    void Easyrtc::set_accept_checker(const std::function<void()> & accept_check) {
         accept_check_ = accept_check;
     }
     
-    void Easyrtc::set_stream_acceptor(const Func<void()> & acceptor) {
+    void Easyrtc::set_stream_acceptor(const std::function<void(const std::string &,
+                                                               const std::shared_ptr<MediaStream> &,
+                                                               const std::string &)> & acceptor) {
         stream_acceptor_ = acceptor;
     }
     
-    void Easyrtc::set_on_error(const Func<void(const Any &)> & err_listener) {
+    void Easyrtc::set_on_error(const std::function<void(const Any &)> & err_listener) {
         on_error_ = err_listener;
     }
     
-    void Easyrtc::set_call_canceled(const Func<void()> & call_canceled) {
+    void Easyrtc::set_call_canceled(const std::function<void()> & call_canceled) {
         call_cancelled_ = call_canceled;
     }
     
-    void Easyrtc::set_on_stream_closed(const Func<void()> & on_stream_closed) {
+    void Easyrtc::set_on_stream_closed(const std::function<void()> & on_stream_closed) {
         on_stream_closed_ = on_stream_closed;
     }
     
@@ -922,9 +910,9 @@ namespace ert {
         return true;
     }
     
-    void Easyrtc::set_peer_listener(const ReceivePeerCallback & listener,
-                                    const Optional<std::string> & msg_type,
-                                    const Optional<std::string> & source)
+    void Easyrtc::SetPeerListener(const ReceivePeerCallback & listener,
+                                  const Optional<std::string> & msg_type,
+                                  const Optional<std::string> & source)
     {
         if (!msg_type) {
             receive_peer_.cb = listener;
@@ -959,20 +947,20 @@ namespace ert {
             if (HasKey(msg_entry.sources, easyrtcid) &&
                 msg_entry.sources[easyrtcid].cb)
             {
-                (*msg_entry.sources[easyrtcid].cb)(easyrtcid, msg_type, msg_data, targeting);
+                (msg_entry.sources[easyrtcid].cb)(easyrtcid, msg_type, msg_data, targeting);
                 return;
             }
             if (msg_entry.cb) {
-                (*msg_entry.cb)(easyrtcid, msg_type, msg_data, targeting);
+                (msg_entry.cb)(easyrtcid, msg_type, msg_data, targeting);
                 return;
             }
         }
         if (receive_peer_.cb) {
-            (*receive_peer_.cb)(easyrtcid, msg_type, msg_data, targeting);
+            (receive_peer_.cb)(easyrtcid, msg_type, msg_data, targeting);
         }
     }
     
-    void Easyrtc::set_server_listener(const Func<void()> & listener) {
+    void Easyrtc::set_server_listener(const std::function<void()> & listener) {
         receive_server_cb_ = listener;
     }
     
@@ -1042,7 +1030,7 @@ namespace ert {
         credential_ = credential_param.ToJsonString();
     }
     
-    void Easyrtc::set_disconnect_listener(const Func<void()> & disconnect_listener) {
+    void Easyrtc::set_disconnect_listener(const std::function<void()> & disconnect_listener) {
         disconnect_listener_ = disconnect_listener;
     }
     
@@ -1062,7 +1050,7 @@ namespace ert {
         use_fresh_ice_each_peer_ = value;
     }
     
-    MediaConstraints Easyrtc::server_ice() {
+    std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> Easyrtc::server_ice() {
         return pc_config_;
     }
     
@@ -1070,8 +1058,7 @@ namespace ert {
                              bool check_audio,
                              const Optional<std::string> & stream_name)
     {
-        
-        rtc::scoped_refptr<webrtc::MediaStreamInterface> stream;
+        std::shared_ptr<MediaStream> stream;
         
         if (!easyrtcid) {
             stream = GetLocalMediaStreamByName(stream_name);
@@ -1089,12 +1076,12 @@ namespace ert {
             return false;
         }
         
-        MediaStreamTrackVector tracks;
+        std::vector<std::shared_ptr<MediaStreamTrack>> tracks;
         if (check_audio) {
-            tracks = ToMediaStreamTrackVector(stream->GetAudioTracks());
+            tracks = stream->audio_tracks();
         }
         else {
-            tracks = ToMediaStreamTrackVector(stream->GetVideoTracks());
+            tracks = stream->video_tracks();
         }
 
         return tracks.size() > 0;
@@ -1126,7 +1113,6 @@ namespace ert {
     
     void Easyrtc::DisconnectBody() {
         logging_out_ = true;
-        offers_pending_ = 0;
         acceptance_pending_.clear();
         disconnecting_ = true;
         closed_channel_ = websocket_;
@@ -1139,7 +1125,7 @@ namespace ert {
         HangupAll();
         if (room_occupant_listener_) {
             for (const auto & key : Keys(last_loggged_in_list_)) {
-                (*room_occupant_listener_)(Some(key), Any(Any::ObjectType{}), false);
+                (room_occupant_listener_)(Some(key), Any(Any::ObjectType{}), false);
             }
         }
         last_loggged_in_list_.clear();
@@ -1179,9 +1165,7 @@ namespace ert {
             thiz->logging_out_ = false;
             thiz->disconnecting_ = false;
             
-            if (thiz->room_occupant_listener_) {
-                (*thiz->room_occupant_listener_)(None(), Any(Any::ObjectType{}), false);
-            }
+            FuncCall(thiz->room_occupant_listener_, None(), Any(Any::ObjectType{}), false);
             
             thiz->EmitEvent("roomOccupant", Any(Any::ObjectType{}));
             thiz->old_config_ = 0;
@@ -1411,7 +1395,8 @@ namespace ert {
     
     void Easyrtc::SendServerMessage(const std::string & msg_type,
                                     const Any & msg_data,
-                                    const std::function<void()> & success_cb,
+                                    const std::function<void(const std::string &,
+                                                             const Any &)> & success_cb,
                                     const std::function<void(const std::string &,
                                                              const std::string &)> & failure_cb)
     {
@@ -1477,20 +1462,21 @@ namespace ert {
     }
     
     MediaConstraints Easyrtc::BuildPeerConstraints() {
+        webrtc::MediaConstraintsInterface::Constraints mandatory;
         webrtc::MediaConstraintsInterface::Constraints options;
         
         //  TODO: google
         //        options.push({'DtlsSrtpKeyAgreement': 'true'}); // for interoperability
         
-        return MediaConstraints(webrtc::MediaConstraintsInterface::Constraints(),
-                                options);
+        return MediaConstraints(mandatory, options);
     }
     
     void Easyrtc::Call(const std::string & other_user,
-                       const std::function<void()> & call_success_cb,
+                       const std::function<void(const std::string &,
+                                                const std::string &)> & call_success_cb,
                        const std::function<void(const std::string &,
                                                 const std::string &)> & call_failure_cb,
-                       const std::function<void(bool)> & was_accepted_cb,
+                       const std::function<void(bool, const std::string &)> & was_accepted_cb,
                        const Optional<std::vector<std::string>> & stream_names)
     {
         auto thiz = shared_from_this();
@@ -1517,7 +1503,7 @@ namespace ert {
             if (!stream && (audio_enabled_ || video_enabled_)) {
                 
                 InitMediaSource([thiz, other_user, call_success_cb, call_failure_cb, was_accepted_cb]
-                                (webrtc::MediaStreamInterface & stream){
+                                (const std::shared_ptr<MediaStream> & stream){
                                     thiz->Call(other_user,
                                                call_success_cb,
                                                call_failure_cb,
@@ -1541,7 +1527,7 @@ namespace ert {
         // call B as a positive offer to B's offer.
         //
         if (HasKey(offers_pending_, other_user)) {
-            FuncCall(was_accepted_cb, true);
+            FuncCall(was_accepted_cb, true, other_user);
             DoAnswer(other_user, offers_pending_[other_user], stream_names);
             offers_pending_.erase(other_user);
             CallCanceled(other_user, false);
@@ -1578,12 +1564,15 @@ namespace ert {
     }
     
     void Easyrtc::CallBody(const std::string & other_user,
-                           const std::function<void()> & call_success_cb,
+                           const std::function<void(const std::string &,
+                                                    const std::string &)> & call_success_cb,
                            const std::function<void(const std::string &,
                                                     const std::string &)> & call_failure_cb,
-                           const std::function<void(bool)> & was_accepted_cb,
+                           const std::function<void(bool, const std::string &)> & was_accepted_cb,
                            const Optional<std::vector<std::string>> & stream_names)
     {
+        auto thiz = shared_from_this();
+        
         acceptance_pending_[other_user] = true;
         
         auto pc = BuildPeerConnection(other_user, true, call_failure_cb, stream_names);
@@ -1595,47 +1584,840 @@ namespace ert {
         }
         
         peer_conns_[other_user]->set_call_success_cb(call_success_cb);
+        peer_conns_[other_user]->set_call_failure_cb(call_failure_cb);
+        peer_conns_[other_user]->set_was_accepted_cb(was_accepted_cb);
         
-        peerConns[otherUser].callSuccessCB = callSuccessCB;
-        peerConns[otherUser].callFailureCB = callFailureCB;
-        peerConns[otherUser].wasAcceptedCB = wasAcceptedCB;
-        var peerConnObj = peerConns[otherUser];
-        var setLocalAndSendMessage0 = function(sessionDescription) {
-            if (peerConnObj.cancelled) {
+        auto peer_conn_obj = peer_conns_[other_user];
+        
+        auto set_local_and_send_message_0 =
+        [thiz, pc, peer_conn_obj, other_user, call_failure_cb]
+        (const std::shared_ptr<RtcSessionDescription> & session_description) {
+            if (peer_conn_obj->canceled()) {
                 return;
             }
-            var sendOffer = function() {
-                
-                sendSignalling(otherUser, "offer", sessionDescription, null, callFailureCB);
+            
+            auto send_offer = [thiz, other_user, session_description, call_failure_cb]() {
+                thiz->SendSignaling(Some(other_user),
+                                    "offer",
+                                    session_description->ToAny(),
+                                    nullptr,
+                                    call_failure_cb);
             };
-            if (sdpLocalFilter) {
-                sessionDescription.sdp = sdpLocalFilter(sessionDescription.sdp);
+            
+            if (thiz->sdp_local_filter_) {
+                session_description->set_sdp(thiz->sdp_local_filter_(session_description->sdp()));
             }
-            pc.setLocalDescription(sessionDescription, sendOffer,
-                                   function(errorText) {
-                                       callFailureCB(self.errCodes.CALL_ERR, errorText);
-                                   });
+            
+            pc->SetLocalDescription(session_description,
+                                    send_offer,
+                                    [thiz, call_failure_cb](const std::string & error_text) {
+                                        call_failure_cb(thiz->err_codes_CALL_ERR_, error_text);
+                                    });
         };
-        setTimeout(function() {
-            //
-            // if the call was cancelled, we don't want to continue getting the offer.
-            // we can tell the call was cancelled because there won't be a peerConn object
-            // for it.
-            //
-            if( !peerConns[otherUser]) {
+        
+        Timer::Create(TimeDuration(0.1),
+                      [thiz, other_user, pc, set_local_and_send_message_0, call_failure_cb]() {
+                          //
+                          // if the call was cancelled, we don't want to continue getting the offer.
+                          // we can tell the call was cancelled because there won't be a peerConn object
+                          // for it.
+                          //
+                          if (!thiz->peer_conns_[other_user]) {
+                              return;
+                          }
+                          
+                          pc->CreateOffer(&thiz->received_media_constraints_,
+                                          set_local_and_send_message_0,
+                                          [thiz, call_failure_cb](const std::string & error){
+                                              FuncCall(call_failure_cb, thiz->err_codes_CALL_ERR_, error);
+                                          });
+                      });
+    }
+    
+    void Easyrtc::HangupBody(const std::string & other_user) {
+        FuncCall(debug_printer_, std::string("Hanging up on " + other_user));
+        
+        ClearQueuedMessages(other_user);
+        
+        if (HasKey(peer_conns_, other_user)) {
+            if (peer_conns_[other_user]->pc()) {
+                auto remote_streams = peer_conns_[other_user]->pc()->remote_streams();
+                for (int i = 0; i < remote_streams.size(); i++) {
+                    if (remote_streams[i]->active()) {
+                        EmitOnStreamClosed(other_user, remote_streams[i]);
+                        StopStream(remote_streams[i]);
+                    }
+                }
+                //
+                // todo: may need to add a few lines here for closing the data channels
+                //
+                peer_conns_[other_user]->pc()->Close();
+            }
+            
+            peer_conns_[other_user]->set_canceled(true);
+            peer_conns_.erase(other_user);
+
+            if (websocket_) {
+                auto thiz = shared_from_this();
+                
+                SendSignaling(Some(other_user),
+                              "hangup",
+                              nullptr,
+                              nullptr,
+                              [thiz](const std::string & error_code, const std::string & error_text) {
+                                  FuncCall(thiz->debug_printer_,
+                                           std::string("hangup failed:" + error_text));
+                              });
+            }
+            
+            if (acceptance_pending_[other_user]) {
+                acceptance_pending_.erase(other_user);
+            }
+        }
+    }
+    
+    void Easyrtc::Hangup(const std::string & other_user) {
+        HangupBody(other_user);
+        UpdateConfigurationInfo();
+    }
+    
+    void Easyrtc::HangupAll() {
+        bool saw_a_connection = false;
+        for (const auto & other_user : Keys(peer_conns_)) {
+            saw_a_connection = true;
+            HangupBody(other_user);
+        }
+        
+        if (saw_a_connection) {
+            UpdateConfigurationInfo();
+        }
+    }
+    
+    bool Easyrtc::DoesDataChannelWork(const std::string & other_user) {
+        if (HasKey(peer_conns_, other_user)) {
+            return false;
+        }
+        return peer_conns_[other_user]->data_channel_ready();
+    }
+    
+    std::shared_ptr<MediaStream>
+    Easyrtc::GetRemoteStream(const std::string & easyrtcid,
+                             const std::string & remote_stream_name)
+    {
+        if (!HasKey(peer_conns_, easyrtcid)) {
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      std::string("attempt to get stream of uncalled party"));
+            Fatal("Developer err: no such stream");
+        }
+        else {
+            return peer_conns_[easyrtcid]->GetRemoteStreamByName(*this, Some(remote_stream_name));
+        }
+    }
+    
+    void Easyrtc::MakeLocalStreamFromRemoteStream(const std::string & easyrtcid,
+                                                  const std::string & remote_stream_name,
+                                                  const std::string & local_stream_name)
+    {
+        if (peer_conns_[easyrtcid]->pc()) {
+            auto remote_stream = peer_conns_[easyrtcid]->GetRemoteStreamByName(*this, Some(remote_stream_name));
+            if (remote_stream) {
+                RegisterLocalMediaStreamByName(remote_stream,
+                                               Some(local_stream_name));
+            }
+            else {
+                Fatal("Developer err: no such stream");
+            }
+        }
+        else {
+            Fatal("Developer err: no such peer ");
+        }
+    }
+    
+    void Easyrtc::AddStreamToCall(const std::string & easyrtcid,
+                                  const Optional<std::string> & arg_stream_name,
+                                  const std::function<void()> & receipt_handler)
+    {
+        std::string stream_name = arg_stream_name || std::string("default");
+
+        auto stream = GetLocalMediaStreamByName(Some(stream_name));
+        if (!stream) {
+            printf("attempt to add nonexistent stream %s\n", stream_name.c_str());
+        }
+        else if (!HasKey(peer_conns_, easyrtcid) || !peer_conns_[easyrtcid]->pc()) {
+            printf("Can't add stream before a call has started.\n");
+        }
+        else {
+            auto pc = peer_conns_[easyrtcid]->pc();
+            peer_conns_[easyrtcid]->set_enable_negotiate_listener(true);
+            pc->AddStream(stream);
+            
+            if (receipt_handler) {
+                peer_conns_[easyrtcid]->streams_added_acks()[stream_name] = receipt_handler;
+            }
+        }
+    }
+    
+    void Easyrtc::SetupPeerListener1() {
+        auto thiz = shared_from_this();
+        auto func = [thiz](const std::string & easyrtcid,
+                           const std::string & msg_type,
+                           const Any & msg_data,
+                           const Any & targeting)
+        {
+            if (!HasKey(thiz->peer_conns_, easyrtcid) || !thiz->peer_conns_[easyrtcid]->pc()) {
+                thiz->ShowError(thiz->err_codes_DEVELOPER_ERR_,
+                                "Attempt to add additional stream before establishing the base call.");
+            }
+            else {
+                auto sdp = msg_data.GetAt("sdp");
+                auto pc = thiz->peer_conns_[easyrtcid]->pc();
+                
+                auto set_local_and_send_message1 = [thiz, easyrtcid, pc](const std::shared_ptr<RtcSessionDescription> & session_description){
+                    
+                    auto send_answer = [thiz, easyrtcid, session_description]() {
+                        FuncCall(thiz->debug_printer_, "sending answer");
+                        
+                        auto on_signal_success = [](const std::string & a, const Any & b){};
+                        auto on_signal_failure = [thiz, easyrtcid]
+                        (const std::string & error_code,
+                         const std::string & error_text)
+                        {
+                            thiz->peer_conns_.erase(easyrtcid);
+                            thiz->ShowError(error_code, error_text);
+                        };
+                        
+                        thiz->SendSignaling(Some(easyrtcid),
+                                            "answer",
+                                            session_description->ToAny(),
+                                            on_signal_success,
+                                            on_signal_failure);
+                        
+                        thiz->peer_conns_[easyrtcid]->set_connection_accepted(true);
+                        
+                        thiz->SendQueuedCandidates(easyrtcid, on_signal_success, on_signal_failure);
+                    };
+                    
+                    if (thiz->sdp_local_filter_) {
+                        session_description->set_sdp(thiz->sdp_local_filter_(session_description->sdp()));
+                    }
+                  
+                    pc->SetLocalDescription(session_description,
+                                            send_answer,
+                                            [thiz](const std::string & message){
+                                                thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
+                                                                std::string("setLocalDescription: " + message));
+                                            });
+                };
+                
+                auto invoke_create_answer = [thiz, pc, easyrtcid, sdp, set_local_and_send_message1]() {
+                    pc->CreateAnswer(&thiz->received_media_constraints_,
+                                     set_local_and_send_message1,
+                                     [thiz](const std::string & message){
+                                         thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
+                                                         std::string("create-answer: " + message));
+                                     });
+                    thiz->SendPeerMessage(Any(easyrtcid),
+                                          "__gotAddedMediaStream",
+                                          Any(Any::ObjectType
+                                              {
+                                                  { "sdp", sdp }
+                                              }),
+                                          nullptr, nullptr);
+                };
+                
+                FuncCall(thiz->debug_printer_, "about to call setRemoteDescription in doAnswer");
+                
+                if (thiz->sdp_remote_filter_) {
+                    std::string sdp_str = sdp.GetAt("sdp").AsString() || std::string();
+                    sdp_str = thiz->sdp_remote_filter_(sdp_str);
+                    sdp.SetAt("sdp", Any(sdp_str));
+                    
+                    pc->SetRemoteDescription(RtcSessionDescription::FromAny(sdp),
+                                             invoke_create_answer,
+                                             [thiz](const std::string & message){
+                                                 thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
+                                                                 std::string("set-remote-description: " + message));
+                                             });
+                }
+            }
+        };
+        
+        SetPeerListener(func, Some(std::string("__addedMediaStream")), None());
+    }
+    
+    void Easyrtc::SetupPeerListener2() {
+        auto thiz = shared_from_this();
+        auto func = [thiz](const std::string & easyrtcid,
+                           const std::string & msg_type,
+                           const Any & msg_data,
+                           const Any & targeting)
+        {
+            if (!HasKey(thiz->peer_conns_, easyrtcid) || !thiz->peer_conns_[easyrtcid]->pc()) {
+            }
+            else {
+                auto sdp = msg_data.GetAt("sdp");
+                
+                if (thiz->sdp_remote_filter_) {
+                    std::string sdp_str = sdp.GetAt("sdp").AsString() || std::string();
+                    sdp_str = thiz->sdp_remote_filter_(sdp_str);
+                    sdp.SetAt("sdp", Any(sdp_str));
+                }
+
+                auto pc = thiz->peer_conns_[easyrtcid]->pc();
+                
+                pc->SetRemoteDescription(RtcSessionDescription::FromAny(sdp),
+                                         nullptr,
+                                         [thiz](const std::string & message){
+                                             thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
+                                                             std::string("set-remote-description: " + message));
+                                         });
+            }
+        };
+        
+        SetPeerListener(func, Some(std::string("__gotAddedMediaStream")), None());
+    }
+    
+    void Easyrtc::SetupPeerListener3() {
+        auto thiz = shared_from_this();
+        
+        auto func = [thiz](const std::string & easyrtcid,
+                           const std::string & msg_type,
+                           const Any & msg_data,
+                           const Any & targeting)
+        {
+            if (!HasKey(thiz->peer_conns_, easyrtcid) || !thiz->peer_conns_[easyrtcid]->pc()) {
+            }
+            else {
+                auto stream = thiz->peer_conns_[easyrtcid]->GetRemoteStreamByName(*thiz,
+                                                                                  msg_data.GetAt("streamName").AsString());
+                if (stream) {
+                    thiz->OnRemoveStreamHelper(easyrtcid, stream);
+                    thiz->StopStream(stream);
+                }
+            }
+        };
+        
+        SetPeerListener(func, Some(std::string("__closingMediaStream")), None());
+    }
+    
+    void Easyrtc::OnRemoveStreamHelper(const std::string & easyrtcid,
+                                       const std::shared_ptr<MediaStream> & stream)
+    {
+        if (HasKey(peer_conns_, easyrtcid)) {
+            EmitOnStreamClosed(easyrtcid, stream);
+            UpdateConfigurationInfo();
+            if (peer_conns_[easyrtcid]->pc()) {
+                peer_conns_[easyrtcid]->pc()->RemoveStream(stream);
+            }
+        }
+    }
+    
+    void Easyrtc::DumpPeerConnectionInfo() {
+        for (const auto & peer : Keys(peer_conns_)) {
+            printf("For peer %s\n", peer.c_str());
+            auto pc = peer_conns_[peer]->pc();
+            auto remotes = pc->remote_streams();
+            std::vector<std::string> remote_ids;
+            for (int i = 0; i < remotes.size(); i++) {
+                remote_ids.push_back(remotes[i]->id());
+            }
+            auto locals = pc->local_streams();
+            std::vector<std::string> local_ids;
+            for (int i = 0; i < locals.size(); i++) {
+                local_ids.push_back(locals[i]->id());
+            }
+            
+            for (const auto & id : remote_ids) {
+                printf("    remote: %s\n", id.c_str());
+            }
+            for (const auto & id : local_ids) {
+                printf("    local: %s\n", id.c_str());
+            }
+        }
+    }
+    
+    std::shared_ptr<RtcPeerConnection>
+    Easyrtc::BuildPeerConnection(const std::string & other_user,
+                                 bool is_initiator,
+                                 const std::function<void(const std::string &,
+                                                          const std::string &)> & failure_cb,
+                                 const Optional<std::vector<std::string>> & stream_names)
+    {
+        auto thiz = shared_from_this();
+        
+        std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> ice_config =
+        pc_config_to_use_ ? pc_config_to_use_ : pc_config_;
+        FuncCall(debug_printer_, std::string("building peer connection to ") + other_user);
+        
+        //
+        // we don't support data channels on chrome versions < 31
+        //
+        
+        auto pc = CreateRtcPeerConnection(*ice_config, BuildPeerConstraints());
+        if (!pc) {
+            std::string message("Unable to create PeerConnection object, check your ice configuration");
+            //                JSON.stringify(ice_config)
+            FuncCall(debug_printer_, message);
+            Fatal(message);
+        }
+        
+        pc->set_on_negotiation_needed([thiz, other_user, pc](){
+            if (thiz->peer_conns_[other_user]->enable_negotiate_listener()) {
+                pc->CreateOffer(nullptr,
+                                [thiz, other_user, pc](const std::shared_ptr<RtcSessionDescription> & sdp){
+                                    if (thiz->sdp_local_filter_) {
+                                        sdp->set_sdp(thiz->sdp_local_filter_(sdp->sdp()));
+                                    }
+                                    
+                                    pc->SetLocalDescription(sdp,
+                                                            [thiz, other_user, sdp](){
+                                                                thiz->SendPeerMessage(Any(other_user),
+                                                                                      "__addedMediaStream",
+                                                                                      Any(Any::ObjectType
+                                                                                          {
+                                                                                              { "sdp", sdp->ToAny() }
+                                                                                          }),
+                                                                                      nullptr,
+                                                                                      nullptr);
+                                                            },
+                                                            [](const std::string & message){
+                                                                printf("unexpected failure: %s\n", message.c_str());
+                                                            });
+                                },
+                                [](const std::string & error){
+                                    printf("unexpected error in creating offer; %s\n", error.c_str());
+                                });
+            }
+        });
+        
+        pc->set_on_ice_connection_state_change([thiz, other_user, failure_cb](webrtc::PeerConnectionInterface::IceConnectionState conn_state){
+            switch (conn_state) {
+                case webrtc::PeerConnectionInterface::kIceConnectionConnected: {
+                    if (thiz->peer_conns_[other_user]->call_success_cb()) {
+                        thiz->peer_conns_[other_user]->call_success_cb()(other_user, "connection");
+                    }
+                    break;
+                }
+                case webrtc::PeerConnectionInterface::kIceConnectionFailed: {
+                    FuncCall(failure_cb, "NOVIABLEICE", "No usable STUN/TURN path");
+                    thiz->DeletePeerConn(other_user);
+                    break;
+                }
+                case webrtc::PeerConnectionInterface::kIceConnectionDisconnected: {
+                    if (thiz->on_peer_failing_) {
+                        thiz->on_peer_failing_(other_user);
+                        thiz->peer_conns_[other_user]->set_failing(Some(std::chrono::system_clock::now()));
+                    }
+                    break;
+                }
+                case webrtc::PeerConnectionInterface::kIceConnectionClosed: {
+                    if (thiz->on_peer_closed_) {
+                        thiz->on_peer_closed_(other_user);
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+            
+            if (conn_state == webrtc::PeerConnectionInterface::kIceConnectionConnected ||
+                conn_state == webrtc::PeerConnectionInterface::kIceConnectionCompleted)
+            {
+                if (thiz->peer_conns_[other_user]->failing() && thiz->on_peer_recovered_) {
+                    thiz->on_peer_recovered_(other_user,
+                                             thiz->peer_conns_[other_user]->failing().value(),
+                                             std::chrono::system_clock::now());
+                }
+                
+                thiz->peer_conns_[other_user]->set_failing(None());
+            }
+        });
+        
+
+//            pc.onconnection = function() {
+//                if (self.debugPrinter) {
+//                    self.debugPrinter("onconnection called prematurely");
+//                }
+//            };
+        
+        
+        auto new_peer_conn = std::make_shared<PeerConn>();
+        new_peer_conn->set_pc(pc);
+        new_peer_conn->candidates_to_send().clear();
+        new_peer_conn->set_started_av(false);
+        new_peer_conn->set_connection_accepted(false);
+        new_peer_conn->set_is_initiator(is_initiator);
+        new_peer_conn->remote_stream_id_to_name().clear();
+        new_peer_conn->streams_added_acks().clear();
+        new_peer_conn->live_remote_streams().clear();
+        
+        pc->set_on_ice_candidate([thiz, new_peer_conn, other_user, failure_cb](const std::shared_ptr<webrtc::IceCandidateInterface> & candidate){
+            if (new_peer_conn->canceled()) {
                 return;
             }
-            pc.createOffer(setLocalAndSendMessage0, function(errorObj) {
-                callFailureCB(self.errCodes.CALL_ERR, JSON.stringify(errorObj));
-            },
-                           receivedMediaConstraints);
-        }, 100);
+            
+            if (thiz->peer_conns_[other_user]) {
+                
+                std::string candidate_str;
+                bool ok = candidate->ToString(&candidate_str);
+                if (!ok) { Fatal("invalid candidate"); }
+                
+                Any candidate_data(Any::ObjectType {
+                    { "type", Any("candidate") },
+                    { "label", Any(candidate->sdp_mline_index()) },
+                    { "id", Any(candidate->sdp_mid()) },
+                    { "candidate", Any(candidate_str)  }
+                } );
+                                
+                if (thiz->ice_candidate_filter_) {
+                    candidate_data = thiz->ice_candidate_filter_(candidate_data, false);
+                    if( !candidate_data ) {
+                        return;
+                    }
+                }
+                //
+                // some candidates include ip addresses of turn servers. we'll want those
+                // later so we can see if our actual connection uses a turn server.
+                // The keyword "relay" in the candidate identifies it as referencing a
+                // turn server. The \d symbol in the regular expression matches a number.
+                //
+                if (IndexOf(candidate_str, "typ relay") != -1) {
+                    std::regex regex("(udp|tcp) \\d+ (\\d+\\.\\d+\\.\\d+\\.\\d+)", std::regex_constants::icase);
+                    std::smatch match_ret;
+                    if (std::regex_search(candidate_str, match_ret, regex)) {
+                        std::string ip_address = match_ret[2].str();
+                        thiz->turn_servers_[ip_address] = true;
+                    } else {
+                        printf("ip address match failed [%s]\n", candidate_str.c_str());
+                    }
+                }
+                
+                if (thiz->peer_conns_[other_user]->connection_accepted()) {
+                    
+                    thiz->SendSignaling(Some(other_user), "candidate", candidate_data,
+                                        nullptr,
+                                        [thiz, failure_cb](const std::string & code, const std::string & text) {
+                                            FuncCall(failure_cb,
+                                                     thiz->err_codes_PEER_GONE_,
+                                                     nwr::Format("Candidate disappeared (code=%s, text=%s)", code.c_str(), text.c_str()));
+                                        });
+                }
+                else {
+                    thiz->peer_conns_[other_user]->candidates_to_send().push_back(candidate_data);
+                }
+            }
+        });
+        
+        pc->set_on_add_stream([thiz, other_user, new_peer_conn](const std::shared_ptr<MediaStream> & stream){
+            FuncCall(thiz->debug_printer_, "saw incoming media stream");
+
+            if (new_peer_conn->canceled()) {
+                return;
+            }
+
+            const auto & peer_conn = thiz->peer_conns_[other_user];
+            
+            if (!peer_conn->started_av()) {
+                peer_conn->set_started_av(true);
+                peer_conn->set_sharing_audio(thiz->have_audio_);
+                peer_conn->set_sharing_video(thiz->have_video_);
+                peer_conn->set_connect_time(Some(std::chrono::system_clock::now()));
+                if (peer_conn->call_success_cb()) {
+                    if (peer_conn->sharing_audio() || peer_conn->sharing_video()) {
+                        peer_conn->call_success_cb()(other_user, "audiovideo");
+                    }
+                }
+                if (thiz->audio_enabled_ || thiz->video_enabled_) {
+                    thiz->UpdateConfiguration();
+                }
+            }
+            
+            
+            auto remote_name_opt = thiz->GetNameOfRemoteStream(other_user, Some(stream->id()));
+            std::string remote_name = remote_name_opt || std::string("default");
+
+            peer_conn->remote_stream_id_to_name()[stream->id()] = remote_name;
+            peer_conn->live_remote_streams()[remote_name] = true;
+//            event.stream.streamName = remoteName;
+            if (thiz->stream_acceptor_) {
+                thiz->stream_acceptor_(other_user, stream, remote_name);
+                //
+                // Inform the other user that the stream they provided has been received.
+                // This should be moved into signalling at some point
+                //
+                thiz->SendDataWS(Any(other_user), "easyrtc_streamReceived",
+                                 Any(Any::ObjectType
+                                     {
+                                         { "streamName", Any(remote_name) }
+                                     }),
+                                 nullptr);
+            }
+        });
+        
+        pc->set_on_remove_stream([thiz, other_user](const std::shared_ptr<MediaStream> & stream) {
+            FuncCall(thiz->debug_printer_, "saw remove on remote media stream");
+            
+            thiz->OnRemoveStreamHelper(other_user, stream);
+        });
+        
+        SetPeerConn(other_user, new_peer_conn);
+
+        std::shared_ptr<MediaStream> stream = nullptr;
+        if (stream_names) {
+            for (const auto & stream_name : stream_names.value()) {
+                stream = GetLocalMediaStreamByName(Some(stream_name));
+                if (stream) {
+                    pc->AddStream(stream);
+                }
+                else {
+                    printf("Developer error, attempt to access unknown local media stream %s", stream_name.c_str());
+                }
+            }
+        }
+        else if (auto_init_user_media_ && (video_enabled_ || audio_enabled_)) {
+            stream = GetLocalStream(None());
+            pc->AddStream(stream);
+        }
+        
+        //
+        // This function handles data channel message events.
+        //
+        
+        std::shared_ptr<Any> pending_transfer_ptr = std::make_shared<Any>();
+        
+        auto data_channel_message_handler = [thiz, other_user, pending_transfer_ptr](const Any & event) {
+            FuncCall(thiz->debug_printer_, std::string("saw dataChannel.onmessage event: ") + event.ToJsonString());
+
+            if (event.GetAt("data").AsString() == Some(std::string("dataChannelPrimed"))) {
+                thiz->SendDataWS(Any(other_user), "dataChannelPrimed", Any(""), nullptr);
+            }
+            else {
+                //
+                // Chrome and Firefox Interop is passing a event with a strange data="", perhaps
+                // as it's own form of priming message. Comparing the data against "" doesn't
+                // work, so I'm going with parsing and trapping the parse error.
+                //
+                
+                auto msg = Any::FromJsonString(event.GetAt("data").AsString() || std::string(""));
+                if (msg) {
+                    Optional<std::string> transfer_opt = msg.GetAt("transfer").AsString();
+                    Optional<std::string> transfer_id_opt = msg.GetAt("transferId").AsString();
+                    if (transfer_opt && transfer_id_opt) {
+                        std::string transfer = *transfer_opt;
+                        std::string transfer_id = *transfer_id_opt;
+                        if (transfer == "start") {
+                            FuncCall(thiz->debug_printer_, std::string("start transfer #") + transfer_id);
+                            
+                            int parts = msg.GetAt("parts").AsInt().value();
+                            
+                            *pending_transfer_ptr = Any(Any::ObjectType {
+                                { "chunks", Any(Any::ArrayType{}) },
+                                { "parts", Any(parts) },
+                                { "transferId", Any(transfer_id) }
+                            });
+                        } else if (transfer == "chunk") {
+                            FuncCall(thiz->debug_printer_, std::string("got chunk for tranfer #") + transfer_id);
+                            
+                            // check data is valid
+                            auto data_opt = msg.GetAt("data").AsString();
+                            if (!(data_opt && data_opt->length() <= thiz->max_p2p_message_length_)) {
+                                
+                                printf("Developer error, invalid data\n");
+                                
+                                // check there's a pending transfer
+                            } else if (!*pending_transfer_ptr) {
+                                printf("Developer error, unexpected chunk\n");
+                                
+                                // check that transferId is valid
+                            } else if (transfer_id != pending_transfer_ptr->GetAt("transferId").AsString().value()) {
+                                printf("Developer error, invalid transfer id\n");
+                                
+                                // check that the max length of transfer is not reached
+                            } else if (pending_transfer_ptr->GetAt("chunks").AsArray()->size() + 1 > pending_transfer_ptr->GetAt("parts").AsInt().value()) {
+                                
+                                printf("Developer error, received too many chunks");
+                                
+                            } else {
+                                pending_transfer_ptr->GetAt("chunks").AsArray()->push_back(Any(data_opt.value()));
+                            }
+                            
+                        } else if (transfer == "end") {
+                            FuncCall(thiz->debug_printer_, std::string("end of transfer #") + transfer_id);
+                            
+                            // check there's a pending transfer
+                            if (!*pending_transfer_ptr) {
+                                
+                                printf("Developer error, unexpected end of transfer\n");
+                                
+                                // check that transferId is valid
+                            } else if (transfer_id != pending_transfer_ptr->GetAt("transferId").AsString().value()) {
+                                printf("Developer error, invalid transfer id");
+                                
+                                // check that all the chunks were received
+                            } else if (pending_transfer_ptr->GetAt("chunks").AsArray()->size() != pending_transfer_ptr->GetAt("parts").AsInt().value()) {
+                                printf("Developer error, received wrong number of chunks");
+                                
+                            } else {
+                                
+                                std::vector<std::string> chunks = Map(pending_transfer_ptr->GetAt("chunks").AsArray().value(),
+                                                                      [](const Any & value) -> std::string {
+                                                                          return value.AsString().value();
+                                                                      });
+                                Any chunked_msg = Any::FromJsonString(Join(chunks));
+                                if (!chunked_msg) {
+                                    printf("Developer error, unable to parse message\n");
+                                } else {
+                                    thiz->ReceivePeerDistribute(other_user, chunked_msg, nullptr);
+                                }
+                            }
+                            
+                            *pending_transfer_ptr = Any();
+                            
+                        } else {
+                            printf("Developer error, got an unknown transfer message %s\n", transfer.c_str());
+                        }
+                    } else {
+                        thiz->ReceivePeerDistribute(other_user, msg, nullptr);
+                    }
+                } else {
+                    printf("[data channel message handler] parse failed\n");
+                }
+                
+            }
+        };
+
+        auto init_out_going_channel = [thiz](const std::string & other_user){
+            FuncCall(thiz->debug_printer_, "saw initOutgoingChannel call");
+            
+#warning todo pc create data channel
+//            var dataChannel = pc.createDataChannel(dataChannelName, self.getDatachannelConstraints());
+//            peerConns[otherUser].dataChannelS = dataChannel;
+//            peerConns[otherUser].dataChannelR = dataChannel;
+//            dataChannel.onmessage = dataChannelMessageHandler;
+//            dataChannel.onopen = function(event) {
+//                if (self.debugPrinter) {
+//                    self.debugPrinter("saw dataChannel.onopen event");
+//                }
+//                if (peerConns[otherUser]) {
+//                    dataChannel.send("dataChannelPrimed");
+//                }
+//            };
+//            dataChannel.onclose = function(event) {
+//                if (self.debugPrinter) {
+//                    self.debugPrinter("saw dataChannelS.onclose event");
+//                }
+//                if (peerConns[otherUser]) {
+//                    peerConns[otherUser].dataChannelReady = false;
+//                    delete peerConns[otherUser].dataChannelS;
+//                }
+//                if (onDataChannelClose) {
+//                    onDataChannelClose(otherUser);
+//                }
+//                
+//                updateConfigurationInfo();
+//            };
+        };
+        
+//        function initOutGoingChannel(otherUser) {
+
+//        }
+//
+//        function initIncomingChannel(otherUser) {
+//            if (self.debugPrinter) {
+//                self.debugPrinter("initializing incoming channel handler for " + otherUser);
+//            }
+//
+//            peerConns[otherUser].pc.ondatachannel = function(event) {
+//                
+//                if (self.debugPrinter) {
+//                    self.debugPrinter("saw incoming data channel");
+//                }
+//                
+//                var dataChannel = event.channel;
+//                peerConns[otherUser].dataChannelR = dataChannel;
+//                peerConns[otherUser].dataChannelS = dataChannel;
+//                peerConns[otherUser].dataChannelReady = true;
+//                dataChannel.onmessage = dataChannelMessageHandler;
+//                dataChannel.onclose = function(event) {
+//                    if (self.debugPrinter) {
+//                        self.debugPrinter("saw dataChannelR.onclose event");
+//                    }
+//                    if (peerConns[otherUser]) {
+//                        peerConns[otherUser].dataChannelReady = false;
+//                        delete peerConns[otherUser].dataChannelR;
+//                    }
+//                    if (onDataChannelClose) {
+//                        onDataChannelClose(otherUser);
+//                    }
+//                    
+//                    updateConfigurationInfo();
+//                };
+//                dataChannel.onopen = function(event) {
+//                    if (self.debugPrinter) {
+//                        self.debugPrinter("saw dataChannel.onopen event");
+//                    }
+//                    if (peerConns[otherUser]) {
+//                        dataChannel.send("dataChannelPrimed");
+//                    }
+//                };
+//            };
+//        }
+//        
+//        //
+//        //  added for interoperability
+//        //
+//        var doDataChannels = dataEnabled;
+//        if (doDataChannels) {
+//            
+//            // check if both sides have the same browser and versions
+//        }
+//        
+//        if (doDataChannels) {
+//            self.setPeerListener(function() {
+//                peerConns[otherUser].dataChannelReady = true;
+//                if (peerConns[otherUser].callSuccessCB) {
+//                    peerConns[otherUser].callSuccessCB(otherUser, "datachannel");
+//                }
+//                if (onDataChannelOpen) {
+//                    onDataChannelOpen(otherUser, true);
+//                }
+//                updateConfigurationInfo();
+//            }, "dataChannelPrimed", otherUser);
+//            if (isInitiator) {
+//                try {
+//                    
+//                    initOutGoingChannel(otherUser);
+//                } catch (channelErrorEvent) {
+//                    console.log("failed to init outgoing channel");
+//                    failureCB(self.errCodes.SYSTEM_ERR,
+//                              self.formatError(channelErrorEvent));
+//                }
+//            }
+//            if (!isInitiator) {
+//                initIncomingChannel(otherUser);
+//            }
+//        }
+//        
+//        pc.onconnection = function() {
+//            if (self.debugPrinter) {
+//                self.debugPrinter("setup pc.onconnection ");
+//            }
+//        };
+//        
+//        //
+//        // Temporary support for responding to acknowledgements of about streams being added.
+//        //
+//        self.setPeerListener(function(easyrtcid, msgType, msgData, targeting){
+//            if( newPeerConn.streamsAddedAcks[msgData.streamName]) {
+//                (newPeerConn.streamsAddedAcks[msgData.streamName])(easyrtcid, msgData.streamName);
+//                delete newPeerConn.streamsAddedAcks[msgData.streamName];
+//            }
+//        }, "easyrtc_streamReceived", otherUser);
+        return pc;
     }
     
     
-    
-    
-    
+    // -----
     
     
     Any Easyrtc::GetRoomFields(const std::string & room_name) {
@@ -1644,6 +2426,13 @@ namespace ert {
     
     void Easyrtc::ProcessRoomData(const Any & room_data) {
         
+        
+    }
+    
+    void Easyrtc::UpdateConfiguration() {
+    }
+    void Easyrtc::UpdateConfigurationInfo() {
+        UpdateConfiguration();
     }
     
 
@@ -1662,6 +2451,21 @@ namespace ert {
         { "gumFailed", "Failed to get access to local media. Error code was {0}." },
         { "requireAudioOrVideo", "At least one of audio and video must be provided" }
     };
+    
+    void Easyrtc::SetPeerConn(const std::string & other_user, const std::shared_ptr<PeerConn> & peer_conn) {
+        if (HasKey(peer_conns_, other_user)) {
+            printf("[warning] peer conn %s override\n", other_user.c_str());
+            DeletePeerConn(other_user);
+        }
+        peer_conns_[other_user] = peer_conn;
+    }
+    
+    void Easyrtc::DeletePeerConn(const std::string & other_user) {
+        if (HasKey(peer_conns_, other_user)) {
+            peer_conns_[other_user]->Close();
+            peer_conns_.erase(other_user);
+        }
+    }
     
 }
 }

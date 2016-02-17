@@ -14,6 +14,7 @@
 #include <cctype>
 #include <regex>
 #include <functional>
+#include <random>
 
 #include "data.h"
 
@@ -25,6 +26,7 @@ namespace nwr {
     std::vector<std::string> Split(const std::string & str, const std::string & delim);
     std::vector<std::string> Split(const std::string & str, const std::string & delim, int max_count);
     
+    std::string Join(const std::vector<std::string> & parts);
     std::string Join(const std::vector<std::string> & parts, const std::string & glue);
     
     const uint8_t * AsDataPointer(const std::string & string);
@@ -37,4 +39,6 @@ namespace nwr {
     
     std::string Replace(const std::string & str, const std::regex & regex,
                         const std::function<std::string(const std::string &)> & func);
+    
+    std::string GetRandomString(int len);
 }

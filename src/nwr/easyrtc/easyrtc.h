@@ -26,16 +26,22 @@
 #include <nwr/base/any.h>
 #include <nwr/base/any_emitter.h>
 #include <nwr/socketio/io.h>
-#include <nwr/base/lib_webrtc.h>
+#include <nwr/jsrtc/media_constraints.h>
+#include <nwr/jsrtc/media_stream.h>
+#include <nwr/jsrtc/media_stream_track.h>
+#include <nwr/jsrtc/rtc_session_description.h>
+#include <nwr/jsrtc/rtc_peer_connection.h>
+#include <nwr/jsrtc/rtc_peer_connection_factory.h>
 
-#include "media_constraints.h"
-#include "media_stream_track.h"
+#include "video_audio_constraints.h"
 #include "peer_conn.h"
 #include "receive_peer.h"
 #include "logged_in_info.h"
 
 namespace nwr {
 namespace ert {
+    using namespace jsrtc;
+    
     class Easyrtc: public std::enable_shared_from_this<Easyrtc> {
     public:
         friend PeerConn;
@@ -44,28 +50,34 @@ namespace ert {
         void Init();
     public:
         ~Easyrtc();
+#warning todo clear all vars , especially check remove all retain cycles.
         void Close();
     private:
         bool auto_init_user_media_;
-        int sdp_local_filter_;
-        int sdp_remote_filter_;
-        int ice_candidate_filter_;
+        std::function<std::string(const std::string &)> sdp_local_filter_;
+        std::function<std::string(const std::string &)> sdp_remote_filter_;
         int connection_option_timeout_;
         bool connection_option_force_new_connection_;
-        void StopStream(webrtc::MediaStreamInterface * stream);
-        void set_sdp_filters(int local_filter, int remote_filter);
-        Func<void()> on_peer_closed_;
-        void set_peer_closed_listener(const Func<void()> & handler);
-        Func<void()> on_peer_failing_;
-        Func<void()> on_peer_recovered_;
-        void set_peer_failing_listener(const Func<void()> & failing_handler,
-                                       const Func<void()> & recovered_handler);
-        void set_ice_candidate_filter(int filter);
+        void StopStream(const std::shared_ptr<MediaStream> & stream);
+        void set_sdp_filters(const std::function<std::string(const std::string &)> & local_filter,
+                             const std::function<std::string(const std::string &)> & remote_filter);
+        std::function<void(const std::string &)> on_peer_closed_;
+        void set_peer_closed_listener(const std::function<void(const std::string &)> & handler);
+        std::function<void(const std::string &)> on_peer_failing_;
+        std::function<void(const std::string &,
+                           const std::chrono::system_clock::time_point &,
+                           const std::chrono::system_clock::time_point &)> on_peer_recovered_;
+        void set_peer_failing_listener(const std::function<void(const std::string &)> & failing_handler,
+                                       const std::function<void(const std::string &,
+                                                                const std::chrono::system_clock::time_point &,
+                                                                const std::chrono::system_clock::time_point &)> & recovered_handler);
+        std::function<Any(const Any &, bool)> ice_candidate_filter_;
+        void set_ice_candidate_filter(const std::function<Any(const Any &, bool)> & filter);
         void set_auto_init_user_media(bool flag);
     public:
         std::string Format(const std::string & format, const std::vector<std::string> & args);
     private:
-        bool IsSocketConnected(const std::shared_ptr<sio::Socket> & socket);
+        bool IsSocketConnected(const std::shared_ptr<const sio::Socket> & socket);
         bool have_audio_;
         bool have_video_;
         std::string GetConstantString(const std::string & key);
@@ -95,14 +107,14 @@ namespace ert {
         bool logging_out_;
         bool disconnecting_;
         std::vector<std::string> session_fields_;
-        Any received_media_constraints_;
+        MediaConstraints received_media_constraints_;
         void EnableAudioReceive(bool value);
         void EnableVideoReceive(bool value);
         //  GetSourcesList
         //  GetAudioSourceList
         //  GetVideoSourceList
         std::string data_channel_name_;
-        Func<void (const std::string &)> debug_printer_;
+        std::function<void (const std::string &)> debug_printer_;
         Optional<std::string> my_easyrtcid_;
         int old_config_;
         std::map<std::string, bool> offers_pending_;
@@ -126,8 +138,8 @@ namespace ert {
         //  set_video_source
         void set_video_dims(int width, int height, const Optional<double> & frame_rate);
         //  set_screen_capture
-        Optional<VideoAudioMediaConstraints> preset_media_constraints_;
-        VideoAudioMediaConstraints GetUserMediaConstraints();
+        Optional<VideoAudioConstraints> preset_media_constraints_;
+        VideoAudioConstraints GetUserMediaConstraints();
         std::string application_name_;
         void set_application_name(const std::string & application_name);
         void EnableDebug(bool enable);
@@ -136,15 +148,13 @@ namespace ert {
         void UpdatePresence(const std::string & state, const std::string & status_text);
         bool SupportsGetUserMedia();
         bool SupportsPeerConnections();
-        rtc::scoped_refptr<webrtc::PeerConnectionInterface>
+        std::shared_ptr<RtcPeerConnection>
         CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                                const webrtc::MediaConstraintsInterface * constraints,
-                                webrtc::PeerConnectionObserver * observer);
+                                const webrtc::MediaConstraintsInterface & constraints);
         //  GetDataChannelConstraints
         std::string server_path_;
         std::map<std::string, std::map<std::string, LoggedInInfo>> last_loggged_in_list_;
         ReceivePeer receive_peer_;
-        Func<void ()> update_configuration_info_;
         std::map<std::string, std::shared_ptr<PeerConn>> peer_conns_;
         std::map<std::string, bool> acceptance_pending_;
         //  GetPeerStatistics
@@ -163,18 +173,18 @@ namespace ert {
         void ShowError(const std::string & message_code, const std::string & message);
         //  CreateObjectURL
         std::string CleanId(const std::string & id_string);
-        Func<void()> room_entry_listener_;
-        void set_room_entry_listener(const Func<void()> & handler);
-        Func<void(const Optional<std::string> &,
-                  const Any &,
-                  bool)> room_occupant_listener_;
-        void set_room_occupant_listener(const Func<void(const Optional<std::string> &,
+        std::function<void()> room_entry_listener_;
+        void set_room_entry_listener(const std::function<void()> & handler);
+        std::function<void(const Optional<std::string> &,
+                           const Any &,
+                           bool)> room_occupant_listener_;
+        void set_room_occupant_listener(const std::function<void(const Optional<std::string> &,
                                                         const Any &,
                                                         bool)> & listener);
-        Func<void()> on_data_channel_open_;
-        void set_data_channel_open_listener(const Func<void()> & listener);
-        Func<void()> on_data_channel_close_;
-        void set_data_channel_close_listener(const Func<void()> & listener);
+        std::function<void()> on_data_channel_open_;
+        void set_data_channel_open_listener(const std::function<void()> & listener);
+        std::function<void()> on_data_channel_close_;
+        void set_data_channel_close_listener(const std::function<void()> & listener);
         int connection_count();
         int max_p2p_message_length_;
         void set_max_p2p_message_length(int max_length);
@@ -185,13 +195,13 @@ namespace ert {
         bool data_enabled_;
         void EnableDataChannels(bool enabled);
         void EnableMediaTracks(bool enable,
-                               const MediaStreamTrackVector & tracks);
-        std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface>> named_local_media_streams_;
-        rtc::scoped_refptr<webrtc::MediaStreamInterface> GetLocalMediaStreamByName(const Optional<std::string> & stream_name);
+                               const std::vector<std::shared_ptr<MediaStreamTrack>> & tracks);
+        std::map<std::string, std::shared_ptr<MediaStream>> named_local_media_streams_;
+        std::shared_ptr<MediaStream> GetLocalMediaStreamByName(const Optional<std::string> & stream_name);
         std::vector<std::string> GetLocalMediaIds();
         Any BuildMediaIds();
         std::map<std::string, int> room_data_;
-        void RegisterLocalMediaStreamByName(webrtc::MediaStreamInterface & stream,
+        void RegisterLocalMediaStreamByName(const std::shared_ptr<MediaStream> & stream,
                                             const Optional<std::string> & stream_name);
         //  register3rdPartyLocalMediaStream
         Optional<std::string> GetNameOfRemoteStream(const std::string & easyrtcid,
@@ -199,36 +209,44 @@ namespace ert {
         void CloseLocalMediaStreamByName(const Optional<std::string> & stream_name);
         void EnableCamera(bool enable, const Optional<std::string> & stream_name);
         void EnableMicrophone(bool enable, const Optional<std::string> & stream_name);
+        std::shared_ptr<MediaStream>
+        BuildLocalMediaStream(const std::string & stream_name,
+                              const std::vector<std::shared_ptr<MediaStreamTrack>> & audio_tracks,
+                              const std::vector<std::shared_ptr<MediaStreamTrack>> & video_tracks);
         //  muteVideoObject (DOM)
         //  getLocalStreamAsUrl ; for <video>, <canvas>
         //  clearMediaStream(DOM)
         //  setVideoObjectSrc <video>
         //  loadStylesheet
         std::string FormatError(const Any & error);
-        void InitMediaSource(const std::function<void(webrtc::MediaStreamInterface &)> & success_callback,
+        void InitMediaSource(const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
                              const std::function<void(const std::string &,
-                                                      const std::string &)> & arg_error_callback,
+                                                      const std::string &)> & error_callback,
                              const Optional<std::string> & stream_name);
-        Func<void ()> accept_check_;
-        void set_accept_checker(const Func<void()> & accept_check);
-        Func<void ()> stream_acceptor_;
-        void set_stream_acceptor(const Func<void()> & acceptor);
-        Func<void(const Any &)> on_error_;
-        void set_on_error(const Func<void(const Any &)> & err_listener);
-        Func<void ()> call_cancelled_;
-        void set_call_canceled(const Func<void()> & call_canceled);
-        Func<void ()> on_stream_closed_;
-        void set_on_stream_closed(const Func<void()> & on_stream_closed);
+        std::function<void ()> accept_check_;
+        void set_accept_checker(const std::function<void()> & accept_check);
+        std::function<void(const std::string &,
+                           const std::shared_ptr<MediaStream> &,
+                           const std::string &)> stream_acceptor_;
+        void set_stream_acceptor(const std::function<void(const std::string &,
+                                                          const std::shared_ptr<MediaStream> &,
+                                                          const std::string &)> & acceptor);
+        std::function<void(const Any &)> on_error_;
+        void set_on_error(const std::function<void(const Any &)> & err_listener);
+        std::function<void ()> call_cancelled_;
+        void set_call_canceled(const std::function<void()> & call_canceled);
+        std::function<void ()> on_stream_closed_;
+        void set_on_stream_closed(const std::function<void()> & on_stream_closed);
         //  setVideoBandwidth ; deprecated in original
         bool SupportsDataChannels();
-        void set_peer_listener(const ReceivePeerCallback & listener,
-                               const Optional<std::string> & msg_type,
-                               const Optional<std::string> & source);
+        void SetPeerListener(const ReceivePeerCallback & listener,
+                             const Optional<std::string> & msg_type,
+                             const Optional<std::string> & source);
         void ReceivePeerDistribute(const std::string & easyrtcid,
                                    const Any & msg,
                                    const Any & targeting);
-        Func<void()> receive_server_cb_;
-        void set_server_listener(const Func<void()> & listener);
+        std::function<void()> receive_server_cb_;
+        void set_server_listener(const std::function<void()> & listener);
         eio::Socket::ConstructorParams connection_options_;
         void set_socket_url(const std::string & socket_url,
                             const Optional<eio::Socket::ConstructorParams> & options);
@@ -240,15 +258,15 @@ namespace ert {
                             const std::string & field_name);
         std::string credential_;
         void set_credential(const Any & credential_param);
-        Func<void()> disconnect_listener_;
-        void set_disconnect_listener(const Func<void()> & disconnect_listener);
+        std::function<void()> disconnect_listener_;
+        void set_disconnect_listener(const std::function<void()> & disconnect_listener);
         std::string IdToName(const std::string & easyrtcid);
         std::shared_ptr<sio::Socket> websocket_;
-        MediaConstraints pc_config_;
-        //  MediaConstraints pc_config_to_use_;
+        std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> pc_config_;
+        std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> pc_config_to_use_;
         bool use_fresh_ice_each_peer_;
         void set_use_fresh_ice_each_peer_connection(bool value);
-        MediaConstraints server_ice();
+        std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> server_ice();
         //  setIceUsedInCalls
         std::shared_ptr<sio::Socket> closed_channel_;
         bool HaveTracks(const Optional<std::string> & easyrtcid,
@@ -292,7 +310,8 @@ namespace ert {
                                                       const std::string &)> & failure_cb);
         void SendServerMessage(const std::string & msg_type,
                                const Any & msg_data,
-                               const std::function<void()> & success_cb,
+                               const std::function<void(const std::string &,
+                                                        const Any &)> & success_cb,
                                const std::function<void(const std::string &,
                                                         const std::string &)> & failure_cb);
         void GetRoomList(const std::function<void(const Any &)> & callback,
@@ -304,20 +323,57 @@ namespace ert {
             IsConnected
         };
         ConnectStatus GetConnectStatus(const std::string & other_user);
-        MediaConstraints BuildPeerConstraints();
+        jsrtc::MediaConstraints BuildPeerConstraints();
         void Call(const std::string & other_user,
-                  const std::function<void()> & call_success_cb,
+                  const std::function<void(const std::string &,
+                                           const std::string &)> & call_success_cb,
                   const std::function<void(const std::string &,
                                            const std::string &)> & call_failure_cb,
-                  const std::function<void(bool)> & was_accepted_cb,
+                  const std::function<void(bool, const std::string &)> & was_accepted_cb,
                   const Optional<std::vector<std::string>> & stream_names);
+        void CallBody(const std::string & other_user,
+                      const std::function<void(const std::string &,
+                                               const std::string &)> & call_success_cb,
+                      const std::function<void(const std::string &,
+                                               const std::string &)> & call_failure_cb,
+                      const std::function<void(bool, const std::string &)> & was_accepted_cb,
+                      const Optional<std::vector<std::string>> & stream_names);
+        void HangupBody(const std::string & other_user);
+        void Hangup(const std::string & other_user);
+        void HangupAll();
+        bool DoesDataChannelWork(const std::string & other_user);
+        std::shared_ptr<MediaStream>
+        GetRemoteStream(const std::string & easyrtcid,
+                        const std::string & remote_stream_name);
+        void MakeLocalStreamFromRemoteStream(const std::string & easyrtcid,
+                                             const std::string & remote_stream_name,
+                                             const std::string & local_stream_name);
+        void AddStreamToCall(const std::string & easyrtcid,
+                             const Optional<std::string> & arg_stream_name,
+                             const std::function<void()> & receipt_handler);
+        void SetupPeerListener1();
+        void SetupPeerListener2();
+        void SetupPeerListener3();
+        void OnRemoveStreamHelper(const std::string & easyrtcid,
+                                  const std::shared_ptr<MediaStream> & stream);
+        void DumpPeerConnectionInfo();
         
+        //---
         
-        rtc::scoped_refptr<webrtc::PeerConnectionInterface>
+        void SendQueuedCandidates(const std::string & easyrtcid,
+                                  const std::function<void(const std::string &,
+                                                           const Any &)> & on_signal_success,
+                                  const std::function<void(const std::string &,
+                                                           const std::string &)> & on_signal_failure);
+        
+        void EmitOnStreamClosed(const std::string & other_user,
+                                const std::shared_ptr<MediaStream> & stream);
+        std::map<std::string, bool> turn_servers_;
+        std::shared_ptr<RtcPeerConnection>
         BuildPeerConnection(const std::string & other_user,
-                            bool b,
+                            bool is_initiator,
                             const std::function<void(const std::string &,
-                                                     const std::string &)> & call_failure_cb,
+                                                     const std::string &)> & failure_cb,
                             const Optional<std::vector<std::string>> & stream_names);
         
         void GetFreshIceConfig(const std::function<void(bool)> & cb);
@@ -325,28 +381,22 @@ namespace ert {
                       const Optional<std::vector<std::string>> & stream_names);
         void CallCanceled(const std::string & other_user, bool a);
         
-        void HangupAll();
-                
-        webrtc::MediaStreamInterface * GetLocalStream(const Optional<std::string> & stream_name);
         
-        
-        
-        
-        
+        void ClearQueuedMessages(const std::string & other_user);
+        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
         void ProcessRoomData(const Any & room_data);
-        
-        
         Any GetRoomFields(const std::string & room_name);
+        void UpdateConfiguration();
+        void UpdateConfigurationInfo();
 
         static std::map<std::string, std::string> constant_strings_;
 
         
         
         bool closed_;
-        rtc::scoped_ptr<rtc::Thread> rtc_signaling_thread_;
-        rtc::scoped_ptr<rtc::Thread> rtc_worker_thread_;
-        rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
-
+        std::shared_ptr<RtcPeerConnectionFactory> peer_connection_factory_;
+        void SetPeerConn(const std::string & other_user, const shared_ptr<PeerConn> & peer_conn);
+        void DeletePeerConn(const std::string & other_user);
         
 
         

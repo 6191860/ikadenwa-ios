@@ -47,10 +47,10 @@ namespace sio {
         Socket();
         void Init(Manager * io, const std::string & nsp);
     public:
-        std::string id() { return id_; }
+        std::string id() const { return id_; }
         void set_id(const std::string & value) { id_ = value; }
         
-        bool connected() { return connected_; }
+        bool connected() const { return connected_; }
     private:
         void SubEvents();
         void Open();

@@ -33,7 +33,7 @@ namespace nwr {
         Emitter() {}
         ~Emitter() {}
         
-        std::vector<EventListener<Event>> listeners() {
+        std::vector<EventListener<Event>> listeners() const {
             return listeners_;
         }
         

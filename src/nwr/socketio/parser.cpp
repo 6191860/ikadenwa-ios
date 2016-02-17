@@ -73,7 +73,7 @@ namespace sio {
         
         std::vector<eio::PacketData> buffers;
         
-        buffers = Map<DataPtr, eio::PacketData>(std::get<1>(deconstruction), [](const DataPtr & data){
+        buffers = Map(std::get<1>(deconstruction), [](const DataPtr & data){
             return eio::PacketData(data);
         });
 

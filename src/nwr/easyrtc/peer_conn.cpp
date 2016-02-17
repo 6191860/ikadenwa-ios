@@ -17,10 +17,22 @@ namespace ert {
     data_channel_ready_(false),
     sharing_audio_(false),
     sharing_video_(false),
-    sharing_data_(false)
+    sharing_data_(false),
+    canceled_(false),
+    connection_accepted_(false),
+    is_initiator_(false),
+    enable_negotiate_listener_(false)
     {}
     
-    rtc::scoped_refptr<webrtc::MediaStreamInterface>
+#warning todo
+    void PeerConn::Close() {
+        if (pc_) {
+            pc_->Close();
+            pc_ = nullptr;
+        }
+    }
+    
+    std::shared_ptr<MediaStream>
     PeerConn::GetRemoteStreamByName(Easyrtc & ert,
                                     const Optional<std::string> & arg_stream_name) const
     {
@@ -31,8 +43,8 @@ namespace ert {
         auto remote_streams = pc_->remote_streams();
         
         if (stream_name == "default") {
-            if (remote_streams->count() > 0) {
-                return rtc::scoped_refptr<webrtc::MediaStreamInterface>(remote_streams->at(0));
+            if (remote_streams.size() > 0) {
+                return remote_streams[0];
             }
             else {
                 return nullptr;
@@ -51,13 +63,13 @@ namespace ert {
                           "remote peer does not have media stream called " + stream_name);
         }
         
-        for (int i = 0; i < remote_streams->count(); i++) {
+        for (int i = 0; i < remote_streams.size(); i++) {
             std::string remote_id;
             
-            remote_id = remote_streams->at(i)->label();
+            remote_id = remote_streams[i]->id();
             
             if (!key_to_match || Some(remote_id) == key_to_match) {
-                return rtc::scoped_refptr<webrtc::MediaStreamInterface>(remote_streams->at(i));
+                return remote_streams[i];
             }
         }
         return nullptr;

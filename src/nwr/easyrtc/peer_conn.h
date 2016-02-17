@@ -10,43 +10,70 @@
 
 #include <string>
 #include <map>
+#include <chrono>
 
 #include <nwr/base/map.h>
 #include <nwr/base/func.h>
+#include <nwr/base/any.h>
 #include <nwr/base/optional.h>
-#include <nwr/base/lib_webrtc.h>
+#include <nwr/jsrtc/rtc_peer_connection.h>
 
 namespace nwr {
 namespace ert {
+    using namespace jsrtc;
+    
     class Easyrtc;
     
     class PeerConn {
     public:
         PeerConn();
+        void Close();
         
         bool started_av() const { return started_av_; }
+        void set_started_av(bool value) { started_av_ = value; }
         rtc::scoped_refptr<webrtc::DataChannel> data_channel_s() const { return data_channel_s_; }
         bool data_channel_ready() const { return data_channel_ready_; }
+        Optional<std::chrono::system_clock::time_point> connect_time() const { return connect_time_; }
+        void set_connect_time(const Optional<std::chrono::system_clock::time_point> & value) { connect_time_ = value; }
         bool sharing_audio() const { return sharing_audio_; }
+        void set_sharing_audio(bool value) { sharing_audio_ = value; }
         bool sharing_video() const { return sharing_video_; }
+        void set_sharing_video(bool value) { sharing_video_ = value; }
         bool sharing_data() const { return sharing_data_; }
-        rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc() const { return pc_; }
-        std::map<std::string, std::string> remote_stream_id_to_name() const { return remote_stream_id_to_name_; }
-        
-        Func<void(const std::string &)> call_success_cb() const { return call_success_cb_; }
-        void set_call_success_cb(const Func<void(const std::string &)> & value) { call_success_cb_ = value; }
-        Func<void(const std::string &,
-                  const std::string &)> call_failure_cb() const { return call_failure_cb_; }
-        void set_call_failure_cb(const Func<void(const std::string &,
-                                                 const std::string &)> & value) { call_failure_cb_ = value; }
-        Func<void(bool, const std::string &)> was_accepted_cb() const {
+        void set_sharing_data(bool value) { sharing_data_ = value; }
+        bool canceled() const { return canceled_; }
+        void set_canceled(bool value) { canceled_ = value; }
+        std::vector<Any> & candidates_to_send() { return candidates_to_send_; }
+        std::map<std::string, std::function<void()>> & streams_added_acks() { return streams_added_acks_; }
+        std::shared_ptr<RtcPeerConnection> pc() const { return pc_; }
+        void set_pc(const std::shared_ptr<RtcPeerConnection> & value) { pc_ = value; }
+        bool connection_accepted() const { return connection_accepted_; }
+        void set_connection_accepted(bool value) { connection_accepted_ = value; }
+        bool is_initiator() const { return is_initiator_; }
+        void set_is_initiator(bool value) { is_initiator_ = value; }
+        std::map<std::string, std::string> & remote_stream_id_to_name() { return remote_stream_id_to_name_; }
+        std::map<std::string, bool> & live_remote_streams() { return live_remote_streams_; }
+        bool enable_negotiate_listener() const { return enable_negotiate_listener_; }
+        void set_enable_negotiate_listener(bool value) { enable_negotiate_listener_ = value; }
+        std::function<void(const std::string &,
+                           const std::string &)> call_success_cb() const { return call_success_cb_; }
+        void set_call_success_cb(const std::function<void(const std::string &,
+                                                          const std::string &)> & value) { call_success_cb_ = value; }
+        std::function<void(const std::string &,
+                           const std::string &)> call_failure_cb() const { return call_failure_cb_; }
+        void set_call_failure_cb(const std::function<void(const std::string &,
+                                                          const std::string &)> & value) { call_failure_cb_ = value; }
+        std::function<void(bool, const std::string &)> was_accepted_cb() const {
             return was_accepted_cb_;
         }
-        void set_was_accepted_cb(const Func<void(bool, const std::string &)> & value) {
+        void set_was_accepted_cb(const std::function<void(bool, const std::string &)> & value) {
             was_accepted_cb_ = value;
         }
+        Optional<std::chrono::system_clock::time_point> failing() { return failing_; }
+        void set_failing(const Optional<std::chrono::system_clock::time_point> & value) { failing_ = value; }
         
-        rtc::scoped_refptr<webrtc::MediaStreamInterface>
+        
+        std::shared_ptr<MediaStream>
         GetRemoteStreamByName(Easyrtc & ert,
                               const Optional<std::string> & stream_name) const;
         
@@ -59,24 +86,29 @@ namespace ert {
         rtc::scoped_refptr<webrtc::DataChannel> data_channel_s_;
         //  data_channel_r
         bool data_channel_ready_;
-        //  connect_time
+        Optional<std::chrono::system_clock::time_point> connect_time_;
         bool sharing_audio_;
         bool sharing_video_;
         bool sharing_data_;
-        //  cancelled
-        //  candidates_to_send
-        //  streams_added_acks
-        rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc_;
+        bool canceled_;
+        std::vector<Any> candidates_to_send_;
+        std::map<std::string, std::function<void()>> streams_added_acks_;
+        std::shared_ptr<RtcPeerConnection> pc_;
         //  media_stream
-        //  connection_accepted
-        //  is_initiator
+        bool connection_accepted_;
+        bool is_initiator_;
         std::map<std::string, std::string> remote_stream_id_to_name_;
-        //  live_remote_streams
+        std::map<std::string, bool> live_remote_streams_;
+        bool enable_negotiate_listener_;
         
-        Func<void(const std::string &)> call_success_cb_;
-        Func<void(const std::string &,
-                  const std::string &)> call_failure_cb_;
-        Func<void(bool, const std::string &)> was_accepted_cb_;
+        std::function<void(const std::string &,
+                           const std::string &)> call_success_cb_;
+        std::function<void(const std::string &,
+                           const std::string &)> call_failure_cb_;
+        std::function<void(bool, const std::string &)> was_accepted_cb_;
+        
+        Optional<std::chrono::system_clock::time_point> failing_;
+        
         
 //    {  startedAV: boolean,  -- true if we have traded audio/video streams
 //        dataChannelS: RTPDataChannel for outgoing messages if present
