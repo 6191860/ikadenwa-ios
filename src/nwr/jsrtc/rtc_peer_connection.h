@@ -46,6 +46,7 @@ namespace nwr {
             std::shared_ptr<const RtcSessionDescription> remote_description();
             std::shared_ptr<const RtcSessionDescription> current_remote_description();
             std::shared_ptr<const RtcSessionDescription> pending_remote_description();
+#warning todo callback (issue)
             void AddIceCandidate(const std::shared_ptr<const RtcIceCandidate> & candidate);
             webrtc::PeerConnectionInterface::SignalingState signaling_state();
             webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state();

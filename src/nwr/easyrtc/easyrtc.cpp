@@ -881,7 +881,10 @@ namespace ert {
         }
     };
     
-    void Easyrtc::set_accept_checker(const std::function<void()> & accept_check) {
+    void Easyrtc::set_accept_checker(const std::function<void (const std::string &,
+                                                               const std::function<void (bool,
+                                                                                         const Optional<std::vector<std::string>> &)> &)> & accept_check)
+    {
         accept_check_ = accept_check;
     }
     
@@ -2081,7 +2084,7 @@ namespace ert {
                         std::string ip_address = match_ret[2].str();
                         thiz->turn_servers_[ip_address] = true;
                     } else {
-                        printf("ip address match failed [%s]\n", candidate->candidate().c_str());
+                        printf("ip address match failed [%s]\n", candidate_str.c_str());
                     }
                 }
                 
@@ -2748,7 +2751,8 @@ namespace ert {
         std::string msg_type = msg.GetAt("msgType").AsString().value();
         Any msg_data = msg.GetAt("msgData");
         
-        std::shared_ptr<RtcPeerConnection> pc;
+        std::shared_ptr<std::shared_ptr<RtcPeerConnection>> pc_ptr;
+        *pc_ptr = std::shared_ptr<RtcPeerConnection>(nullptr);
         
         FuncCall(debug_printer_, std::string("received message of type ") + msg_type);
 
@@ -2756,9 +2760,8 @@ namespace ert {
             ClearQueuedMessages(caller);
         }
         
-        auto process_candidate_body = [thiz](const std::string & caller, const Any & arg_msg_data){
+        auto process_candidate_body = [thiz, pc_ptr](const std::string & caller, const Any & arg_msg_data){
             Any msg_data = arg_msg_data;
-//            var candidate = null;
             
             if (thiz->ice_candidate_filter_) {
                 msg_data = thiz->ice_candidate_filter_(msg_data, true);
@@ -2766,241 +2769,215 @@ namespace ert {
                     return;
                 }
             }
+            
+            std::string mid = msg_data.GetAt("id").AsString().value();
+            int mline_index = msg_data.GetAt("label").AsInt().value();
+            std::string candidate_str = msg_data.GetAt("candidate").AsString().value();
 
-//            RtcIce
-//            
-//            if (window.mozRTCIceCandidate) {
-//                candidate = new mozRTCIceCandidate({
-//                sdpMLineIndex: msgData.label,
-//                candidate: msgData.candidate
-//                });
-//            }
-//            else {
-//                candidate = new RTCIceCandidate({
-//                sdpMLineIndex: msgData.label,
-//                candidate: msgData.candidate
-//                });
-//            }
-//            pc = peerConns[caller].pc;
-//            
-//            function iceAddSuccess() {}
-//            function iceAddFailure(domError) {
-//                easyrtc.showError(self.errCodes.ICECANDIDATE_ERR, "bad ice candidate (" + domError.name + "): " +
-//                                  JSON.stringify(candidate));
-//            }
-//            pc.addIceCandidate(candidate, iceAddSuccess, iceAddFailure);
-//            
-//            if (msgData.candidate.indexOf("typ relay") > 0) {
-//                var ipAddress = msgData.candidate.match(/(udp|tcp) \d+ (\d+\.\d+\.\d+\.\d+)/i)[1];
-//                self._turnServers[ipAddress] = true;
-//            }
+            std::shared_ptr<RtcIceCandidate> candidate =
+            std::make_shared<RtcIceCandidate>(mid, mline_index, candidate_str);
+            
+            *pc_ptr = thiz->peer_conns_[caller]->pc();
+            
+#warning todo open issue
+//            auto ice_add_success = [](){
+//                
+//            };
+//            auto ice_add_failure = [thiz, candidate](const std::string & error){
+//                thiz->ShowError(thiz->err_codes_ICECANDIDATE_ERROR_,
+//                                nwr::Format("bad ice candidate (%s): %s", error.c_str(), candidate->ToAny().ToJsonString().c_str()));
+//            };
+            
+
+            (*pc_ptr)->AddIceCandidate(candidate);
+            
+            if (IndexOf(candidate_str, "typ relay") != -1) {
+                std::regex regex("(udp|tcp) \\d+ (\\d+\\.\\d+\\.\\d+\\.\\d+)", std::regex_constants::icase);
+                std::smatch match_ret;
+                if (std::regex_search(candidate_str, match_ret, regex)) {
+                    std::string ip_address = match_ret[2].str();
+                    thiz->turn_servers_[ip_address] = true;
+                } else {
+                    printf("ip address match failed [%s]\n", candidate_str.c_str());
+                }
+            }
         };
-//        var flushCachedCandidates = function(caller) {
-//            var i;
-//            if (queuedMessages[caller]) {
-//                for (i = 0; i < queuedMessages[caller].candidates.length; i++) {
-//                    processCandidateBody(caller, queuedMessages[caller].candidates[i]);
-//                }
-//                delete queuedMessages[caller];
-//            }
-//        };
-//        var processOffer = function(caller, msgData) {
-//            
-//            var helper = function(wasAccepted, streamNames) {
-//                
-//                if (streamNames) {
-//                    if (typeof streamNames === "string") {
-//                        streamNames = [streamNames];
-//                    }
-//                    else if (streamNames.length === undefined) {
-//                        easyrtc.showError(self.errCodes.DEVELOPER_ERR, "accept callback passed invalid streamNames");
-//                        return;
-//                    }
-//                }
-//                if (self.debugPrinter) {
-//                    self.debugPrinter("offer accept=" + wasAccepted);
-//                }
-//                delete offersPending[caller];
-//                
-//                if (wasAccepted) {
-//                    if (!self.supportsPeerConnections()) {
-//                        callFailureCB(self.errCodes.CALL_ERR, self.getConstantString("noWebrtcSupport"));
-//                        return;
-//                    }
-//                    doAnswer(caller, msgData, streamNames);
-//                    flushCachedCandidates(caller);
-//                }
-//                else {
-//                    sendSignalling(caller, "reject", null, null, null);
-//                    clearQueuedMessages(caller);
-//                }
-//            };
-//            //
-//            // There is a very rare case of two callers sending each other offers
-//            // before receiving the others offer. In such a case, the caller with the
-//            // greater valued easyrtcid will delete its pending call information and do a
-//            // simple answer to the other caller's offer.
-//            //
-//            if (acceptancePending[caller] && caller < self.myEasyrtcid) {
-//                delete acceptancePending[caller];
-//                if (queuedMessages[caller]) {
-//                    delete queuedMessages[caller];
-//                }
-//                if (peerConns[caller].wasAcceptedCB) {
-//                    peerConns[caller].wasAcceptedCB(true, caller);
-//                }
-//                delete peerConns[caller];
-//                helper(true);
-//                return;
-//            }
-//            
-//            offersPending[caller] = msgData;
-//            if (!self.acceptCheck) {
-//                helper(true);
-//            }
-//            else {
-//                self.acceptCheck(caller, helper);
-//            }
-//        };
-//        function processReject(caller) {
-//            delete acceptancePending[caller];
-//            if (queuedMessages[caller]) {
-//                delete queuedMessages[caller];
-//            }
-//            if (peerConns[caller]) {
-//                if (peerConns[caller].wasAcceptedCB) {
-//                    peerConns[caller].wasAcceptedCB(false, caller);
-//                }
-//                delete peerConns[caller];
-//            }
-//        }
-//        
-//        function processAnswer(caller, msgData) {
-//            
-//            
-//            
-//            delete acceptancePending[caller];
-//            
-//            //
-//            // if we've discarded the peer connection, ignore the answer.
-//            //
-//            if (!peerConns[caller]) {
-//                return;
-//            }
-//            peerConns[caller].connectionAccepted = true;
-//            
-//            
-//            
-//            if (peerConns[caller].wasAcceptedCB) {
-//                peerConns[caller].wasAcceptedCB(true, caller);
-//            }
-//            
-//            var onSignalSuccess = function() {
-//                
-//            };
-//            var onSignalFailure = function(errorCode, errorText) {
-//                if (peerConns[caller]) {
-//                    delete peerConns[caller];
-//                }
-//                self.showError(errorCode, errorText);
-//            };
-//            // peerConns[caller].startedAV = true;
-//            sendQueuedCandidates(caller, onSignalSuccess, onSignalFailure);
-//            pc = peerConns[caller].pc;
-//            var sd = null;
-//            if (window.mozRTCSessionDescription) {
-//                sd = new mozRTCSessionDescription(msgData);
-//            }
-//            else {
-//                sd = new RTCSessionDescription(msgData);
-//            }
-//            if (!sd) {
-//                throw "Could not create the RTCSessionDescription";
-//            }
-//            
-//            if (self.debugPrinter) {
-//                self.debugPrinter("about to call initiating setRemoteDescription");
-//            }
-//            try {
-//                if (sdpRemoteFilter) {
-//                    sd.sdp = sdpRemoteFilter(sd.sdp);
-//                }
-//                pc.setRemoteDescription(sd, function() {
-//                    if (pc.connectDataConnection) {
-//                        if (self.debugPrinter) {
-//                            self.debugPrinter("calling connectDataConnection(5001,5002)");
-//                        }
-//                        pc.connectDataConnection(5001, 5002); // these are like ids for data channels
-//                    }
-//                }, function(message){
-//                    console.log("setRemoteDescription failed ", message);
-//                });
-//            } catch (smdException) {
-//                console.log("setRemoteDescription failed ", smdException);
-//            }
-//            flushCachedCandidates(caller);
-//        }
-//        
-//        function processCandidateQueue(caller, msgData) {
-//            
-//            if (peerConns[caller] && peerConns[caller].pc) {
-//                processCandidateBody(caller, msgData);
-//            }
-//            else {
-//                if (!peerConns[caller]) {
-//                    queuedMessages[caller] = {
-//                    candidates: []
-//                    };
-//                }
-//                queuedMessages[caller].candidates.push(msgData);
-//            }
-//        }
-//        
-//        switch (msgType) {
-//            case "sessionData":
-//                processSessionData(msgData.sessionData);
-//                break;
-//            case "roomData":
-//                processRoomData(msgData.roomData);
-//                break;
-//            case "iceConfig":
-//                processIceConfig(msgData.iceConfig);
-//                break;
-//            case "forwardToUrl":
-//                if (msgData.newWindow) {
-//                    window.open(msgData.forwardToUrl.url);
-//                }
-//                else {
-//                    window.location.href = msgData.forwardToUrl.url;
-//                }
-//                break;
-//            case "offer":
-//                processOffer(caller, msgData);
-//                break;
-//            case "reject":
-//                processReject(caller);
-//                break;
-//            case "answer":
-//                processAnswer(caller, msgData);
-//                break;
-//            case "candidate":
-//                processCandidateQueue(caller, msgData);
-//                break;
-//            case "hangup":
-//                onRemoteHangup(caller);
-//                clearQueuedMessages(caller);
-//                break;
-//            case "error":
-//                self.showError(msg.errorCode, msg.errorText);
-//                break;
-//            default:
-//                console.error("received unknown message type from server, msgType is " + msgType);
-//                return;
-//        }
-//        
-//        if (ackAcceptorFn) {
-//            ackAcceptorFn(self.ackMessage);
-//        }
+        
+        auto flush_cached_candidates = [thiz](const std::string & caller) {
+            if (HasKey(thiz->queued_messages_, caller)) {
+                const auto candidates = thiz->queued_messages_[caller].GetAt("candidates").AsArray().value();
+                for (const auto & candidate : candidates) {
+                    thiz->ProcessCandidateBody(caller, candidate);
+                }
+                thiz->queued_messages_.erase(caller);
+            }
+        };
+        
+        auto process_offer = [thiz, flush_cached_candidates]
+        (const std::string & caller, const Any & msg_data)
+        {
+            std::function<void(bool,
+                               const Optional<std::vector<std::string>> &)> helper =
+            [thiz, caller, msg_data, flush_cached_candidates]
+            (bool was_accepted,
+             const Optional<std::vector<std::string>> & stream_names)
+            {
+                FuncCall(thiz->debug_printer_, nwr::Format("offer accept=%d", was_accepted));
+                thiz->offers_pending_.erase(caller);
+                
+                if (was_accepted) {
+                    if (!thiz->SupportsPeerConnections()) {
+                        thiz->ShowError(thiz->err_codes_CALL_ERR_,
+                                        thiz->GetConstantString("noWebrtcSupport"));
+                        return;
+                    }
+                    thiz->DoAnswer(caller, msg_data, stream_names);
+                    flush_cached_candidates(caller);
+                }
+                else {
+                    thiz->SendSignaling(Some(caller),
+                                        "reject",
+                                        Any(), nullptr, nullptr);
+                    thiz->ClearQueuedMessages(caller);
+                }
+            };
+            //
+            // There is a very rare case of two callers sending each other offers
+            // before receiving the others offer. In such a case, the caller with the
+            // greater valued easyrtcid will delete its pending call information and do a
+            // simple answer to the other caller's offer.
+            //
+            
+            if (HasKey(thiz->acceptance_pending_, caller) &&
+                thiz->my_easyrtcid_ &&
+                caller < thiz->my_easyrtcid_.value()
+                )
+            {
+                thiz->acceptance_pending_.erase(caller);
+                if (HasKey(thiz->queued_messages_, caller)) {
+                    thiz->queued_messages_.erase(caller);
+                }
+                FuncCall(thiz->peer_conns_[caller]->was_accepted_cb(), true, caller);
+                
+                thiz->DeletePeerConn(caller);
+                helper(true, None());
+                return;
+            }
+            
+            thiz->offers_pending_[caller] = msg_data;
+            
+            if (!thiz->accept_check_) {
+                helper(true, None());
+            }
+            else {
+                thiz->accept_check_(caller, helper);
+            }
+        };
+        
+        auto process_reject = [thiz](const std::string & caller){
+            thiz->acceptance_pending_.erase(caller);
+            if (HasKey(thiz->queued_messages_, caller)) {
+                thiz->queued_messages_.erase(caller);
+            }
+            if (HasKey(thiz->peer_conns_, caller)) {
+                FuncCall(thiz->peer_conns_[caller]->was_accepted_cb(), false, caller);
+                thiz->DeletePeerConn(caller);
+            }
+        };
+
+        auto process_answer = [thiz, pc_ptr, flush_cached_candidates](const std::string & caller, const Any & msg_data) {
+            thiz->acceptance_pending_.erase(caller);
+
+            //
+            // if we've discarded the peer connection, ignore the answer.
+            //
+            
+            if (!HasKey(thiz->peer_conns_, caller)) {
+                return;
+            }
+            thiz->peer_conns_[caller]->set_connection_accepted(true);
+
+            FuncCall(thiz->peer_conns_[caller]->was_accepted_cb(), true, caller);
+
+            auto on_signal_success = [](const std::string & msg_type,
+                                        const Any & data) {};
+            auto on_signal_failure = [thiz, caller](const std::string & code, const std::string & text) {
+                if (HasKey(thiz->peer_conns_, caller)) {
+                    thiz->DeletePeerConn(caller);
+                }
+                thiz->ShowError(code, text);
+            };
+
+            // peerConns[caller].startedAV = true;
+            thiz->SendQueuedCandidates(caller, on_signal_success, on_signal_failure);
+            
+            *pc_ptr = thiz->peer_conns_[caller]->pc();
+            
+            std::shared_ptr<RtcSessionDescription> sd = RtcSessionDescription::FromAny(msg_data);
+            if (!sd) {
+                Fatal("Could not create the RTCSessionDescription");
+            }
+            
+            FuncCall(thiz->debug_printer_, "about to call initiating setRemoteDescription");
+            
+            if (thiz->sdp_remote_filter_) {
+                sd->set_sdp(thiz->sdp_remote_filter_(sd->sdp()));
+            }
+            
+            (*pc_ptr)->SetRemoteDescription(sd,
+                                            [](){
+                                                
+                                            },
+                                            [](const std::string & message){
+                                                printf("setRemoteDescription failed %s", message.c_str());
+                                            });
+            
+            flush_cached_candidates(caller);
+        };
+        
+        auto process_candidate_queue = [thiz, process_candidate_body]
+        (const std::string & caller, const Any & msg_data)
+        {
+            if (HasKey(thiz->peer_conns_, caller) && thiz->peer_conns_[caller]->pc()) {
+                process_candidate_body(caller, msg_data);
+            }
+            else {
+                if (!HasKey(thiz->peer_conns_, caller)) {
+                    thiz->queued_messages_[caller] = Any(Any::ObjectType {
+                        { "candidates", Any(Any::ArrayType{}) }
+                    });
+                }
+                thiz->queued_messages_[caller].GetAt("candidates").AsArray()->push_back(msg_data);
+            }
+        };
+
+        if (msg_type == "sessionData") {
+            ProcessSessionData(msg_data.GetAt("sessionData"));
+        } else if (msg_type == "roomData") {
+            ProcessRoomData(msg_data.GetAt("roomData"));
+        } else if (msg_type == "iceConfig") {
+            ProcessIceConfig(msg_data.GetAt("iceConfig"));
+        } else if (msg_type == "forwardToUrl") {
+            printf("forward to url: %s\n", msg_data.ToJsonString().c_str());
+        } else if (msg_type == "offer") {
+            process_offer(caller, msg_data);
+        } else if (msg_type == "reject") {
+            process_reject(caller);
+        } else if (msg_type == "answer") {
+            process_answer(caller, msg_data);
+        } else if (msg_type == "candidate") {
+            process_candidate_queue(caller, msg_data);
+        } else if (msg_type == "hangup") {
+            OnRemoteHangup(caller);
+            ClearQueuedMessages(caller);
+        } else if (msg_type == "error") {
+#warning todo check ; msg_data?
+            ShowError(msg.GetAt("errorCode").AsString().value(),
+                      msg.GetAt("errorText").AsString().value());
+        } else {
+            printf("received unknown message type from server; msg=%s\n", msg.ToJsonString().c_str());
+            return;
+        }
         
         if (ack_acceptor_fn) {
             ack_acceptor_fn(ack_message_);

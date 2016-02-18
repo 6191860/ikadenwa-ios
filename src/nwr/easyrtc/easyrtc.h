@@ -225,8 +225,12 @@ namespace ert {
                              const std::function<void(const std::string &,
                                                       const std::string &)> & error_callback,
                              const Optional<std::string> & stream_name);
-        std::function<void ()> accept_check_;
-        void set_accept_checker(const std::function<void()> & accept_check);
+        std::function<void (const std::string &,
+                            const std::function<void (bool,
+                                                      const Optional<std::vector<std::string>> &)> &)> accept_check_;
+        void set_accept_checker(const std::function<void (const std::string &,
+                                                          const std::function<void (bool,
+                                                                                    const Optional<std::vector<std::string>> &)> &)> & accept_check);
         std::function<void(const std::string &,
                            const std::shared_ptr<MediaStream> &,
                            const std::string &)> stream_acceptor_;
@@ -402,6 +406,7 @@ namespace ert {
                           const std::function<void(const Any &)> ack_acceptor_func);
         void OnChannelCmd(const Any & msg,
                           const std::function<void(const Any &)> ack_acceptor_fn);
+        void ProcessCandidateBody(const std::string & caller, const Any & candidate);
         //---
         
         
