@@ -960,7 +960,9 @@ namespace ert {
         }
     }
     
-    void Easyrtc::set_server_listener(const std::function<void()> & listener) {
+    void Easyrtc::set_server_listener(const std::function<void(const std::string &,
+                                                               const Any &,
+                                                               const Any &)> & listener) {
         receive_server_cb_ = listener;
     }
     
@@ -1167,7 +1169,7 @@ namespace ert {
             thiz->logging_out_ = false;
             thiz->disconnecting_ = false;
             
-            FuncCall(thiz->room_occupant_listener_, None(), Any(Any::ObjectType{}), false);
+            FuncCall(thiz->room_occupant_listener_, None(), std::map<std::string, Any>{}, Any());
             
             thiz->EmitEvent("roomOccupant", Any(Any::ObjectType{}));
             thiz->old_config_ = 0;
@@ -1737,7 +1739,8 @@ namespace ert {
     
     void Easyrtc::AddStreamToCall(const std::string & easyrtcid,
                                   const Optional<std::string> & arg_stream_name,
-                                  const std::function<void()> & receipt_handler)
+                                  const std::function<void(const std::string &,
+                                                           const std::string &)> & receipt_handler)
     {
         std::string stream_name = arg_stream_name || std::string("default");
 
@@ -2045,22 +2048,17 @@ namespace ert {
         new_peer_conn->streams_added_acks().clear();
         new_peer_conn->live_remote_streams().clear();
         
-        pc->set_on_ice_candidate([thiz, new_peer_conn, other_user, failure_cb](const std::shared_ptr<webrtc::IceCandidateInterface> & candidate){
+        pc->set_on_ice_candidate([thiz, new_peer_conn, other_user, failure_cb](const std::shared_ptr<RtcIceCandidate> & candidate){
             if (new_peer_conn->canceled()) {
                 return;
             }
             
             if (thiz->peer_conns_[other_user]) {
-                
-                std::string candidate_str;
-                bool ok = candidate->ToString(&candidate_str);
-                if (!ok) { Fatal("invalid candidate"); }
-                
                 Any candidate_data(Any::ObjectType {
                     { "type", Any("candidate") },
                     { "label", Any(candidate->sdp_mline_index()) },
                     { "id", Any(candidate->sdp_mid()) },
-                    { "candidate", Any(candidate_str)  }
+                    { "candidate", Any(candidate->candidate())  }
                 } );
                                 
                 if (thiz->ice_candidate_filter_) {
@@ -2075,14 +2073,15 @@ namespace ert {
                 // The keyword "relay" in the candidate identifies it as referencing a
                 // turn server. The \d symbol in the regular expression matches a number.
                 //
-                if (IndexOf(candidate_str, "typ relay") != -1) {
+                if (IndexOf(candidate->candidate(), "typ relay") != -1) {
                     std::regex regex("(udp|tcp) \\d+ (\\d+\\.\\d+\\.\\d+\\.\\d+)", std::regex_constants::icase);
                     std::smatch match_ret;
+                    std::string candidate_str = candidate->candidate();
                     if (std::regex_search(candidate_str, match_ret, regex)) {
                         std::string ip_address = match_ret[2].str();
                         thiz->turn_servers_[ip_address] = true;
                     } else {
-                        printf("ip address match failed [%s]\n", candidate_str.c_str());
+                        printf("ip address match failed [%s]\n", candidate->candidate().c_str());
                     }
                 }
                 
@@ -2690,6 +2689,323 @@ namespace ert {
                                                  }));
         }, Some(TimeDuration(0.1)));
     }
+    
+    void Easyrtc::SendQueuedCandidates(const std::string & peer,
+                                       const std::function<void (const std::string &,
+                                                                 const Any &)> & on_signal_success,
+                                       const std::function<void (const std::string &,
+                                                                 const std::string &)> & on_signal_failure)
+    {
+        for (const auto & cand : peer_conns_[peer]->candidates_to_send()) {
+            SendSignaling(Some(peer),
+                          "candidate",
+                          cand,
+                          on_signal_success,
+                          on_signal_failure);
+        }
+    }
+    
+    void Easyrtc::OnChannelMsg(const Any & msg,
+                               const std::function<void(const Any &)> ack_acceptor_func)
+    {
+        Any targeting = Any(Any::ObjectType{});
+        
+        if (ack_acceptor_func) {
+            ack_acceptor_func(ack_message_);
+        }
+        
+        if (msg.GetAt("targetEasyrtcid")) {
+            targeting.SetAt("targetEasyrtcid", msg.GetAt("targetEasyrtcid"));
+        }
+        if (msg.GetAt("targetRoom")) {
+            targeting.SetAt("targetRoom", msg.GetAt("targetRoom"));
+        }
+        if (msg.GetAt("targetGroup")) {
+            targeting.SetAt("targetGroup", msg.GetAt("targetGroup"));
+        }
+        if (msg.GetAt("senderEasyrtcid")) {
+            ReceivePeerDistribute(msg.GetAt("senderEasyrtcid").AsString().value(),
+                                  msg, targeting);
+        }
+        else {
+            if (receive_server_cb_){
+                receive_server_cb_(msg.GetAt("msgType").AsString().value(),
+                                   msg.GetAt("msgData"),
+                                   targeting);
+            }
+            else {
+                printf("Unhandled server message %s\n", msg.ToJsonString().c_str());
+            }
+        }
+    }
+    
+    void Easyrtc::OnChannelCmd(const Any & msg,
+                               const std::function<void(const Any &)> ack_acceptor_fn)
+    {
+        auto thiz = shared_from_this();
+        
+        std::string caller = msg.GetAt("senderEasyrtcid").AsString().value();
+        std::string msg_type = msg.GetAt("msgType").AsString().value();
+        Any msg_data = msg.GetAt("msgData");
+        
+        std::shared_ptr<RtcPeerConnection> pc;
+        
+        FuncCall(debug_printer_, std::string("received message of type ") + msg_type);
+
+        if (HasKey(queued_messages_, caller)) {
+            ClearQueuedMessages(caller);
+        }
+        
+        auto process_candidate_body = [thiz](const std::string & caller, const Any & arg_msg_data){
+            Any msg_data = arg_msg_data;
+//            var candidate = null;
+            
+            if (thiz->ice_candidate_filter_) {
+                msg_data = thiz->ice_candidate_filter_(msg_data, true);
+                if (!msg_data) {
+                    return;
+                }
+            }
+
+//            RtcIce
+//            
+//            if (window.mozRTCIceCandidate) {
+//                candidate = new mozRTCIceCandidate({
+//                sdpMLineIndex: msgData.label,
+//                candidate: msgData.candidate
+//                });
+//            }
+//            else {
+//                candidate = new RTCIceCandidate({
+//                sdpMLineIndex: msgData.label,
+//                candidate: msgData.candidate
+//                });
+//            }
+//            pc = peerConns[caller].pc;
+//            
+//            function iceAddSuccess() {}
+//            function iceAddFailure(domError) {
+//                easyrtc.showError(self.errCodes.ICECANDIDATE_ERR, "bad ice candidate (" + domError.name + "): " +
+//                                  JSON.stringify(candidate));
+//            }
+//            pc.addIceCandidate(candidate, iceAddSuccess, iceAddFailure);
+//            
+//            if (msgData.candidate.indexOf("typ relay") > 0) {
+//                var ipAddress = msgData.candidate.match(/(udp|tcp) \d+ (\d+\.\d+\.\d+\.\d+)/i)[1];
+//                self._turnServers[ipAddress] = true;
+//            }
+        };
+//        var flushCachedCandidates = function(caller) {
+//            var i;
+//            if (queuedMessages[caller]) {
+//                for (i = 0; i < queuedMessages[caller].candidates.length; i++) {
+//                    processCandidateBody(caller, queuedMessages[caller].candidates[i]);
+//                }
+//                delete queuedMessages[caller];
+//            }
+//        };
+//        var processOffer = function(caller, msgData) {
+//            
+//            var helper = function(wasAccepted, streamNames) {
+//                
+//                if (streamNames) {
+//                    if (typeof streamNames === "string") {
+//                        streamNames = [streamNames];
+//                    }
+//                    else if (streamNames.length === undefined) {
+//                        easyrtc.showError(self.errCodes.DEVELOPER_ERR, "accept callback passed invalid streamNames");
+//                        return;
+//                    }
+//                }
+//                if (self.debugPrinter) {
+//                    self.debugPrinter("offer accept=" + wasAccepted);
+//                }
+//                delete offersPending[caller];
+//                
+//                if (wasAccepted) {
+//                    if (!self.supportsPeerConnections()) {
+//                        callFailureCB(self.errCodes.CALL_ERR, self.getConstantString("noWebrtcSupport"));
+//                        return;
+//                    }
+//                    doAnswer(caller, msgData, streamNames);
+//                    flushCachedCandidates(caller);
+//                }
+//                else {
+//                    sendSignalling(caller, "reject", null, null, null);
+//                    clearQueuedMessages(caller);
+//                }
+//            };
+//            //
+//            // There is a very rare case of two callers sending each other offers
+//            // before receiving the others offer. In such a case, the caller with the
+//            // greater valued easyrtcid will delete its pending call information and do a
+//            // simple answer to the other caller's offer.
+//            //
+//            if (acceptancePending[caller] && caller < self.myEasyrtcid) {
+//                delete acceptancePending[caller];
+//                if (queuedMessages[caller]) {
+//                    delete queuedMessages[caller];
+//                }
+//                if (peerConns[caller].wasAcceptedCB) {
+//                    peerConns[caller].wasAcceptedCB(true, caller);
+//                }
+//                delete peerConns[caller];
+//                helper(true);
+//                return;
+//            }
+//            
+//            offersPending[caller] = msgData;
+//            if (!self.acceptCheck) {
+//                helper(true);
+//            }
+//            else {
+//                self.acceptCheck(caller, helper);
+//            }
+//        };
+//        function processReject(caller) {
+//            delete acceptancePending[caller];
+//            if (queuedMessages[caller]) {
+//                delete queuedMessages[caller];
+//            }
+//            if (peerConns[caller]) {
+//                if (peerConns[caller].wasAcceptedCB) {
+//                    peerConns[caller].wasAcceptedCB(false, caller);
+//                }
+//                delete peerConns[caller];
+//            }
+//        }
+//        
+//        function processAnswer(caller, msgData) {
+//            
+//            
+//            
+//            delete acceptancePending[caller];
+//            
+//            //
+//            // if we've discarded the peer connection, ignore the answer.
+//            //
+//            if (!peerConns[caller]) {
+//                return;
+//            }
+//            peerConns[caller].connectionAccepted = true;
+//            
+//            
+//            
+//            if (peerConns[caller].wasAcceptedCB) {
+//                peerConns[caller].wasAcceptedCB(true, caller);
+//            }
+//            
+//            var onSignalSuccess = function() {
+//                
+//            };
+//            var onSignalFailure = function(errorCode, errorText) {
+//                if (peerConns[caller]) {
+//                    delete peerConns[caller];
+//                }
+//                self.showError(errorCode, errorText);
+//            };
+//            // peerConns[caller].startedAV = true;
+//            sendQueuedCandidates(caller, onSignalSuccess, onSignalFailure);
+//            pc = peerConns[caller].pc;
+//            var sd = null;
+//            if (window.mozRTCSessionDescription) {
+//                sd = new mozRTCSessionDescription(msgData);
+//            }
+//            else {
+//                sd = new RTCSessionDescription(msgData);
+//            }
+//            if (!sd) {
+//                throw "Could not create the RTCSessionDescription";
+//            }
+//            
+//            if (self.debugPrinter) {
+//                self.debugPrinter("about to call initiating setRemoteDescription");
+//            }
+//            try {
+//                if (sdpRemoteFilter) {
+//                    sd.sdp = sdpRemoteFilter(sd.sdp);
+//                }
+//                pc.setRemoteDescription(sd, function() {
+//                    if (pc.connectDataConnection) {
+//                        if (self.debugPrinter) {
+//                            self.debugPrinter("calling connectDataConnection(5001,5002)");
+//                        }
+//                        pc.connectDataConnection(5001, 5002); // these are like ids for data channels
+//                    }
+//                }, function(message){
+//                    console.log("setRemoteDescription failed ", message);
+//                });
+//            } catch (smdException) {
+//                console.log("setRemoteDescription failed ", smdException);
+//            }
+//            flushCachedCandidates(caller);
+//        }
+//        
+//        function processCandidateQueue(caller, msgData) {
+//            
+//            if (peerConns[caller] && peerConns[caller].pc) {
+//                processCandidateBody(caller, msgData);
+//            }
+//            else {
+//                if (!peerConns[caller]) {
+//                    queuedMessages[caller] = {
+//                    candidates: []
+//                    };
+//                }
+//                queuedMessages[caller].candidates.push(msgData);
+//            }
+//        }
+//        
+//        switch (msgType) {
+//            case "sessionData":
+//                processSessionData(msgData.sessionData);
+//                break;
+//            case "roomData":
+//                processRoomData(msgData.roomData);
+//                break;
+//            case "iceConfig":
+//                processIceConfig(msgData.iceConfig);
+//                break;
+//            case "forwardToUrl":
+//                if (msgData.newWindow) {
+//                    window.open(msgData.forwardToUrl.url);
+//                }
+//                else {
+//                    window.location.href = msgData.forwardToUrl.url;
+//                }
+//                break;
+//            case "offer":
+//                processOffer(caller, msgData);
+//                break;
+//            case "reject":
+//                processReject(caller);
+//                break;
+//            case "answer":
+//                processAnswer(caller, msgData);
+//                break;
+//            case "candidate":
+//                processCandidateQueue(caller, msgData);
+//                break;
+//            case "hangup":
+//                onRemoteHangup(caller);
+//                clearQueuedMessages(caller);
+//                break;
+//            case "error":
+//                self.showError(msg.errorCode, msg.errorText);
+//                break;
+//            default:
+//                console.error("received unknown message type from server, msgType is " + msgType);
+//                return;
+//        }
+//        
+//        if (ackAcceptorFn) {
+//            ackAcceptorFn(self.ackMessage);
+//        }
+        
+        if (ack_acceptor_fn) {
+            ack_acceptor_fn(ack_message_);
+        }
+    };
     
     // -----
     

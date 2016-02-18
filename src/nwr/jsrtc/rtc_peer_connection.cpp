@@ -11,6 +11,7 @@
 #include "media_stream.h"
 #include "rtc_data_channel.h"
 #include "rtc_session_description.h"
+#include "rtc_ice_candidate.h"
 
 namespace nwr {
 namespace jsrtc {
@@ -107,8 +108,10 @@ namespace jsrtc {
         return current_remote_description();
     }
     
-    void RtcPeerConnection::AddIceCandidate(const webrtc::IceCandidateInterface * candidate) {
-        bool ok = inner_connection_->AddIceCandidate(candidate);
+    void RtcPeerConnection::AddIceCandidate(const std::shared_ptr<const RtcIceCandidate> & candidate) {
+        rtc::scoped_ptr<webrtc::IceCandidateInterface> wcand(candidate->CreateWebrtc());
+        
+        bool ok = inner_connection_->AddIceCandidate(wcand.get());
         if (!ok) { Fatal("AddIceCandidate failed"); }
     }
     
@@ -157,7 +160,7 @@ namespace jsrtc {
     }
     
     void RtcPeerConnection::
-    set_on_ice_candidate(const std::function<void(const std::shared_ptr<webrtc::IceCandidateInterface> &)> & value) {
+    set_on_ice_candidate(const std::function<void(const std::shared_ptr<RtcIceCandidate> &)> & value) {
         on_ice_candidate_ = value;
     }
     
@@ -294,15 +297,8 @@ namespace jsrtc {
     void RtcPeerConnection::InnerObserver::
     OnIceCandidate(const webrtc::IceCandidateInterface* arg_candidate)
     {
-        std::string sdp;
-        bool ok = arg_candidate->ToString(&sdp);
-        if (!ok) { Fatal("candidate ToString failed"); }
-        
-        std::shared_ptr<webrtc::IceCandidateInterface>
-        candidate(webrtc::CreateIceCandidate(arg_candidate->sdp_mid(),
-                                             arg_candidate->sdp_mline_index(),
-                                             sdp,
-                                             nullptr));
+        std::shared_ptr<RtcIceCandidate> candidate = RtcIceCandidate::FromWebrtc(*arg_candidate);
+        if (!candidate) { Fatal("invalid"); }
         
         owner->Post([candidate](RtcPeerConnection & owner) {
             FuncCall(owner.on_ice_candidate_, candidate);
@@ -330,6 +326,7 @@ namespace jsrtc {
     OnSuccess(webrtc::SessionDescriptionInterface* arg_desc) {
         rtc::scoped_refptr<CreateSessionDescriptionObserver> thiz(this);
         std::shared_ptr<RtcSessionDescription> desc = RtcSessionDescription::FromWebrtc(*arg_desc);
+        if (!desc) { Fatal("invalid"); }
         
         owner->Post([thiz, desc](RtcPeerConnection & owner) {
             FuncCall(thiz->success, desc);

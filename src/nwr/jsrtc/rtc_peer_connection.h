@@ -20,6 +20,7 @@
 namespace nwr {
     namespace jsrtc {
         class RtcSessionDescription;
+        class RtcIceCandidate;
         class RtcPeerConnectionFactory;
         class RtcDataChannel;
         class MediaStream;
@@ -45,7 +46,7 @@ namespace nwr {
             std::shared_ptr<const RtcSessionDescription> remote_description();
             std::shared_ptr<const RtcSessionDescription> current_remote_description();
             std::shared_ptr<const RtcSessionDescription> pending_remote_description();
-            void AddIceCandidate(const webrtc::IceCandidateInterface * candidate);
+            void AddIceCandidate(const std::shared_ptr<const RtcIceCandidate> & candidate);
             webrtc::PeerConnectionInterface::SignalingState signaling_state();
             webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state();
             webrtc::PeerConnectionInterface::IceConnectionState ice_connection_state();
@@ -56,7 +57,7 @@ namespace nwr {
 //            void                           setConfiguration (RTCConfiguration configuration);            
             void Close();
             void set_on_negotiation_needed(const std::function<void()> & value);
-            void set_on_ice_candidate(const std::function<void(const std::shared_ptr<webrtc::IceCandidateInterface> &)> & value);
+            void set_on_ice_candidate(const std::function<void(const std::shared_ptr<RtcIceCandidate> &)> & value);
             void set_on_signaling_state_change(const std::function<void(webrtc::PeerConnectionInterface::SignalingState)> & value);
             void set_on_ice_connection_state_change(const std::function<void(webrtc::PeerConnectionInterface::IceConnectionState)> & value);
             void set_on_ice_gathering_state_change(const std::function<void(webrtc::PeerConnectionInterface::IceGatheringState)> & value);
@@ -149,7 +150,7 @@ namespace nwr {
             std::shared_ptr<const RtcSessionDescription> current_remote_description_;
             std::shared_ptr<const RtcSessionDescription> pending_remote_description_;
             std::function<void()> on_negotiation_needed_;
-            std::function<void(const std::shared_ptr<webrtc::IceCandidateInterface> &)> on_ice_candidate_;
+            std::function<void(const std::shared_ptr<RtcIceCandidate> &)> on_ice_candidate_;
 //            std::function<void()> on_ice_candidate_error_;
             std::function<void(webrtc::PeerConnectionInterface::SignalingState)> on_signaling_state_change_;
             std::function<void(webrtc::PeerConnectionInterface::IceConnectionState)> on_ice_connection_state_change_;

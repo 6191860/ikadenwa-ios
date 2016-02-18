@@ -30,6 +30,7 @@
 #include <nwr/jsrtc/media_stream.h>
 #include <nwr/jsrtc/media_stream_track.h>
 #include <nwr/jsrtc/rtc_session_description.h>
+#include <nwr/jsrtc/rtc_ice_candidate.h>
 #include <nwr/jsrtc/rtc_peer_connection.h>
 #include <nwr/jsrtc/rtc_peer_connection_factory.h>
 
@@ -250,8 +251,12 @@ namespace ert {
         void ReceivePeerDistribute(const std::string & easyrtcid,
                                    const Any & msg,
                                    const Any & targeting);
-        std::function<void()> receive_server_cb_;
-        void set_server_listener(const std::function<void()> & listener);
+        std::function<void(const std::string &,
+                           const Any &,
+                           const Any &)> receive_server_cb_;
+        void set_server_listener(const std::function<void(const std::string &,
+                                                          const Any &,
+                                                          const Any &)> & listener);
         eio::Socket::ConstructorParams connection_options_;
         void set_socket_url(const std::string & socket_url,
                             const Optional<eio::Socket::ConstructorParams> & options);
@@ -355,7 +360,8 @@ namespace ert {
                                              const std::string & local_stream_name);
         void AddStreamToCall(const std::string & easyrtcid,
                              const Optional<std::string> & arg_stream_name,
-                             const std::function<void()> & receipt_handler);
+                             const std::function<void(const std::string &,
+                                                      const std::string &)> & receipt_handler);
         void SetupPeerListener1();
         void SetupPeerListener2();
         void SetupPeerListener3();
@@ -385,13 +391,19 @@ namespace ert {
         void AddAggregatingTimer(const std::string & key,
                                  const std::function<void()> & callback,
                                  const Optional<TimeDuration> & arg_period);
+        void ProcessOccupantList(const std::string & room_name,
+                                 std::map<std::string, Any> & occupant_list);
+        void SendQueuedCandidates(const std::string & peer,
+                                  const std::function<void (const std::string &,
+                                                            const Any &)> & on_signal_success,
+                                  const std::function<void (const std::string &,
+                                                            const std::string &)> & on_signal_failure);
+        void OnChannelMsg(const Any & msg,
+                          const std::function<void(const Any &)> ack_acceptor_func);
+        void OnChannelCmd(const Any & msg,
+                          const std::function<void(const Any &)> ack_acceptor_fn);
         //---
         
-        void SendQueuedCandidates(const std::string & easyrtcid,
-                                  const std::function<void(const std::string &,
-                                                           const Any &)> & on_signal_success,
-                                  const std::function<void(const std::string &,
-                                                           const std::string &)> & on_signal_failure);
         
         
         void GetFreshIceConfig(const std::function<void(bool)> & cb);

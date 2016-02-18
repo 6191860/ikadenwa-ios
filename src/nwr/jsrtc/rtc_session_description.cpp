@@ -65,15 +65,15 @@ namespace jsrtc {
         webrtc::SdpParseError err;
         auto * wdesc = webrtc::CreateSessionDescription(type, sdp, &err);
         if (!wdesc) {
-            printf("invalid session description sdp: line %s, %s\n",
-                   err.line.c_str(), err.description.c_str());
+            printf("invalid session description sdp: line %s, %s; sdp=%s\n",
+                   err.line.c_str(), err.description.c_str(), sdp.c_str());
             return nullptr;
         }
         return wdesc;
     }
     
     std::shared_ptr<RtcSessionDescription> RtcSessionDescription::
-    FromWebrtc(webrtc::SessionDescriptionInterface & wdesc)
+    FromWebrtc(const webrtc::SessionDescriptionInterface & wdesc)
     {
         std::string sdp;
         wdesc.ToString(&sdp);

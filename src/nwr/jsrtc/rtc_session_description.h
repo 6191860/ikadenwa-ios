@@ -30,7 +30,7 @@ namespace jsrtc {
         webrtc::SessionDescriptionInterface * CreateWebrtc() const;
         static webrtc::SessionDescriptionInterface * CreateWebrtc(const std::string & type,
                                                                   const std::string & sdp);
-        static std::shared_ptr<RtcSessionDescription> FromWebrtc(webrtc::SessionDescriptionInterface & wdesc);
+        static std::shared_ptr<RtcSessionDescription> FromWebrtc(const webrtc::SessionDescriptionInterface & wdesc);
     private:
         std::string type_;
         std::string sdp_;

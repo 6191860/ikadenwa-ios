@@ -26,7 +26,6 @@ namespace ert {
     enable_negotiate_listener_(false)
     {}
     
-#warning todo
     void PeerConn::Close() {
         if (closed_) { return; }
         
