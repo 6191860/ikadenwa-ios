@@ -186,6 +186,8 @@ namespace ert {
     std::string Easyrtc::err_codes_ALREADY_CONNECTED_ = "ALREADY_CONNECTED";
     std::string Easyrtc::err_codes_BAD_CREDENTIAL_ = "BAD_CREDENTIAL";
     std::string Easyrtc::err_codes_ICECANDIDATE_ERROR_ = "ICECANDIDATE_ERROR";
+    std::string Easyrtc::err_codes_NOVIABLEICE_ = "NOVIABLEICE";
+    std::string Easyrtc::err_codes_SIGNAL_ERROR_ = "SIGNAL_ERROR";
     
     void Easyrtc::EnableAudioReceive(bool value) {
         MediaConstraintsSet(received_media_constraints_.mandatory(),
@@ -2007,7 +2009,7 @@ namespace ert {
                     break;
                 }
                 case webrtc::PeerConnectionInterface::kIceConnectionFailed: {
-                    FuncCall(failure_cb, "NOVIABLEICE", "No usable STUN/TURN path");
+                    FuncCall(failure_cb, thiz->err_codes_NOVIABLEICE_, "No usable STUN/TURN path");
                     thiz->DeletePeerConn(other_user);
                     break;
                 }
@@ -2803,11 +2805,11 @@ namespace ert {
             }
         };
         
-        auto flush_cached_candidates = [thiz](const std::string & caller) {
+        auto flush_cached_candidates = [thiz, process_candidate_body](const std::string & caller) {
             if (HasKey(thiz->queued_messages_, caller)) {
                 const auto candidates = thiz->queued_messages_[caller].GetAt("candidates").AsArray().value();
                 for (const auto & candidate : candidates) {
-                    thiz->ProcessCandidateBody(caller, candidate);
+                    process_candidate_body(caller, candidate);
                 }
                 thiz->queued_messages_.erase(caller);
             }
@@ -2982,7 +2984,111 @@ namespace ert {
         if (ack_acceptor_fn) {
             ack_acceptor_fn(ack_message_);
         }
-    };
+    }
+    
+    void Easyrtc::ConnectToWSServer(const std::function<void()> & success_callback,
+                                    const std::function<void(const std::string &,
+                                                             const std::string &)> & error_callback)
+    {
+        auto thiz = shared_from_this();
+
+        if (preallocated_socket_io_) {
+            websocket_ = preallocated_socket_io_;
+        }
+        else if (!websocket_) {
+            websocket_ = sio::Io(server_path_, connection_options_);
+            if (!websocket_) {
+                Fatal("sio::Io failed");
+            }
+        }
+        else {
+            for (const auto & entry : websocket_listeners_) {
+                websocket_->emitter()->Off(entry.event, entry.handler);
+            }
+        }
+        
+        websocket_listeners_.clear();
+        
+        auto add_socket_listener = [thiz](const std::string & event, const AnyEventListener & handler) {
+            thiz->websocket_->emitter()->On(event, handler);
+            thiz->websocket_listeners_.push_back({ event, handler });
+        };
+        
+        add_socket_listener("close", AnyEventListenerMake([](const Any & event){
+            printf("the web socket closed\n");
+        }));
+        add_socket_listener("error", AnyEventListenerMake([thiz, error_callback](const Any & event){
+            
+            if (thiz->my_easyrtcid_) {
+                //
+                // socket.io version 1 got rid of the socket member, moving everything up one level.
+                //
+                if (thiz->IsSocketConnected(thiz->websocket_)) {
+                    thiz->ShowError(thiz->err_codes_SIGNAL_ERROR_,
+                                    thiz->GetConstantString("miscSignalError"));
+                }
+                else {
+                    /* socket server went down. this will generate a 'disconnect' event as well, so skip this event */
+                    error_callback(thiz->err_codes_CONNECT_ERR_,
+                                   thiz->GetConstantString("noServer"));
+                }
+            }
+            else {
+                error_callback(thiz->err_codes_CONNECT_ERR_,
+                               thiz->GetConstantString("noServer"));
+            }
+            
+        }));
+        
+        auto connect_handler = [thiz, success_callback, error_callback](const Any & event) {
+            thiz->websocket_connected_ = true;
+            if (!thiz->websocket_) {
+                thiz->ShowError(thiz->err_codes_CONNECT_ERR_,
+                                thiz->GetConstantString("badsocket"));
+            }
+
+            FuncCall(thiz->debug_printer_, "saw socket-server connect event");
+            
+            if (thiz->websocket_connected_) {
+                thiz->SendAuthenticate(success_callback, error_callback);
+            }
+            else {
+                error_callback(thiz->err_codes_SIGNAL_ERROR_,
+                               thiz->GetConstantString("icf"));
+            }
+        };
+        
+        if (IsSocketConnected(preallocated_socket_io_)) {
+            connect_handler(nullptr);
+        }
+        else {
+            add_socket_listener("connect", AnyEventListenerMake(connect_handler));
+        }
+        add_socket_listener("easyrtcMsg", AnyEventListenerMake([thiz](const Any & event){
+#warning todo ack handling
+            thiz->OnChannelMsg(event, nullptr);
+        }));
+        add_socket_listener("easyrtcCmd", AnyEventListenerMake([thiz](const Any & event){
+#warning todo ack handling
+            thiz->OnChannelCmd(event, nullptr);
+        }));
+        
+        add_socket_listener("disconnect", AnyEventListenerMake([thiz](const Any & event){
+            thiz->websocket_connected_ = false;
+#warning todo : update configuration info dynamically
+            thiz->update_configuration_info_ = [](){
+                
+            }; // dummy update function
+#warning todo old conifg
+            thiz->old_config_ = 0;
+            thiz->DisconnectBody();
+            FuncCall(thiz->disconnect_listener_);
+        }));
+    }
+    
+    
+    
+    
     
     // -----
     
@@ -2999,7 +3105,7 @@ namespace ert {
     void Easyrtc::UpdateConfiguration() {
     }
     void Easyrtc::UpdateConfigurationInfo() {
-        UpdateConfiguration();
+        FuncCall(update_configuration_info_);
     }
     
 

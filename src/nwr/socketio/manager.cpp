@@ -289,7 +289,6 @@ namespace sio {
             }
         }
         
-
         return socket;
     }
     

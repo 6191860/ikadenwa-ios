@@ -64,6 +64,7 @@ namespace sio {
         void OnClose();
         void OnPacket(const Packet & packet);
         void OnEvent(const Packet & packet);
+#warning todo support it
         AckFunc Ack(int id);
         void OnAck(const Packet & packet);
         void OnConnect();

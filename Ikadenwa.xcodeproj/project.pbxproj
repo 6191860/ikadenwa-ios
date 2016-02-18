@@ -132,6 +132,7 @@
 		D65236E31C760E3900D399F6 /* aggregating_timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aggregating_timer.h; path = nwr/easyrtc/aggregating_timer.h; sourceTree = "<group>"; };
 		D65236E51C76188000D399F6 /* rtc_ice_candidate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_ice_candidate.cpp; path = nwr/jsrtc/rtc_ice_candidate.cpp; sourceTree = "<group>"; };
 		D65236E61C76188000D399F6 /* rtc_ice_candidate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_ice_candidate.h; path = nwr/jsrtc/rtc_ice_candidate.h; sourceTree = "<group>"; };
+		D65236E91C763C9E00D399F6 /* websocket_listener_entry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = websocket_listener_entry.h; path = nwr/socketio/websocket_listener_entry.h; sourceTree = "<group>"; };
 		D664369B1C4A544C0059A94B /* app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = app/app.cpp; sourceTree = "<group>"; };
 		D664369C1C4A544C0059A94B /* app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = app.h; path = app/app.h; sourceTree = "<group>"; };
 		D664369E1C4A5F070059A94B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -446,6 +447,7 @@
 				D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */,
 				D65236E31C760E3900D399F6 /* aggregating_timer.h */,
 				D65236E21C760E3900D399F6 /* aggregating_timer.cpp */,
+				D65236E91C763C9E00D399F6 /* websocket_listener_entry.h */,
 				D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */,
 				D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */,
 			);

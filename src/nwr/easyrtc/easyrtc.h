@@ -38,6 +38,7 @@
 #include "peer_conn.h"
 #include "receive_peer.h"
 #include "aggregating_timer.h"
+#include "websocket_listener_entry.h"
 
 namespace nwr {
 namespace ert {
@@ -101,6 +102,9 @@ namespace ert {
         static std::string err_codes_ALREADY_CONNECTED_;
         static std::string err_codes_BAD_CREDENTIAL_;
         static std::string err_codes_ICECANDIDATE_ERROR_;
+        static std::string err_codes_NOVIABLEICE_;
+        static std::string err_codes_SIGNAL_ERROR_;
+
         std::string api_version_;
         Any ack_message_;
         std::regex username_regexp_;
@@ -406,7 +410,14 @@ namespace ert {
                           const std::function<void(const Any &)> ack_acceptor_func);
         void OnChannelCmd(const Any & msg,
                           const std::function<void(const Any &)> ack_acceptor_fn);
-        void ProcessCandidateBody(const std::string & caller, const Any & candidate);
+        std::vector<WebsocketListenerEntry> websocket_listeners_;
+        
+        void SendAuthenticate(const std::function<void()> & success_callback,
+                              const std::function<void(const std::string &,
+                                                       const std::string &)> & failure_callback);
+        void ConnectToWSServer(const std::function<void()> & success_callback,
+                               const std::function<void(const std::string &,
+                                                        const std::string &)> & error_callback);
         //---
         
         
@@ -416,10 +427,13 @@ namespace ert {
         void CallCanceled(const std::string & other_user, bool a);
         
         std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
+        void ProcessSessionData(const Any & session_data);
         void ProcessRoomData(const Any & room_data);
+        void ProcessIceConfig(const Any & ice_config);
         Any GetRoomFields(const std::string & room_name);
         void UpdateConfiguration();
         void UpdateConfigurationInfo();
+        std::function<void()> update_configuration_info_;
 
         static std::map<std::string, std::string> constant_strings_;
 
