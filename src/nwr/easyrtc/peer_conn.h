@@ -28,7 +28,7 @@ namespace ert {
     
     class PeerConn {
     public:
-        PeerConn();
+        PeerConn(const std::string & other_user);
         void Close();
         
         bool started_av() const { return started_av_; }
@@ -38,6 +38,7 @@ namespace ert {
         std::shared_ptr<RtcDataChannel> data_channel_r() const { return data_channel_r_; }
         void set_data_channel_r(const std::shared_ptr<RtcDataChannel> & value) { data_channel_r_ = value; }
         bool data_channel_ready() const { return data_channel_ready_; }
+        void set_data_channel_ready(bool value) { data_channel_ready_ = value; }
         Optional<std::chrono::system_clock::time_point> connect_time() const { return connect_time_; }
         void set_connect_time(const Optional<std::chrono::system_clock::time_point> & value) { connect_time_ = value; }
         bool sharing_audio() const { return sharing_audio_; }
@@ -84,7 +85,9 @@ namespace ert {
         
         
     private:
-        //  emulate lambda capture
+        bool closed_;
+        
+        //  lambda capture emulation
         std::string other_user_;
         
         bool started_av_;

@@ -101,6 +101,24 @@ namespace jsrtc {
         if (remote()) { return; }
         inner_track_->set_state(webrtc::MediaStreamTrackInterface::kEnded);
     }
+    
+    void MediaStreamTrack::Close() {
+        if (closed_) { return; }
+        
+        Stop();
+        inner_track_ = nullptr;
+        inner_observer_ = nullptr;
+
+        id_.clear();
+        enabled_ = false;
+        ready_state_ = MediaStreamTrackState::Ended;
+        on_ended_ = nullptr;
+        change_emitter_->RemoveAllListeners();
+        
+        ClosePostTarget();
+        
+        closed_ = true;
+    }
 
     webrtc::MediaSourceInterface * MediaStreamTrack::inner_source() {
         auto audio_source = inner_audio_source();

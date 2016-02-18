@@ -43,6 +43,8 @@ namespace jsrtc {
         void set_on_inactive(const std::function<void()> & value);
 //        attribute EventHandler onaddtrack;
 //        attribute EventHandler onremovetrack;
+        
+        void Close();
     private:
         void OnTracksUpdate();
 
@@ -56,6 +58,8 @@ namespace jsrtc {
         
         void set_active(bool value);
         bool ComputeActive();
+        
+        bool closed_;
         
         rtc::scoped_refptr<webrtc::MediaStreamInterface> inner_stream_;
         std::string id_;

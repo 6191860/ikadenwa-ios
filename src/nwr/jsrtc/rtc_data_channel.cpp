@@ -68,11 +68,20 @@ namespace jsrtc {
         
         inner_set_ready_state(RtcDataChannelState::Closed);
         
-        inner_channel_->Close();
-        inner_channel_ = nullptr;
+        if (inner_channel_) {
+            inner_channel_->Close();
+            inner_channel_ = nullptr;
+        }
         inner_observer_ = nullptr;
+    
+        ready_state_ = RtcDataChannelState::Closed;
+        
+        on_open_ = nullptr;
+        on_close_ = nullptr;
+        on_message_ = nullptr;
         
         ClosePostTarget();
+        
         closed_ = true;
     }
     

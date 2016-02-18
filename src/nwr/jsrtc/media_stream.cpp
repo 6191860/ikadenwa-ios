@@ -134,6 +134,28 @@ namespace jsrtc {
         on_inactive_ = value;
     }
     
+    void MediaStream::Close() {
+        if (closed_) { return; }
+        
+        for (const auto & track : tracks()) {
+            RemoveTrack(track);
+            track->Close();
+        }
+        
+        inner_stream_ = nullptr;
+        id_.clear();
+        audio_tracks_.clear();
+        video_tracks_.clear();
+        active_ = false;
+        on_active_ = nullptr;
+        on_inactive_ = nullptr;
+        track_change_listener_ = nullptr;
+        
+        ClosePostTarget();
+        
+        closed_ = true;
+    }
+    
     void MediaStream::OnTracksUpdate() {
         bool new_active = ComputeActive();
         if (active_ != new_active) {

@@ -61,6 +61,8 @@ namespace jsrtc {
         webrtc::VideoSourceInterface * inner_video_source();
         
         EmitterPtr<None> change_emitter() const { return change_emitter_; }
+        
+        void Close();
     private:
         struct ChangeObserver: public webrtc::ObserverInterface {
             ChangeObserver(MediaStreamTrack & owner);
@@ -74,6 +76,8 @@ namespace jsrtc {
         void inner_set_ready_state(MediaStreamTrackState value);
         void OnInnerUpdate();
         MediaStreamTrackState ComputeState(webrtc::MediaStreamTrackInterface::TrackState state);
+        
+        bool closed_;
         
         rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> inner_track_;
         std::shared_ptr<ChangeObserver> inner_observer_;

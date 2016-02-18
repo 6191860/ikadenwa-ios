@@ -181,10 +181,10 @@ namespace ert {
         void set_room_occupant_listener(const std::function<void(const Optional<std::string> &,
                                                         const Any &,
                                                         bool)> & listener);
-        std::function<void()> on_data_channel_open_;
-        void set_data_channel_open_listener(const std::function<void()> & listener);
-        std::function<void()> on_data_channel_close_;
-        void set_data_channel_close_listener(const std::function<void()> & listener);
+        std::function<void(const std::string &, bool)> on_data_channel_open_;
+        void set_data_channel_open_listener(const std::function<void(const std::string &, bool)> & listener);
+        std::function<void(const std::string &)> on_data_channel_close_;
+        void set_data_channel_close_listener(const std::function<void(const std::string &)> & listener);
         int connection_count();
         int max_p2p_message_length_;
         void set_max_p2p_message_length(int max_length);

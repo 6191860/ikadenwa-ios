@@ -12,7 +12,9 @@
 
 namespace nwr {
 namespace ert {
-    PeerConn::PeerConn():
+    PeerConn::PeerConn(const std::string & other_user):
+    closed_(false),
+    other_user_(other_user),
     started_av_(false),
     data_channel_ready_(false),
     sharing_audio_(false),
@@ -26,10 +28,45 @@ namespace ert {
     
 #warning todo
     void PeerConn::Close() {
+        if (closed_) { return; }
+        
         if (pc_) {
             pc_->Close();
             pc_ = nullptr;
         }
+        
+        started_av_ = false;
+        if (data_channel_s_) {
+            data_channel_s_->Close();
+            data_channel_s_ = nullptr;
+        }
+        if (data_channel_r_) {
+            data_channel_r_->Close();
+            data_channel_r_ = nullptr;
+        }
+        data_channel_ready_ = false;
+        connect_time_ = None();
+        sharing_audio_ = false;
+        sharing_video_ = false;
+        sharing_data_ = false;
+        canceled_ = true;
+        candidates_to_send_.clear();
+        streams_added_acks_.clear();
+        if (pc_) {
+            pc_->Close();
+            pc_ = nullptr;
+        }
+        connection_accepted_ = false;
+        is_initiator_ = false;
+        remote_stream_id_to_name_.clear();
+        live_remote_streams_.clear();
+        enable_negotiate_listener_ = false;
+        call_success_cb_ = nullptr;
+        call_failure_cb_ = nullptr;
+        was_accepted_cb_ = nullptr;
+        failing_ = None();
+                
+        closed_ = true;
     }
     
     std::shared_ptr<MediaStream>

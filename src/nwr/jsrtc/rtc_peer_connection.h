@@ -75,6 +75,8 @@ namespace nwr {
                                                               const webrtc::DataChannelInit * config);
             void set_on_data_channel(const std::function<void(const std::shared_ptr<RtcDataChannel> &)> & value);
             
+#warning onconnection
+            
             std::vector<std::shared_ptr<MediaStream>> local_streams();
             std::vector<std::shared_ptr<MediaStream>> remote_streams();
             void AddStream(const std::shared_ptr<MediaStream> & stream);

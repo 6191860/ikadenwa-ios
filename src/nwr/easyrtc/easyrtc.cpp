@@ -501,11 +501,11 @@ namespace ert {
         room_occupant_listener_ = listener;
     }
     
-    void Easyrtc::set_data_channel_open_listener(const std::function<void()> & listener) {
+    void Easyrtc::set_data_channel_open_listener(const std::function<void(const std::string &, bool)> & listener) {
         on_data_channel_open_ = listener;
     }
     
-    void Easyrtc::set_data_channel_close_listener(const std::function<void()> & listener) {
+    void Easyrtc::set_data_channel_close_listener(const std::function<void(const std::string &)> & listener) {
         on_data_channel_close_ = listener;
     }
     
@@ -2030,15 +2030,7 @@ namespace ert {
             }
         });
         
-
-//            pc.onconnection = function() {
-//                if (self.debugPrinter) {
-//                    self.debugPrinter("onconnection called prematurely");
-//                }
-//            };
-        
-        
-        auto new_peer_conn = std::make_shared<PeerConn>();
+        auto new_peer_conn = std::make_shared<PeerConn>(other_user);
         new_peer_conn->set_pc(pc);
         new_peer_conn->candidates_to_send().clear();
         new_peer_conn->set_started_av(false);
@@ -2182,10 +2174,11 @@ namespace ert {
         
         std::shared_ptr<Any> pending_transfer_ptr = std::make_shared<Any>();
         
-        auto data_channel_message_handler = [thiz, other_user, pending_transfer_ptr](const Any & event) {
-            FuncCall(thiz->debug_printer_, std::string("saw dataChannel.onmessage event: ") + event.ToJsonString());
+        auto data_channel_message_handler = [thiz, other_user, pending_transfer_ptr](const eio::PacketData & data) {
+            std::string data_str(data.char_ptr(), data.size());
+            FuncCall(thiz->debug_printer_, std::string("saw dataChannel.onmessage event: ") + data_str.c_str());
 
-            if (event.GetAt("data").AsString() == Some(std::string("dataChannelPrimed"))) {
+            if (data_str == "dataChannelPrimed") {
                 thiz->SendDataWS(Any(other_user), "dataChannelPrimed", Any(""), nullptr);
             }
             else {
@@ -2195,7 +2188,7 @@ namespace ert {
                 // work, so I'm going with parsing and trapping the parse error.
                 //
                 
-                auto msg = Any::FromJsonString(event.GetAt("data").AsString() || std::string(""));
+                auto msg = Any::FromJsonString(data_str);
                 if (msg) {
                     Optional<std::string> transfer_opt = msg.GetAt("transfer").AsString();
                     Optional<std::string> transfer_id_opt = msg.GetAt("transferId").AsString();
@@ -2283,137 +2276,126 @@ namespace ert {
             }
         };
 
-        auto init_out_going_channel = [thiz, other_user, pc](const std::string & other_user){
+        auto init_out_going_channel = [thiz, other_user, pc, data_channel_message_handler](const std::string & other_user){
             FuncCall(thiz->debug_printer_, "saw initOutgoingChannel call");
             
             webrtc::DataChannelInit data_channel_config = thiz->GetDataChannelConstraints();
             auto data_channel = pc->CreateDataChannel(thiz->data_channel_name_, &data_channel_config);
             
-#warning todo pc create data channel
             thiz->peer_conns_[other_user]->set_data_channel_s(data_channel);
             thiz->peer_conns_[other_user]->set_data_channel_r(data_channel);
+            data_channel->set_on_message(data_channel_message_handler);
+            data_channel->set_on_open([thiz, other_user, data_channel](){
+                FuncCall(thiz->debug_printer_, "saw dataChannel.onopen event");
+                
+                if (HasKey(thiz->peer_conns_, other_user)) {
+                    data_channel->Send(eio::PacketData("dataChannelPrimed"));
+                }
+            });
+            data_channel->set_on_close([thiz, other_user](){
+                FuncCall(thiz->debug_printer_, "saw dataChannelS.onclose event");
+
+                if (HasKey(thiz->peer_conns_, other_user)) {
+                    thiz->peer_conns_[other_user]->set_data_channel_ready(false);
+                    thiz->peer_conns_[other_user]->set_data_channel_s(nullptr);
+                }
+                
+                FuncCall(thiz->on_data_channel_close_, other_user);
+                
+                thiz->UpdateConfigurationInfo();
+            });
+        };
+
+        auto init_incoming_channel = [thiz, other_user, data_channel_message_handler](const std::string & other_user) {
+            FuncCall(thiz->debug_printer_, std::string("initializing incoming channel handler for ") + other_user);
             
+            thiz->peer_conns_[other_user]->pc()->set_on_data_channel([thiz, other_user, data_channel_message_handler](const std::shared_ptr<RtcDataChannel> & data_channel) {
+                FuncCall(thiz->debug_printer_, "saw incoming data channel");
+                
+                thiz->peer_conns_[other_user]->set_data_channel_r(data_channel);
+                thiz->peer_conns_[other_user]->set_data_channel_s(data_channel);
+                thiz->peer_conns_[other_user]->set_data_channel_ready(true);
+                
+                data_channel->set_on_message(data_channel_message_handler);
+                
+                data_channel->set_on_close([thiz, other_user](){
+                    FuncCall(thiz->debug_printer_, "saw dataChannelR.onclose event");
+                    
+                    if (HasKey(thiz->peer_conns_, other_user)) {
+                        thiz->peer_conns_[other_user]->set_data_channel_ready(false);
+                        thiz->peer_conns_[other_user]->set_data_channel_r(nullptr);
+                    }
+                    
+                    FuncCall(thiz->on_data_channel_close_, other_user);
+                    
+                    thiz->UpdateConfigurationInfo();
+                });
+                
+                data_channel->set_on_open([thiz, other_user, data_channel](){
+                    FuncCall(thiz->debug_printer_, "saw dataChannel.onopen event");
+                    
+                    if (HasKey(thiz->peer_conns_, other_user)) {
+                        data_channel->Send(eio::PacketData("dataChannelPrimed"));
+                    }
+                });                
+            });
             
-            //            dataChannel.onmessage = dataChannelMessageHandler;
-//            dataChannel.onopen = function(event) {
-//                if (self.debugPrinter) {
-//                    self.debugPrinter("saw dataChannel.onopen event");
-//                }
-//                if (peerConns[otherUser]) {
-//                    dataChannel.send("dataChannelPrimed");
-//                }
-//            };
-//            dataChannel.onclose = function(event) {
-//                if (self.debugPrinter) {
-//                    self.debugPrinter("saw dataChannelS.onclose event");
-//                }
-//                if (peerConns[otherUser]) {
-//                    peerConns[otherUser].dataChannelReady = false;
-//                    delete peerConns[otherUser].dataChannelS;
-//                }
-//                if (onDataChannelClose) {
-//                    onDataChannelClose(otherUser);
-//                }
-//                
-//                updateConfigurationInfo();
-//            };
         };
         
-//        function initOutGoingChannel(otherUser) {
 
-//        }
-//
-//        function initIncomingChannel(otherUser) {
-//            if (self.debugPrinter) {
-//                self.debugPrinter("initializing incoming channel handler for " + otherUser);
-//            }
-//
-//            peerConns[otherUser].pc.ondatachannel = function(event) {
-//                
-//                if (self.debugPrinter) {
-//                    self.debugPrinter("saw incoming data channel");
-//                }
-//                
-//                var dataChannel = event.channel;
-//                peerConns[otherUser].dataChannelR = dataChannel;
-//                peerConns[otherUser].dataChannelS = dataChannel;
-//                peerConns[otherUser].dataChannelReady = true;
-//                dataChannel.onmessage = dataChannelMessageHandler;
-//                dataChannel.onclose = function(event) {
-//                    if (self.debugPrinter) {
-//                        self.debugPrinter("saw dataChannelR.onclose event");
-//                    }
-//                    if (peerConns[otherUser]) {
-//                        peerConns[otherUser].dataChannelReady = false;
-//                        delete peerConns[otherUser].dataChannelR;
-//                    }
-//                    if (onDataChannelClose) {
-//                        onDataChannelClose(otherUser);
-//                    }
-//                    
-//                    updateConfigurationInfo();
-//                };
-//                dataChannel.onopen = function(event) {
-//                    if (self.debugPrinter) {
-//                        self.debugPrinter("saw dataChannel.onopen event");
-//                    }
-//                    if (peerConns[otherUser]) {
-//                        dataChannel.send("dataChannelPrimed");
-//                    }
-//                };
-//            };
-//        }
-//        
-//        //
-//        //  added for interoperability
-//        //
-//        var doDataChannels = dataEnabled;
-//        if (doDataChannels) {
-//            
-//            // check if both sides have the same browser and versions
-//        }
-//        
-//        if (doDataChannels) {
-//            self.setPeerListener(function() {
-//                peerConns[otherUser].dataChannelReady = true;
-//                if (peerConns[otherUser].callSuccessCB) {
-//                    peerConns[otherUser].callSuccessCB(otherUser, "datachannel");
-//                }
-//                if (onDataChannelOpen) {
-//                    onDataChannelOpen(otherUser, true);
-//                }
-//                updateConfigurationInfo();
-//            }, "dataChannelPrimed", otherUser);
-//            if (isInitiator) {
-//                try {
-//                    
-//                    initOutGoingChannel(otherUser);
-//                } catch (channelErrorEvent) {
-//                    console.log("failed to init outgoing channel");
-//                    failureCB(self.errCodes.SYSTEM_ERR,
-//                              self.formatError(channelErrorEvent));
-//                }
-//            }
-//            if (!isInitiator) {
-//                initIncomingChannel(otherUser);
-//            }
-//        }
-//        
-//        pc.onconnection = function() {
-//            if (self.debugPrinter) {
-//                self.debugPrinter("setup pc.onconnection ");
-//            }
-//        };
-//        
-//        //
-//        // Temporary support for responding to acknowledgements of about streams being added.
-//        //
-//        self.setPeerListener(function(easyrtcid, msgType, msgData, targeting){
-//            if( newPeerConn.streamsAddedAcks[msgData.streamName]) {
-//                (newPeerConn.streamsAddedAcks[msgData.streamName])(easyrtcid, msgData.streamName);
-//                delete newPeerConn.streamsAddedAcks[msgData.streamName];
-//            }
-//        }, "easyrtc_streamReceived", otherUser);
+        //
+        //  added for interoperability
+        //
+        
+        auto do_data_channels = data_enabled_;
+        if (do_data_channels) {
+
+            // check if both sides have the same browser and versions
+        }
+
+        if (do_data_channels) {
+            SetPeerListener([thiz, other_user](const std::string & easyrtcid,
+                                               const std::string & msg_type,
+                                               const Any & msd_data,
+                                               const Any & targeting)
+                            {
+                                thiz->peer_conns_[other_user]->set_data_channel_ready(true);
+                                
+                                if (thiz->peer_conns_[other_user]->call_success_cb()) {
+                                    thiz->peer_conns_[other_user]->call_success_cb()(other_user, "datachannel");
+                                }
+                                if (thiz->on_data_channel_open_) {
+                                    thiz->on_data_channel_open_(other_user, true);
+                                }
+                                thiz->UpdateConfigurationInfo();
+                            }, Some(std::string("dataChannelPrimed")), Some(other_user));
+            
+            
+            if (is_initiator) {
+                init_out_going_channel(other_user);
+            }
+            if (!is_initiator) {
+                init_incoming_channel(other_user);
+            }
+        }
+
+
+        //
+        // Temporary support for responding to acknowledgements of about streams being added.
+        //
+        
+        SetPeerListener([thiz, new_peer_conn](const std::string & easyrtcid,
+                                              const std::string & msg_type,
+                                              const Any & msg_data,
+                                              const Any & targeting)
+                        {
+                            std::string stream_name = msg_data.GetAt("streamName").AsString().value();
+                            if (HasKey(new_peer_conn->streams_added_acks(), stream_name))  {
+                                FuncCall(new_peer_conn->streams_added_acks()[stream_name], easyrtcid, stream_name);
+                                new_peer_conn->streams_added_acks().erase(stream_name);
+                            }
+                        }, Some(std::string("easyrtc_streamReceived")), Some(other_user));
+        
         return pc;
     }
     

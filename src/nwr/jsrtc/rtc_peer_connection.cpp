@@ -125,9 +125,33 @@ namespace jsrtc {
     void RtcPeerConnection::Close() {
         if (closed_) { return; }
         
-        inner_connection_->Close();
-        inner_connection_ = nullptr;
+        if (inner_connection_) {
+            inner_connection_->Close();
+            inner_connection_ = nullptr;
+        }
         inner_observer_ = nullptr;
+        
+        current_local_description_ = nullptr;
+        pending_local_description_ = nullptr;
+        current_remote_description_ = nullptr;
+        pending_remote_description_ = nullptr;
+        on_negotiation_needed_ = nullptr;
+        on_ice_candidate_ = nullptr;
+        on_signaling_state_change_ = nullptr;
+        on_ice_connection_state_change_ = nullptr;
+        on_ice_gathering_state_change_ = nullptr;
+        on_data_channel_ = nullptr;
+        
+        for (const auto & stream : local_streams_) {
+            stream->Close();
+        }
+        local_streams_.clear();
+        for (const auto & stream : remote_streams_) {
+            stream->Close();
+        }
+        remote_streams_.clear();
+        on_add_stream_ = nullptr;
+        on_remove_stream_ = nullptr;
         
         ClosePostTarget();
         closed_ = true;
