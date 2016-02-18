@@ -50,7 +50,8 @@ namespace ert {
         bool canceled() const { return canceled_; }
         void set_canceled(bool value) { canceled_ = value; }
         std::vector<Any> & candidates_to_send() { return candidates_to_send_; }
-        std::map<std::string, std::function<void()>> & streams_added_acks() { return streams_added_acks_; }
+        std::map<std::string, std::function<void(const std::string &,
+                                                 const std::string &)>> & streams_added_acks() { return streams_added_acks_; }
         std::shared_ptr<RtcPeerConnection> pc() const { return pc_; }
         void set_pc(const std::shared_ptr<RtcPeerConnection> & value) { pc_ = value; }
         bool connection_accepted() const { return connection_accepted_; }
@@ -100,7 +101,8 @@ namespace ert {
         bool sharing_data_;
         bool canceled_;
         std::vector<Any> candidates_to_send_;
-        std::map<std::string, std::function<void()>> streams_added_acks_;
+        std::map<std::string, std::function<void(const std::string &,
+                                                 const std::string &)>> streams_added_acks_;
         std::shared_ptr<RtcPeerConnection> pc_;
         //  media_stream
         bool connection_accepted_;

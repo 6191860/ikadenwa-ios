@@ -18,6 +18,7 @@
 		D65236D61C74A1C600D399F6 /* rtc_session_description.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */; };
 		D65236D91C74E4B500D399F6 /* rtc_data_channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D71C74E4B500D399F6 /* rtc_data_channel.cpp */; };
 		D65236DF1C75136F00D399F6 /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236DD1C75136F00D399F6 /* packet.cpp */; };
+		D65236E41C760E3900D399F6 /* aggregating_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236E21C760E3900D399F6 /* aggregating_timer.cpp */; };
 		D664369D1C4A544C0059A94B /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D664369B1C4A544C0059A94B /* app.cpp */; };
 		D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D664369F1C4A5F070059A94B /* AppDelegate.mm */; };
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
@@ -127,6 +128,8 @@
 		D65236DB1C7500FC00D399F6 /* post_target.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = post_target.h; path = nwr/jsrtc/post_target.h; sourceTree = "<group>"; };
 		D65236DD1C75136F00D399F6 /* packet.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = packet.cpp; path = nwr/engineio/packet.cpp; sourceTree = "<group>"; };
 		D65236DE1C75136F00D399F6 /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = nwr/engineio/packet.h; sourceTree = "<group>"; };
+		D65236E21C760E3900D399F6 /* aggregating_timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aggregating_timer.cpp; path = nwr/easyrtc/aggregating_timer.cpp; sourceTree = "<group>"; };
+		D65236E31C760E3900D399F6 /* aggregating_timer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aggregating_timer.h; path = nwr/easyrtc/aggregating_timer.h; sourceTree = "<group>"; };
 		D664369B1C4A544C0059A94B /* app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = app/app.cpp; sourceTree = "<group>"; };
 		D664369C1C4A544C0059A94B /* app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = app.h; path = app/app.h; sourceTree = "<group>"; };
 		D664369E1C4A5F070059A94B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -443,6 +446,8 @@
 				D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */,
 				D6B9DE5F1C6F324900EBF183 /* logged_in_info.h */,
 				D6B9DE5E1C6F324900EBF183 /* logged_in_info.cpp */,
+				D65236E31C760E3900D399F6 /* aggregating_timer.h */,
+				D65236E21C760E3900D399F6 /* aggregating_timer.cpp */,
 				D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */,
 				D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */,
 			);
@@ -611,6 +616,7 @@
 				D66436C31C4D42980059A94B /* looper.mm in Sources */,
 				D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */,
 				D6155E901C660EBD00A8B6CA /* parser.cpp in Sources */,
+				D65236E41C760E3900D399F6 /* aggregating_timer.cpp in Sources */,
 				D66436EF1C4FEF330059A94B /* time.cpp in Sources */,
 				D65236D61C74A1C600D399F6 /* rtc_session_description.cpp in Sources */,
 				D6B9DE5D1C6F2A0B00EBF183 /* receive_peer.cpp in Sources */,

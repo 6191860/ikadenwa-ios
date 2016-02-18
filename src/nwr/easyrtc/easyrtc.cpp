@@ -496,8 +496,8 @@ namespace ert {
     }
     
     void Easyrtc::set_room_occupant_listener(const std::function<void(const Optional<std::string> &,
-                                                                      const Any &,
-                                                                      bool)> & listener) {
+                                                                      const std::map<std::string, Any> &,
+                                                                      const Any &)> & listener) {
         room_occupant_listener_ = listener;
     }
     
@@ -895,11 +895,14 @@ namespace ert {
         on_error_ = err_listener;
     }
     
-    void Easyrtc::set_call_canceled(const std::function<void()> & call_canceled) {
+    void Easyrtc::set_call_canceled(const std::function<void(const std::string &, bool)> & call_canceled) {
         call_cancelled_ = call_canceled;
     }
     
-    void Easyrtc::set_on_stream_closed(const std::function<void()> & on_stream_closed) {
+    void Easyrtc::set_on_stream_closed(const std::function<void(const std::string &,
+                                                                const std::shared_ptr<MediaStream> &,
+                                                                const std::string &)> & on_stream_closed)
+    {
         on_stream_closed_ = on_stream_closed;
     }
     
@@ -994,13 +997,13 @@ namespace ert {
     {
         std::vector<std::tuple<std::string, std::string>> results;
         
-        for (const auto & room_name : Keys(last_loggged_in_list_)) {
+        for (const auto & room_name : Keys(last_logged_in_list_)) {
             if (room && room_name != *room) {
                 continue;
             }
             
-            for (const std::string & id : Keys(last_loggged_in_list_[room_name])) {
-                if (last_loggged_in_list_[room_name][id].username == Some(username)) {
+            for (const std::string & id : Keys(last_logged_in_list_[room_name])) {
+                if (last_logged_in_list_[room_name][id].username == Some(username)) {
                     results.push_back(std::tuple<std::string, std::string>(id, room_name));
                 }
             }
@@ -1012,10 +1015,10 @@ namespace ert {
                                  const std::string & easyrtcid,
                                  const std::string & field_name)
     {
-        if (HasKey(last_loggged_in_list_, room_name) &&
-            HasKey(last_loggged_in_list_[room_name], easyrtcid))
+        if (HasKey(last_logged_in_list_, room_name) &&
+            HasKey(last_logged_in_list_[room_name], easyrtcid))
         {
-            auto & info = last_loggged_in_list_[room_name][easyrtcid];
+            auto & info = last_logged_in_list_[room_name][easyrtcid];
             if (HasKey(info.api_field, field_name)) {
                 return info.api_field[field_name].GetAt("fieldValue");
             }
@@ -1032,9 +1035,9 @@ namespace ert {
     }
     
     std::string Easyrtc::IdToName(const std::string & easyrtcid) {
-        for (const std::string & room_name : Keys(last_loggged_in_list_)) {
-            if (HasKey(last_loggged_in_list_[room_name], easyrtcid)) {
-                auto & entry = last_loggged_in_list_[room_name][easyrtcid];
+        for (const std::string & room_name : Keys(last_logged_in_list_)) {
+            if (HasKey(last_logged_in_list_[room_name], easyrtcid)) {
+                auto & entry = last_logged_in_list_[room_name][easyrtcid];
                 if (entry.username) {
                     return *entry.username;
                 }
@@ -1121,11 +1124,11 @@ namespace ert {
         }
         HangupAll();
         if (room_occupant_listener_) {
-            for (const auto & key : Keys(last_loggged_in_list_)) {
+            for (const auto & key : Keys(last_logged_in_list_)) {
                 (room_occupant_listener_)(Some(key), Any(Any::ObjectType{}), false);
             }
         }
-        last_loggged_in_list_.clear();
+        last_logged_in_list_.clear();
         
         EmitEvent("roomOccupant", Any(Any::ObjectType{}));
         room_data_.clear();
@@ -1769,12 +1772,12 @@ namespace ert {
                 auto sdp = msg_data.GetAt("sdp");
                 auto pc = thiz->peer_conns_[easyrtcid]->pc();
                 
-                auto set_local_and_send_message1 = [thiz, easyrtcid, pc](const std::shared_ptr<RtcSessionDescription> & session_description){
+                auto set_local_and_send_message_1 = [thiz, easyrtcid, pc](const std::shared_ptr<RtcSessionDescription> & session_description){
                     
                     auto send_answer = [thiz, easyrtcid, session_description]() {
                         FuncCall(thiz->debug_printer_, "sending answer");
                         
-                        auto on_signal_success = [](const std::string & a, const Any & b){};
+                        auto on_signal_success = [](const std::string & msg_type, const Any & msg_data){};
                         auto on_signal_failure = [thiz, easyrtcid]
                         (const std::string & error_code,
                          const std::string & error_text)
@@ -1806,9 +1809,9 @@ namespace ert {
                                             });
                 };
                 
-                auto invoke_create_answer = [thiz, pc, easyrtcid, sdp, set_local_and_send_message1]() {
+                auto invoke_create_answer = [thiz, pc, easyrtcid, sdp, set_local_and_send_message_1]() {
                     pc->CreateAnswer(&thiz->received_media_constraints_,
-                                     set_local_and_send_message1,
+                                     set_local_and_send_message_1,
                                      [thiz](const std::string & message){
                                          thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
                                                          std::string("create-answer: " + message));
@@ -2391,7 +2394,7 @@ namespace ert {
                         {
                             std::string stream_name = msg_data.GetAt("streamName").AsString().value();
                             if (HasKey(new_peer_conn->streams_added_acks(), stream_name))  {
-                                FuncCall(new_peer_conn->streams_added_acks()[stream_name], easyrtcid, stream_name);
+                                (new_peer_conn->streams_added_acks()[stream_name])(easyrtcid, stream_name);
                                 new_peer_conn->streams_added_acks().erase(stream_name);
                             }
                         }, Some(std::string("easyrtc_streamReceived")), Some(other_user));
@@ -2399,6 +2402,292 @@ namespace ert {
         return pc;
     }
     
+    void Easyrtc::DoAnswer(const std::string & caller,
+                           const Any & msg_data,
+                           const Optional<std::vector<std::string> > &stream_names)
+    {
+        auto thiz = shared_from_this();
+        
+        if (!stream_names && auto_init_user_media_) {
+            auto local_stream = GetLocalStream(None());
+            if (!local_stream && (video_enabled_ || audio_enabled_)) {
+                InitMediaSource([thiz, caller, msg_data](const std::shared_ptr<MediaStream> & stream)
+                                {
+                                    thiz->DoAnswer(caller, msg_data, None());
+                                },
+                                [thiz](const std::string & code, const std::string & text){
+                                    thiz->ShowError(thiz->err_codes_MEDIA_ERR_,
+                                                    thiz->Format(thiz->GetConstantString("localMediaError"), {} ));
+                                },
+                                None());
+                return;
+            }
+        }
+        if (use_fresh_ice_each_peer_) {
+            GetFreshIceConfig([thiz, caller, msg_data, stream_names](bool succeeded){
+                if (succeeded) {
+                    thiz->DoAnswerBody(caller, msg_data, stream_names);
+                }
+                else {
+                    thiz->ShowError(thiz->err_codes_CALL_ERR_, "Failed to get fresh ice config");
+                }
+            });
+        }
+        else {
+            DoAnswerBody(caller, msg_data, stream_names);
+        }
+    }
+    
+    void Easyrtc::DoAnswerBody(const std::string & caller, const Any & msg_data,
+                               const Optional<std::vector<std::string>> & stream_names)
+    {
+        auto thiz = shared_from_this();
+        
+        auto pc = BuildPeerConnection(caller, false, [thiz](const std::string & code, const std::string & msg) {
+            thiz->ShowError(thiz->err_codes_SYSTEM_ERR_, nwr::Format("%s, %s", code.c_str(), msg.c_str()));
+        }, stream_names);
+        auto new_peer_conn = thiz->peer_conns_[caller];
+        if (!pc) {
+            FuncCall(debug_printer_, "buildPeerConnection failed. Call not answered");
+            return;
+        }
+        auto set_local_and_send_message_1 = [thiz, caller, new_peer_conn, pc]
+        (const std::shared_ptr<RtcSessionDescription> & session_description) {
+            if (new_peer_conn->canceled()) {
+                return;
+            }
+            
+            auto send_answer = [thiz, caller, pc, session_description](){
+                FuncCall(thiz->debug_printer_, "sending answer");
+
+                auto on_signal_success = [](const std::string & msg_type, const Any & msg_data){
+                    
+                };
+                auto on_signal_failure = [thiz, caller](const std::string & code, const std::string & text){
+                    thiz->DeletePeerConn(caller);
+                    thiz->ShowError(code, text);
+                };
+                
+                thiz->SendSignaling(Some(caller), "answer", session_description->ToAny(),
+                                    on_signal_success, on_signal_failure);
+                
+                thiz->peer_conns_[caller]->set_connection_accepted(true);
+                thiz->SendQueuedCandidates(caller, on_signal_success, on_signal_failure);
+            };
+            
+            if (thiz->sdp_local_filter_) {
+                session_description->set_sdp(thiz->sdp_local_filter_(session_description->sdp()));
+            }
+            pc->SetLocalDescription(session_description, send_answer, [thiz](const std::string & message){
+                thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
+                                std::string("setLocalDescription: " + message));
+            });
+        };
+        
+        std::shared_ptr<RtcSessionDescription> sd = RtcSessionDescription::FromAny(msg_data);
+        
+        FuncCall(debug_printer_, std::string("sdp ||  ") + sd->ToAny().ToJsonString());
+        
+        auto invoke_create_answer = [thiz, new_peer_conn, pc, set_local_and_send_message_1]() {
+            if (new_peer_conn->canceled()) {
+                return;
+            }
+            
+            pc->CreateAnswer(&thiz->received_media_constraints_,
+                             set_local_and_send_message_1,
+                             [thiz](const std::string & message){
+                                 thiz->ShowError(thiz->err_codes_INTERNAL_ERR_, std::string("create-answer: " + message));
+                             });
+        };
+        
+        FuncCall(debug_printer_, "about to call setRemoteDescription in doAnswer");
+
+        if (sdp_remote_filter_) {
+            sd->set_sdp(sdp_remote_filter_(sd->sdp()));
+        }
+        
+        pc->SetRemoteDescription(sd,
+                                 invoke_create_answer,
+                                 [thiz](const std::string & message){
+                                     thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
+                                                     std::string("set-remote-description: ") + message);
+                                 });
+    }
+    
+    void Easyrtc::EmitOnStreamClosed(const std::string & easyrtcid,
+                                     const std::shared_ptr<MediaStream> &stream)
+    {
+        if (!HasKey(peer_conns_, easyrtcid)) {
+            return;
+        }
+
+        std::string id = stream->id();
+        std::string stream_name;
+        if (HasKey(peer_conns_[easyrtcid]->remote_stream_id_to_name(), id)) {
+            stream_name = peer_conns_[easyrtcid]->remote_stream_id_to_name()[id];
+        } else {
+            stream_name = "default";
+        }
+        
+        if (HasKey(peer_conns_[easyrtcid]->live_remote_streams(), stream_name) &&
+            on_stream_closed_)
+        {
+            peer_conns_[easyrtcid]->live_remote_streams().erase(stream_name);
+            on_stream_closed_(easyrtcid, stream, stream_name);
+        }
+        
+        peer_conns_[easyrtcid]->remote_stream_id_to_name().erase(id);
+    }
+    
+    void Easyrtc::OnRemoteHangup(const std::string & caller) {
+        offers_pending_.erase(caller);
+        FuncCall(debug_printer_, "Saw onRemote hangup event");
+        
+        if (HasKey(peer_conns_, caller)) {
+            peer_conns_[caller]->set_canceled(true);
+            if (peer_conns_[caller]->pc()) {
+                //
+                // close any remote streams.
+                //
+                auto remote_streams = peer_conns_[caller]->pc()->remote_streams();
+                for (int i = 0; i < remote_streams.size(); i++) {
+                    EmitOnStreamClosed(caller, remote_streams[i]);
+                    StopStream(remote_streams[i]);
+                }
+                
+                peer_conns_[caller]->pc()->Close();
+            }
+            else {
+                FuncCall(call_cancelled_, caller, true);
+            }
+            DeletePeerConn(caller);
+            UpdateConfigurationInfo();
+        }
+        else {
+            FuncCall(call_cancelled_, caller, true);
+        }
+    }
+    
+    void Easyrtc::ClearQueuedMessages(const std::string & caller) {
+        queued_messages_[caller] = Any(Any::ObjectType {
+            { "candidates", Any(Any::ArrayType{}) }
+        });
+    }
+    
+    bool Easyrtc::IsPeerInAnyRoom(const std::string & id) {
+        for (const auto & room_name : Keys(last_logged_in_list_)) {
+            if (HasKey(last_logged_in_list_[room_name], id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    void Easyrtc::ProcessLostPeers(const std::map<std::string, Any> & peers_in_room) {
+        //
+        // check to see the person is still in at least one room. If not, we'll hangup
+        // on them. This isn't the correct behavior, but it's the best we can do without
+        // changes to the server.
+        //
+        
+        for (const auto & id : Keys(peer_conns_)) {
+            if (!HasKey(peers_in_room, id)) {
+                if (!IsPeerInAnyRoom(id)) {
+                    if (peer_conns_[id]->pc() || peer_conns_[id]->is_initiator()) {
+                        OnRemoteHangup(id);
+                    }
+                    offers_pending_.erase(id);
+                    acceptance_pending_.erase(id);
+                    ClearQueuedMessages(id);
+                }
+            }
+        }
+        
+        for (const auto & id : Keys(offers_pending_)) {
+            if (!IsPeerInAnyRoom(id)) {
+                OnRemoteHangup(id);
+                ClearQueuedMessages(id);
+                offers_pending_.erase(id);
+                acceptance_pending_.erase(id);
+            }
+        }
+        
+        for (const auto & id : Keys(acceptance_pending_)) {
+            if (!IsPeerInAnyRoom(id)) {
+                OnRemoteHangup(id);
+                ClearQueuedMessages(id);
+                acceptance_pending_.erase(id);
+            }
+        }
+        
+    }
+    
+    void Easyrtc::AddAggregatingTimer(const std::string & key,
+                                      const std::function<void()> & callback,
+                                      const Optional<TimeDuration> & arg_period)
+    {
+        auto thiz = shared_from_this();
+        
+        TimeDuration period = arg_period || TimeDuration(0.1);
+        
+        int counter = 0;
+        if (HasKey(aggregating_timers_, key)) {
+            if (aggregating_timers_[key].timer) {
+                aggregating_timers_[key].timer->Cancel();
+                aggregating_timers_[key].timer = nullptr;
+            }
+            counter = aggregating_timers_[key].counter;
+        }
+        if (counter > 20) {
+            aggregating_timers_.erase(key);
+            FuncCall(callback);
+        }
+        else {
+            aggregating_timers_[key] = AggregatingTimer(counter + 1);
+            aggregating_timers_[key].timer = Timer::Create(period, [thiz, key, callback](){
+                thiz->aggregating_timers_.erase(key);
+                FuncCall(callback);
+            });
+        }
+    }
+    
+    void Easyrtc::ProcessOccupantList(const std::string & room_name,
+                                      std::map<std::string, Any> & occupant_list)
+    {
+        auto thiz = shared_from_this();
+        
+        Any my_info;
+        std::map<std::string, Any> reduced_list;
+        
+        for (const auto & id : Keys(occupant_list)) {
+            if (Some(id) == my_easyrtcid_) {
+                my_info = occupant_list[id];
+            }
+            else {
+                reduced_list[id] = occupant_list[id];
+            }
+            
+        }
+        //
+        // processLostPeers detects peers that have gone away and performs
+        // house keeping accordingly.
+        //
+        ProcessLostPeers(reduced_list);
+        //
+        //
+        //
+        AddAggregatingTimer(std::string("roomOccupants&") + room_name, [thiz, room_name, reduced_list, my_info](){
+            if (thiz->room_occupant_listener_) {
+                thiz->room_occupant_listener_(Some(room_name), reduced_list, my_info);
+            }
+            
+            thiz->EmitEvent("roomOccupants", Any(Any::ObjectType
+                                                 {
+                                                     { "roomName", Any(room_name) },
+                                                     { "occupants", Any(thiz->last_logged_in_list_) }
+                                                 }));            
+        }, Some(TimeDuration(0.1)));
+    }
     
     // -----
     

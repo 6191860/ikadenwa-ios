@@ -142,13 +142,7 @@ namespace jsrtc {
         on_ice_gathering_state_change_ = nullptr;
         on_data_channel_ = nullptr;
         
-        for (const auto & stream : local_streams_) {
-            stream->Close();
-        }
         local_streams_.clear();
-        for (const auto & stream : remote_streams_) {
-            stream->Close();
-        }
         remote_streams_.clear();
         on_add_stream_ = nullptr;
         on_remove_stream_ = nullptr;

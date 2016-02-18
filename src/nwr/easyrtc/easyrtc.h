@@ -37,6 +37,7 @@
 #include "peer_conn.h"
 #include "receive_peer.h"
 #include "logged_in_info.h"
+#include "aggregating_timer.h"
 
 namespace nwr {
 namespace ert {
@@ -117,7 +118,7 @@ namespace ert {
         std::function<void (const std::string &)> debug_printer_;
         Optional<std::string> my_easyrtcid_;
         int old_config_;
-        std::map<std::string, bool> offers_pending_;
+        std::map<std::string, Any> offers_pending_;
         int native_video_height_;
         int native_video_width_;
         std::map<std::string, Any> room_join_;
@@ -153,7 +154,7 @@ namespace ert {
                                 const webrtc::MediaConstraintsInterface & constraints);
         webrtc::DataChannelInit GetDataChannelConstraints();
         std::string server_path_;
-        std::map<std::string, std::map<std::string, LoggedInInfo>> last_loggged_in_list_;
+        std::map<std::string, std::map<std::string, LoggedInInfo>> last_logged_in_list_;
         ReceivePeer receive_peer_;
         std::map<std::string, std::shared_ptr<PeerConn>> peer_conns_;
         std::map<std::string, bool> acceptance_pending_;
@@ -176,11 +177,11 @@ namespace ert {
         std::function<void()> room_entry_listener_;
         void set_room_entry_listener(const std::function<void()> & handler);
         std::function<void(const Optional<std::string> &,
-                           const Any &,
-                           bool)> room_occupant_listener_;
+                           const std::map<std::string, Any> &,
+                           const Any &)> room_occupant_listener_;
         void set_room_occupant_listener(const std::function<void(const Optional<std::string> &,
-                                                        const Any &,
-                                                        bool)> & listener);
+                                                                 const std::map<std::string, Any> &,
+                                                                 const Any &)> & listener);
         std::function<void(const std::string &, bool)> on_data_channel_open_;
         void set_data_channel_open_listener(const std::function<void(const std::string &, bool)> & listener);
         std::function<void(const std::string &)> on_data_channel_close_;
@@ -233,10 +234,14 @@ namespace ert {
                                                           const std::string &)> & acceptor);
         std::function<void(const Any &)> on_error_;
         void set_on_error(const std::function<void(const Any &)> & err_listener);
-        std::function<void ()> call_cancelled_;
-        void set_call_canceled(const std::function<void()> & call_canceled);
-        std::function<void ()> on_stream_closed_;
-        void set_on_stream_closed(const std::function<void()> & on_stream_closed);
+        std::function<void (const std::string &, bool)> call_cancelled_;
+        void set_call_canceled(const std::function<void(const std::string &, bool)> & call_canceled);
+        std::function<void (const std::string &,
+                            const std::shared_ptr<MediaStream> &,
+                            const std::string &)> on_stream_closed_;
+        void set_on_stream_closed(const std::function<void(const std::string &,
+                                                           const std::shared_ptr<MediaStream> &,
+                                                           const std::string &)> & on_stream_closed);
         //  setVideoBandwidth ; deprecated in original
         bool SupportsDataChannels();
         void SetPeerListener(const ReceivePeerCallback & listener,
@@ -357,7 +362,29 @@ namespace ert {
         void OnRemoveStreamHelper(const std::string & easyrtcid,
                                   const std::shared_ptr<MediaStream> & stream);
         void DumpPeerConnectionInfo();
-        
+        std::map<std::string, bool> turn_servers_;
+        std::shared_ptr<RtcPeerConnection>
+        BuildPeerConnection(const std::string & other_user,
+                            bool is_initiator,
+                            const std::function<void(const std::string &,
+                                                     const std::string &)> & failure_cb,
+                            const Optional<std::vector<std::string>> & stream_names);
+        void DoAnswer(const std::string & caller,
+                      const Any & msg_data,
+                      const Optional<std::vector<std::string> > &stream_names);
+        void DoAnswerBody(const std::string & caller, const Any & msg_data,
+                          const Optional<std::vector<std::string>> & stream_names);
+        void EmitOnStreamClosed(const std::string & easyrtcid,
+                                const std::shared_ptr<MediaStream> &stream);
+        void OnRemoteHangup(const std::string & caller);
+        std::map<std::string, Any> queued_messages_;
+        void ClearQueuedMessages(const std::string & caller);
+        bool IsPeerInAnyRoom(const std::string & id);
+        void ProcessLostPeers(const std::map<std::string, Any> & peers_in_room);
+        std::map<std::string, AggregatingTimer> aggregating_timers_;
+        void AddAggregatingTimer(const std::string & key,
+                                 const std::function<void()> & callback,
+                                 const Optional<TimeDuration> & arg_period);
         //---
         
         void SendQueuedCandidates(const std::string & easyrtcid,
@@ -366,23 +393,11 @@ namespace ert {
                                   const std::function<void(const std::string &,
                                                            const std::string &)> & on_signal_failure);
         
-        void EmitOnStreamClosed(const std::string & other_user,
-                                const std::shared_ptr<MediaStream> & stream);
-        std::map<std::string, bool> turn_servers_;
-        std::shared_ptr<RtcPeerConnection>
-        BuildPeerConnection(const std::string & other_user,
-                            bool is_initiator,
-                            const std::function<void(const std::string &,
-                                                     const std::string &)> & failure_cb,
-                            const Optional<std::vector<std::string>> & stream_names);
         
         void GetFreshIceConfig(const std::function<void(bool)> & cb);
-        void DoAnswer(const std::string & other_user, bool a,
-                      const Optional<std::vector<std::string>> & stream_names);
+        
         void CallCanceled(const std::string & other_user, bool a);
         
-        
-        void ClearQueuedMessages(const std::string & other_user);
         std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
         void ProcessRoomData(const Any & room_data);
         Any GetRoomFields(const std::string & room_name);

@@ -139,7 +139,6 @@ namespace jsrtc {
         
         for (const auto & track : tracks()) {
             RemoveTrack(track);
-            track->Close();
         }
         
         inner_stream_ = nullptr;
