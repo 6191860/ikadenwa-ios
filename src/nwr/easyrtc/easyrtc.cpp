@@ -64,7 +64,7 @@ namespace ert {
         };
         pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();
         use_fresh_ice_each_peer_ = false;
-        
+        last_logged_in_list_ = Any(Any::ObjectType{});
     }
     
     Easyrtc::~Easyrtc() {
@@ -997,13 +997,14 @@ namespace ert {
     {
         std::vector<std::tuple<std::string, std::string>> results;
         
-        for (const auto & room_name : Keys(last_logged_in_list_)) {
+        for (const auto & room_name : last_logged_in_list_.keys()) {
             if (room && room_name != *room) {
                 continue;
             }
             
-            for (const std::string & id : Keys(last_logged_in_list_[room_name])) {
-                if (last_logged_in_list_[room_name][id].username == Some(username)) {
+            for (const std::string & id : last_logged_in_list_.GetAt(room_name).keys()) {
+                auto entry = last_logged_in_list_.GetAt(room_name).GetAt(id);
+                if (entry.GetAt("username").AsString() == Some(username)) {
                     results.push_back(std::tuple<std::string, std::string>(id, room_name));
                 }
             }
@@ -1015,12 +1016,13 @@ namespace ert {
                                  const std::string & easyrtcid,
                                  const std::string & field_name)
     {
-        if (HasKey(last_logged_in_list_, room_name) &&
-            HasKey(last_logged_in_list_[room_name], easyrtcid))
+
+        if (last_logged_in_list_.HasKey(room_name) &&
+            last_logged_in_list_.GetAt(room_name).HasKey(easyrtcid))
         {
-            auto & info = last_logged_in_list_[room_name][easyrtcid];
-            if (HasKey(info.api_field, field_name)) {
-                return info.api_field[field_name].GetAt("fieldValue");
+            auto info = last_logged_in_list_.GetAt(room_name).GetAt(easyrtcid);
+            if (info.GetAt("apiField").HasKey(field_name)) {
+                return info.GetAt("apiField").GetAt(field_name).GetAt("fieldValue");
             }
         }
         return nullptr;
@@ -1035,11 +1037,11 @@ namespace ert {
     }
     
     std::string Easyrtc::IdToName(const std::string & easyrtcid) {
-        for (const std::string & room_name : Keys(last_logged_in_list_)) {
-            if (HasKey(last_logged_in_list_[room_name], easyrtcid)) {
-                auto & entry = last_logged_in_list_[room_name][easyrtcid];
-                if (entry.username) {
-                    return *entry.username;
+        for (const std::string & room_name : last_logged_in_list_.keys()) {
+            if (last_logged_in_list_.GetAt(room_name).HasKey(easyrtcid)) {
+                auto entry = last_logged_in_list_.GetAt(room_name).GetAt(easyrtcid);
+                if (entry.GetAt("username")) {
+                    return entry.GetAt("username").AsString().value();
                 }
             }
         }
@@ -1124,11 +1126,11 @@ namespace ert {
         }
         HangupAll();
         if (room_occupant_listener_) {
-            for (const auto & key : Keys(last_logged_in_list_)) {
-                (room_occupant_listener_)(Some(key), Any(Any::ObjectType{}), false);
+            for (const auto & key : last_logged_in_list_.keys()) {
+                (room_occupant_listener_)(Some(key), std::map<std::string, Any>{}, Any());
             }
         }
-        last_logged_in_list_.clear();
+        last_logged_in_list_ = Any(Any::ObjectType{});
         
         EmitEvent("roomOccupant", Any(Any::ObjectType{}));
         room_data_.clear();
@@ -2575,8 +2577,8 @@ namespace ert {
     }
     
     bool Easyrtc::IsPeerInAnyRoom(const std::string & id) {
-        for (const auto & room_name : Keys(last_logged_in_list_)) {
-            if (HasKey(last_logged_in_list_[room_name], id)) {
+        for (const auto & room_name : last_logged_in_list_.keys()) {
+            if (last_logged_in_list_.GetAt(room_name).HasKey(id)) {
                 return true;
             }
         }
@@ -2684,8 +2686,8 @@ namespace ert {
             thiz->EmitEvent("roomOccupants", Any(Any::ObjectType
                                                  {
                                                      { "roomName", Any(room_name) },
-                                                     { "occupants", Any(thiz->last_logged_in_list_) }
-                                                 }));            
+                                                     { "occupants", thiz->last_logged_in_list_ }
+                                                 }));
         }, Some(TimeDuration(0.1)));
     }
     

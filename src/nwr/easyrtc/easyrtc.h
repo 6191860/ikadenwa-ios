@@ -36,7 +36,6 @@
 #include "video_audio_constraints.h"
 #include "peer_conn.h"
 #include "receive_peer.h"
-#include "logged_in_info.h"
 #include "aggregating_timer.h"
 
 namespace nwr {
@@ -51,6 +50,7 @@ namespace ert {
         void Init();
     public:
         ~Easyrtc();
+        
 #warning todo clear all vars , especially check remove all retain cycles.
         void Close();
     private:
@@ -154,7 +154,7 @@ namespace ert {
                                 const webrtc::MediaConstraintsInterface & constraints);
         webrtc::DataChannelInit GetDataChannelConstraints();
         std::string server_path_;
-        std::map<std::string, std::map<std::string, LoggedInInfo>> last_logged_in_list_;
+        Any last_logged_in_list_;
         ReceivePeer receive_peer_;
         std::map<std::string, std::shared_ptr<PeerConn>> peer_conns_;
         std::map<std::string, bool> acceptance_pending_;
