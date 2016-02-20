@@ -79,15 +79,11 @@ namespace sio {
         emitter_->Emit("connecting", {});
     }
     
-    void Socket::Send(const std::vector<Any> & args, const AckFunc & ack_callback) {
-        Emit("message", args, ack_callback);
+    void Socket::Send(const std::vector<Any> & args) {
+        Emit("message", args);
     }
     
-    void Socket::Emit(const std::string & event, const std::vector<Any> & args) {
-        Emit(event, args, nullptr);
-    }
-    
-    void Socket::Emit(const std::string & event, const std::vector<Any> & arg_args, const AckFunc & ack_callback) {
+    void Socket::Emit(const std::string & event, const std::vector<Any> & arg_args) {
         if (IndexOf(events_, event) != -1) {
             emitter_->Emit(event, arg_args);
             return;
@@ -108,9 +104,11 @@ namespace sio {
         packet.data = Any(args);
         
         // event ack callback
-        if (ack_callback) {
+        if (args.size() > 0 && args.back().type() == Any::Type::Function) {
             printf("[%s] emitting packet with ack id %d\n", __PRETTY_FUNCTION__, ids_);
-            acks_[ids_] = ack_callback;
+            AnyFuncPtr ack = args.back().AsFunction().value();
+            args.erase(args.end() - 1);
+            acks_[ids_] = ack;
             packet.id = Some(ids_);
             ids_ += 1;
         }
@@ -203,11 +201,11 @@ namespace sio {
         }
         args.erase(args.begin());
         
-        AckFunc ack;
+        
         if (packet.id) {
             printf("[%s] attaching ack callback to event\n", __PRETTY_FUNCTION__);
-            ack = Ack(packet.id.value());
-            Fatal("need to investigate this flow");
+            AnyFuncPtr ack = MakeAck(packet.id.value());
+            args.push_back(Any(ack));
         }
         
         if (connected_) {
@@ -217,14 +215,14 @@ namespace sio {
         }
     }
     
-    Socket::AckFunc Socket::Ack(int id) {
+    AnyFuncPtr Socket::MakeAck(int id) {
         auto thiz = shared_from_this();
         
         auto sent_ptr = std::make_shared<bool>(false);
         
-        return [thiz, sent_ptr, id](const Any & args) {
+        return AnyFuncMake([thiz, sent_ptr, id](const Any & args) -> Any {
             // prevent double callbacks
-            if (*sent_ptr) { return; }
+            if (*sent_ptr) { return nullptr; }
             *sent_ptr = true;
             
             printf("[%s] sending ack\n", __PRETTY_FUNCTION__);
@@ -236,15 +234,17 @@ namespace sio {
             packet.data = args;
             
             thiz->SendPacket(packet);
-        };
+            
+            return nullptr;
+        });
     }
     
     void Socket::OnAck(const Packet & packet) {
         if (packet.id) {
             auto packet_id = packet.id.value();
-            AckFunc ack = acks_[packet_id];
+            AnyFuncPtr ack = acks_[packet_id];
             printf("[%s] calling ack %d\n", __PRETTY_FUNCTION__, packet_id);
-            FuncCall(ack, packet.data);
+            ack->Call({ packet.data });
             acks_.erase(packet_id);
         }
     }

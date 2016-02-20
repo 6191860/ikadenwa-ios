@@ -20,6 +20,7 @@
 #include <nwr/base/func.h>
 #include <nwr/base/time.h>
 #include <nwr/base/any.h>
+#include <nwr/base/any_func.h>
 #include <nwr/base/any_emitter.h>
 
 namespace nwr {
@@ -36,12 +37,9 @@ namespace sio {
         static std::shared_ptr<Socket> Create(Manager * io, const std::string & nsp);
         AnyEmitterPtr emitter() { return emitter_; }
     private:
-        using AckFunc = std::function<void(const Any &)>;
-        
         struct EmitParams {
             std::string event;
             std::vector<Any> args;
-//            AckFunc ack;
         };
         
         Socket();
@@ -54,18 +52,16 @@ namespace sio {
     private:
         void SubEvents();
         void Open();
-        void Send(const std::vector<Any> & args, const AckFunc & ack_callback);
+        void Send(const std::vector<Any> & args);
     public:
         void Emit(const std::string & event, const std::vector<Any> & args);
-        void Emit(const std::string & event, const std::vector<Any> & args, const AckFunc & ack_callback);
     private:
         void SendPacket(Packet packet);
         void OnOpen();
         void OnClose();
         void OnPacket(const Packet & packet);
         void OnEvent(const Packet & packet);
-#warning todo support it
-        AckFunc Ack(int id);
+        AnyFuncPtr MakeAck(int id);
         void OnAck(const Packet & packet);
         void OnConnect();
         void EmitBuffered();
@@ -80,7 +76,7 @@ namespace sio {
         Manager * io_;
         std::string nsp_;
         int ids_;
-        std::map<int, AckFunc> acks_;
+        std::map<int, AnyFuncPtr> acks_;
         std::vector<EmitParams> receive_buffer_;
         std::vector<Packet> send_buffer_;
         bool connected_;

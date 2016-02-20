@@ -18,12 +18,14 @@
 
 #include <nwr/base/string.h>
 #include <nwr/base/array.h>
+#include <nwr/base/time.h>
 #include <nwr/base/map.h>
 #include <nwr/base/optional.h>
 #include <nwr/base/timer.h>
 #include <nwr/base/json.h>
 #include <nwr/base/func.h>
 #include <nwr/base/any.h>
+#include <nwr/base/any_func.h>
 #include <nwr/base/any_emitter.h>
 #include <nwr/socketio/io.h>
 #include <nwr/jsrtc/media_constraints.h>
@@ -122,7 +124,7 @@ namespace ert {
         std::string data_channel_name_;
         std::function<void (const std::string &)> debug_printer_;
         Optional<std::string> my_easyrtcid_;
-        int old_config_;
+        Any old_config_;
         std::map<std::string, Any> offers_pending_;
         int native_video_height_;
         int native_video_width_;
@@ -407,9 +409,9 @@ namespace ert {
                                   const std::function<void (const std::string &,
                                                             const std::string &)> & on_signal_failure);
         void OnChannelMsg(const Any & msg,
-                          const std::function<void(const Any &)> ack_acceptor_func);
+                          const std::function<void(const Any &)> & ack_acceptor_func);
         void OnChannelCmd(const Any & msg,
-                          const std::function<void(const Any &)> ack_acceptor_fn);
+                          const std::function<void(const Any &)> & ack_acceptor_fn);
         std::vector<WebsocketListenerEntry> websocket_listeners_;
         
         void SendAuthenticate(const std::function<void()> & success_callback,
@@ -418,9 +420,15 @@ namespace ert {
         void ConnectToWSServer(const std::function<void()> & success_callback,
                                const std::function<void(const std::string &,
                                                         const std::string &)> & error_callback);
+        Any BuildDeltaRecord(const Any & added, const Any & deleted);
+        Any FindDeltas(const Any & old_version, const Any & new_version);
+        Any CollectConfigurationInfo();
+        void UpdateConfiguration();
+        void UpdateConfigurationInfo();
+        std::function<void()> update_configuration_info_;
         //---
         
-        
+        void SendDeltas();
         
         void GetFreshIceConfig(const std::function<void(bool)> & cb);
         
@@ -431,9 +439,7 @@ namespace ert {
         void ProcessRoomData(const Any & room_data);
         void ProcessIceConfig(const Any & ice_config);
         Any GetRoomFields(const std::string & room_name);
-        void UpdateConfiguration();
-        void UpdateConfigurationInfo();
-        std::function<void()> update_configuration_info_;
+
 
         static std::map<std::string, std::string> constant_strings_;
 

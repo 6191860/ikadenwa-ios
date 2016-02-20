@@ -20,6 +20,7 @@
 		D65236DF1C75136F00D399F6 /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236DD1C75136F00D399F6 /* packet.cpp */; };
 		D65236E41C760E3900D399F6 /* aggregating_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236E21C760E3900D399F6 /* aggregating_timer.cpp */; };
 		D65236E71C76188000D399F6 /* rtc_ice_candidate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236E51C76188000D399F6 /* rtc_ice_candidate.cpp */; };
+		D65236F21C78E70700D399F6 /* any_func.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236F11C78E70700D399F6 /* any_func.cpp */; };
 		D664369D1C4A544C0059A94B /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D664369B1C4A544C0059A94B /* app.cpp */; };
 		D66436A01C4A5F070059A94B /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D664369F1C4A5F070059A94B /* AppDelegate.mm */; };
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
@@ -133,6 +134,9 @@
 		D65236E51C76188000D399F6 /* rtc_ice_candidate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_ice_candidate.cpp; path = nwr/jsrtc/rtc_ice_candidate.cpp; sourceTree = "<group>"; };
 		D65236E61C76188000D399F6 /* rtc_ice_candidate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_ice_candidate.h; path = nwr/jsrtc/rtc_ice_candidate.h; sourceTree = "<group>"; };
 		D65236E91C763C9E00D399F6 /* websocket_listener_entry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = websocket_listener_entry.h; path = nwr/socketio/websocket_listener_entry.h; sourceTree = "<group>"; };
+		D65236EE1C78DFBD00D399F6 /* any_func.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any_func.h; sourceTree = "<group>"; };
+		D65236F01C78E02C00D399F6 /* any_func_forward.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = any_func_forward.h; sourceTree = "<group>"; };
+		D65236F11C78E70700D399F6 /* any_func.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any_func.cpp; sourceTree = "<group>"; };
 		D664369B1C4A544C0059A94B /* app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app.cpp; path = app/app.cpp; sourceTree = "<group>"; };
 		D664369C1C4A544C0059A94B /* app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = app.h; path = app/app.h; sourceTree = "<group>"; };
 		D664369E1C4A5F070059A94B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -425,6 +429,9 @@
 				D6F78A441C54110700B21614 /* json.cpp */,
 				D67CAE401C6A530E0000A3C3 /* any.h */,
 				D67CAE3F1C6A530E0000A3C3 /* any.cpp */,
+				D65236F01C78E02C00D399F6 /* any_func_forward.h */,
+				D65236EE1C78DFBD00D399F6 /* any_func.h */,
+				D65236F11C78E70700D399F6 /* any_func.cpp */,
 				D6B9DE301C6BDBBD00EBF183 /* any_emitter.h */,
 				D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */,
 				D66436A61C4A73240059A94B /* websocket.h */,
@@ -631,6 +638,7 @@
 				D6B9DE341C6C8E4700EBF183 /* sio_test.cpp in Sources */,
 				D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */,
 				D60852A61C50DF6000CEE554 /* data.cpp in Sources */,
+				D65236F21C78E70700D399F6 /* any_func.cpp in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
 				D65236D91C74E4B500D399F6 /* rtc_data_channel.cpp in Sources */,
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,

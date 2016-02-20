@@ -9,9 +9,14 @@
 #pragma once
 
 #include <chrono>
+#include <string>
+#include <iomanip>
+#include <sstream>
 
 namespace nwr {
     using TimeDuration = std::chrono::duration<double>;
     
     std::chrono::milliseconds GetCurrentUnixTime();
+    
+    std::string ToString(const std::chrono::system_clock::time_point & time);
 }

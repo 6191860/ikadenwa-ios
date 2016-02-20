@@ -7,6 +7,7 @@
 //
 
 #include "time.h"
+#include "string.h"
 
 namespace nwr {
     std::chrono::milliseconds GetCurrentUnixTime() {
@@ -24,5 +25,20 @@ namespace nwr {
         auto epoch = system_clock::from_time_t(epoch_tt);
         
         return duration_cast<milliseconds>(utc_now - epoch);
+    }
+    
+#warning todo check
+    std::string ToString(const std::chrono::system_clock::time_point & time) {
+        std::stringstream ss;
+        std::time_t tt = std::chrono::system_clock::to_time_t(time);
+        std::tm * tm = std::gmtime(&tt);
+        ss << std::put_time(tm, "%Y-%m-%dT%H:%M:%S");
+        
+        auto time_in_ms = std::chrono::duration_cast<std::chrono::duration<int64_t, std::micro>>(time.time_since_epoch());
+        int64_t ms_part_value = time_in_ms.count() % 1000000;
+        
+        ss << Format(".%06dZ", ms_part_value);
+        
+        return ss.str();
     }
 }

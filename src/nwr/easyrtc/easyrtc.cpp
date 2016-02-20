@@ -49,7 +49,7 @@ namespace ert {
         video_enabled_ = true;
         data_channel_name_ = "dc";
         debug_printer_ = nullptr;
-        old_config_ = 0;
+        old_config_ = Any(Any::ObjectType{});
         native_video_height_ = 0;
         max_p2p_message_length_ = 1000;
         native_video_width_ = 0;
@@ -65,6 +65,9 @@ namespace ert {
         pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();
         use_fresh_ice_each_peer_ = false;
         last_logged_in_list_ = Any(Any::ObjectType{});
+        update_configuration_info_ = [this] {
+            UpdateConfiguration();
+        };
     }
     
     Easyrtc::~Easyrtc() {
@@ -466,13 +469,16 @@ namespace ert {
             }) }
         });
         
-        websocket_->Emit("easyrtcCmd", { data_to_ship },
-                         [thiz](const Any & ack_msg) {
-                             if (ack_msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
-                                 thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
-                                                 ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
-                             }
-                         });
+        websocket_->Emit("easyrtcCmd", {
+            data_to_ship,
+            AnyFuncMake([thiz](const Any & ack_msg) -> Any {
+                if (ack_msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
+                    thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                                    ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
+                }
+                return nullptr;
+            })
+        });
     }
     
     void Easyrtc::ShowError(const std::string & message_code, const std::string & message) {
@@ -1145,7 +1151,7 @@ namespace ert {
         logging_out_ = false;
         my_easyrtcid_ = None();
         disconnecting_ = false;
-        old_config_ = 0;
+        old_config_ = Any(Any::ObjectType{});
     }
     
     void Easyrtc::Disconnect() {
@@ -1177,7 +1183,7 @@ namespace ert {
             FuncCall(thiz->room_occupant_listener_, None(), std::map<std::string, Any>{}, Any());
             
             thiz->EmitEvent("roomOccupant", Any(Any::ObjectType{}));
-            thiz->old_config_ = 0;
+            thiz->old_config_ = Any(Any::ObjectType{});
         });
     }
     
@@ -1208,32 +1214,35 @@ namespace ert {
 
             FuncCall(debug_printer_,
                      std::string("sending socket message ") + data_to_ship.ToJsonString());
-
-            websocket_->Emit("easyrtcCmd", { data_to_ship },
-                             [thiz, success_callback, error_callback]
-                             (const Any & arg_ack_msg) {
-                                 Any ack_msg = arg_ack_msg;
-                                 
-                                 if (ack_msg.GetAt("msgType").AsString() != Some(std::string("error")) ) {
-                                     if (!ack_msg.HasKey("msgData")) {
-                                         ack_msg.SetAt("msgData", nullptr);
-                                     }
-                                     FuncCall(success_callback,
-                                              ack_msg.GetAt("msgType").AsString() || std::string(),
-                                              ack_msg.GetAt("msgData"));
-                                 }
-                                 else {
-                                     auto msg_data = ack_msg.GetAt("msgData");
-                                     auto error_code = msg_data.GetAt("errorCode").AsString() || std::string();
-                                     auto error_text = msg_data.GetAt("errorText").AsString() || std::string();
-                                     
-                                     if (error_callback) {
-                                         error_callback(error_code, error_text);
-                                     } else {
-                                         thiz->ShowError(error_code, error_text);
-                                     }
-                                 }
-                             });
+            
+            websocket_->Emit("easyrtcCmd", {
+                data_to_ship,
+                AnyFuncMake([thiz, success_callback, error_callback]
+                            (const Any & arg_ack_msg) -> Any {
+                                Any ack_msg = arg_ack_msg;
+                                
+                                if (ack_msg.GetAt("msgType").AsString() != Some(std::string("error")) ) {
+                                    if (!ack_msg.HasKey("msgData")) {
+                                        ack_msg.SetAt("msgData", nullptr);
+                                    }
+                                    FuncCall(success_callback,
+                                             ack_msg.GetAt("msgType").AsString() || std::string(),
+                                             ack_msg.GetAt("msgData"));
+                                }
+                                else {
+                                    auto msg_data = ack_msg.GetAt("msgData");
+                                    auto error_code = msg_data.GetAt("errorCode").AsString() || std::string();
+                                    auto error_text = msg_data.GetAt("errorText").AsString() || std::string();
+                                    
+                                    if (error_callback) {
+                                        error_callback(error_code, error_text);
+                                    } else {
+                                        thiz->ShowError(error_code, error_text);
+                                    }
+                                }
+                                return nullptr;
+                            })
+            });
         }
     }
     
@@ -1312,18 +1321,22 @@ namespace ert {
     {
         auto thiz = shared_from_this();
         
-        std::function<void(const Any &)> ack_handler = arg_ack_handler;
+        std::function<Any(const Any &)> ack_handler = [arg_ack_handler](const Any & a) -> Any {
+            FuncCall(arg_ack_handler, a);
+            return nullptr;
+        };
         
         FuncCall(debug_printer_,
                  std::string("sending client message via websockets to ") + destination.ToJsonString() +
                  " with data=" + msg_data.ToJsonString());
         
         if (!ack_handler) {
-            ack_handler = [thiz](const Any & msg){
+            ack_handler = [thiz](const Any & msg) -> Any {
                 if (msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
                     thiz->ShowError(msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
                                     msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
                 }
+                return nullptr;
             };
         }
         
@@ -1350,7 +1363,7 @@ namespace ert {
         }
         
         if (websocket_) {
-            websocket_->Emit("easyrtcMsg", { outgoing_message }, ack_handler);
+            websocket_->Emit("easyrtcMsg", { outgoing_message, AnyFuncMake(ack_handler) });
         }
         else {
             FuncCall(debug_printer_,
@@ -2711,7 +2724,7 @@ namespace ert {
     }
     
     void Easyrtc::OnChannelMsg(const Any & msg,
-                               const std::function<void(const Any &)> ack_acceptor_func)
+                               const std::function<void(const Any &)> & ack_acceptor_func)
     {
         Any targeting = Any(Any::ObjectType{});
         
@@ -2745,7 +2758,7 @@ namespace ert {
     }
     
     void Easyrtc::OnChannelCmd(const Any & msg,
-                               const std::function<void(const Any &)> ack_acceptor_fn)
+                               const std::function<void(const Any &)> & ack_acceptor_fn)
     {
         auto thiz = shared_from_this();
         
@@ -2790,7 +2803,6 @@ namespace ert {
 //                                nwr::Format("bad ice candidate (%s): %s", error.c_str(), candidate->ToAny().ToJsonString().c_str()));
 //            };
             
-
             (*pc_ptr)->AddIceCandidate(candidate);
             
             if (IndexOf(candidate_str, "typ relay") != -1) {
@@ -2973,9 +2985,8 @@ namespace ert {
             OnRemoteHangup(caller);
             ClearQueuedMessages(caller);
         } else if (msg_type == "error") {
-#warning todo check ; msg_data?
-            ShowError(msg.GetAt("errorCode").AsString().value(),
-                      msg.GetAt("errorText").AsString().value());
+            ShowError(msg_data.GetAt("errorCode").AsString().value(),
+                      msg_data.GetAt("errorText").AsString().value());
         } else {
             printf("received unknown message type from server; msg=%s\n", msg.ToJsonString().c_str());
             return;
@@ -3064,30 +3075,179 @@ namespace ert {
         else {
             add_socket_listener("connect", AnyEventListenerMake(connect_handler));
         }
-        add_socket_listener("easyrtcMsg", AnyEventListenerMake([thiz](const Any & event){
-#warning todo ack handling
-            thiz->OnChannelMsg(event, nullptr);
+        add_socket_listener("easyrtcMsg", AnyEventListenerMake([thiz](const Any & event, const Any & arg_ack){
+            std::function<void(const Any &)> ack = nullptr;
+            
+            Optional<AnyFuncPtr> ack_func_opt = arg_ack.AsFunction();
+            if (ack_func_opt) {
+                ack = [ack_func_opt](const Any & x){
+                    (*ack_func_opt)->Call({ x });
+                };
+            }
+            
+            thiz->OnChannelMsg(event, ack);
         }));
-        add_socket_listener("easyrtcCmd", AnyEventListenerMake([thiz](const Any & event){
-#warning todo ack handling
-            thiz->OnChannelCmd(event, nullptr);
+        add_socket_listener("easyrtcCmd", AnyEventListenerMake([thiz](const Any & event, const Any & arg_ack){
+            std::function<void(const Any &)> ack = nullptr;
+            
+            Optional<AnyFuncPtr> ack_func_opt = arg_ack.AsFunction();
+            if (ack_func_opt) {
+                ack = [ack_func_opt](const Any & x){
+                    (*ack_func_opt)->Call({ x });
+                };
+            }
+            
+            thiz->OnChannelCmd(event, ack);
         }));
         
         add_socket_listener("disconnect", AnyEventListenerMake([thiz](const Any & event){
             thiz->websocket_connected_ = false;
-#warning todo : update configuration info dynamically
             thiz->update_configuration_info_ = [](){
                 
             }; // dummy update function
-#warning todo old conifg
-            thiz->old_config_ = 0;
+#warning todo old config
+            thiz->old_config_ = Any(Any::ObjectType{});
             thiz->DisconnectBody();
             FuncCall(thiz->disconnect_listener_);
         }));
     }
     
+    Any Easyrtc::BuildDeltaRecord(const Any & added, const Any & deleted) {
+        auto object_not_empty = [](const Any & obj){
+            return obj.keys().size() > 0;
+        };
+        
+        Any result(Any::ObjectType{});
+        
+        if (object_not_empty(added)) {
+            result.SetAt("added", added);
+        }
+
+        if (object_not_empty(deleted)) {
+            result.SetAt("deleted", deleted);
+        }
+        
+        if (object_not_empty(result)) {
+            return result;
+        }
+        else {
+            return nullptr;
+        }
+    }
     
+    Any Easyrtc::FindDeltas(const Any & old_version, const Any & new_version) {
+        Any added = Any(Any::ObjectType{});
+        Any deleted = Any(Any::ObjectType{});
+//        var subPart;
+        for (const std::string & i : new_version.keys()) {
+            if (!old_version || !old_version.GetAt(i)) {
+                added.SetAt(i, new_version.GetAt(i));
+            }
+            else if (new_version.GetAt(i).type() == Any::Type::Object) {
+                Any sub_part = FindDeltas(old_version.GetAt(i), new_version.GetAt(i));
+                if (sub_part) {
+                    added.SetAt(i, new_version.GetAt(i));
+                }
+            }
+            else if (new_version.GetAt(i) != old_version.GetAt(i)) {
+                added.SetAt(i, new_version.GetAt(i));
+            }
+        }
+        
+        for (const std::string & i : old_version.keys()) {
+            if (!new_version.GetAt(i)) {
+                deleted.SetAt(i, old_version.GetAt(i));
+            }
+        }
+        
+        return BuildDeltaRecord(added, deleted);
+    }
     
+    Any Easyrtc::CollectConfigurationInfo() {
+        Any p2p_list(Any::ObjectType{});
+        
+        for (const std::string & i : Keys(peer_conns_)) {
+            Any connect_time_json;
+            if (peer_conns_[i]->connect_time()) {
+                connect_time_json = Any(ToString(peer_conns_[i]->connect_time().value()));
+            }
+            
+            p2p_list.SetAt(i, Any(Any::ObjectType{
+                { "connectTime", connect_time_json },
+                { "isInitiator", Any(peer_conns_[i]->is_initiator()) }
+            }));
+        }
+
+#warning todo sizes
+#warning todo language
+        Any new_config(Any::ObjectType {
+            { "userSettings", Any(Any::ObjectType{
+                { "sharingAudio", Any(have_audio_) },
+                { "sharingVideo", Any(have_video_) },
+                { "sharingData", Any(data_enabled_) },
+                { "nativeVideoWidth", Any(640) },
+                { "nativeVideoHeight", Any(480) },
+                { "windowWidth", Any(320) },
+                { "windowHeight", Any(640) },
+                { "screenWidth", Any(320) },
+                { "screenHeight", Any(640) },
+                { "cookieEnabled", Any(false) },
+                { "os", Any("iOS") },
+                { "language", Any("ja") },
+            }) }
+        });
+        
+        if (!IsEmptyObj(p2p_list)) {
+            new_config.SetAt("p2pList", p2p_list);
+        }
+
+        return new_config;
+    }
+    
+    void Easyrtc::UpdateConfiguration() {
+        auto thiz = shared_from_this();
+        std::weak_ptr<Easyrtc> whiz = shared_from_this();
+        
+        auto new_config = CollectConfigurationInfo();
+        //
+        // we need to give the getStats calls a chance to fish out the data.
+        // The longest I've seen it take is 5 milliseconds so 100 should be overkill.
+        //
+        auto send_deltas = [thiz, new_config](){
+            auto altered_data = thiz->FindDeltas(thiz->old_config_, new_config);
+            //
+            // send all the configuration information that changes during the session
+            //
+            if (altered_data) {
+                FuncCall(thiz->debug_printer_, std::string("cfg=") + altered_data.ToJsonString());
+                
+                if (thiz->websocket_) {
+                    thiz->SendSignaling(None(), "setUserCfg",
+                                        Any(Any::ObjectType
+                                            {
+                                                { "setUserCfg", altered_data.GetAt("added") }
+                                            }),
+                                        nullptr, nullptr);
+                }
+            }
+            
+            thiz->old_config_ = new_config;
+        };
+        
+        if (old_config_.count() == 0) {
+            send_deltas();
+        }
+        else {
+            Timer::Create(TimeDuration(0.1), [send_deltas]{
+                send_deltas();
+            });
+        }
+    }
+    
+    void Easyrtc::UpdateConfigurationInfo() {
+        FuncCall(update_configuration_info_);
+    }
+
     
     
     // -----
@@ -3102,11 +3262,7 @@ namespace ert {
         
     }
     
-    void Easyrtc::UpdateConfiguration() {
-    }
-    void Easyrtc::UpdateConfigurationInfo() {
-        FuncCall(update_configuration_info_);
-    }
+
     
 
     

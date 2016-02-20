@@ -11,7 +11,6 @@
 #include "string.h"
 #include "array.h"
 #include "map.h"
-
 #include "json.h"
 
 namespace nwr {
@@ -41,6 +40,9 @@ namespace nwr {
 
     Any::Any(const ObjectType & value):
     type_(Type::Object), value_(std::make_shared<ObjectType>(value)) {}
+    
+    Any::Any(const AnyFuncPtr & value):
+    type_(Type::Function), value_(value) {}
     
     Any::Any(const PointerType & value):
     type_(Type::Pointer), value_(value) {}
@@ -112,6 +114,14 @@ namespace nwr {
         return dict ? Some(*dict) : None();
     }
     
+    Optional<AnyFuncPtr> Any::AsFunction() const {
+        if (type() == Type::Function) {
+            return Some(std::static_pointer_cast<AnyFunc>(value_));
+        } else {
+            return None();
+        }
+    }
+    
     Optional<Any::PointerType> Any::AsPointer() const {
         if (type() == Type::Pointer) {
             return Some(value_);
@@ -139,6 +149,7 @@ namespace nwr {
             case Type::Data:
             case Type::Array:
             case Type::Object:
+            case Type::Function:
             case Type::Pointer:
                 value_ = copy.value_;
                 break;
@@ -152,6 +163,29 @@ namespace nwr {
         move.type_ = Type::Null;
         move.value_ = nullptr;
         return *this;
+    }
+    
+    bool Any::operator== (const Any & cmp) const {
+        switch (type_) {
+            case Type::Null:
+                return cmp.type() == Type::Null;
+            case Type::Boolean:
+                return AsBoolean() == cmp.AsBoolean();
+            case Type::Number:
+                return AsDouble() == cmp.AsDouble();
+            case Type::String:
+                return AsString() == cmp.AsString();
+            case Type::Data:
+            case Type::Array:
+            case Type::Object:
+            case Type::Function:
+            case Type::Pointer:
+                return value_ == cmp.value_;
+        }
+    }
+    
+    bool Any::operator!= (const Any & cmp) const {
+        return !(*this == cmp);
     }
     
     Any Any::Clone() const {
@@ -179,6 +213,8 @@ namespace nwr {
                 });
                 return Any(map);
             }
+            case Type::Function:
+                return Any(*AsFunction());
             case Type::Pointer:
                 return Any(*AsPointer());
         }
@@ -235,7 +271,7 @@ namespace nwr {
             case Type::String:
                 return std::make_shared<Json::Value>(*AsString());
             case Type::Data:
-                return std::make_shared<Json::Value>(DataFormat(**AsData()));
+                return std::make_shared<Json::Value>(Format("<Data %s>", DataFormat(**AsData()).c_str()));
             case Type::Array: {
                 auto json = std::make_shared<Json::Value>(Json::arrayValue);
                 for (int i = 0; i < count(); i++) {
@@ -250,8 +286,10 @@ namespace nwr {
                 }
                 return json;
             }
+            case Type::Function:
+                return std::make_shared<Json::Value>(Format("<Function %p>", value_.get()));
             case Type::Pointer:
-                return std::make_shared<Json::Value>(Format("%p", value_.get()));
+                return std::make_shared<Json::Value>(Format("<Pointer %p>", value_.get()));
         }
     }
     

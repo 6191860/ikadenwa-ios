@@ -27,6 +27,14 @@ namespace nwr {
         using type = R;
     };
     
+    template <typename T>
+    struct functor_func_ptr_type { using type = void; };
+    
+    template<typename R, typename K, typename ...Args>
+    struct functor_func_ptr_type<R(K::*)(Args...) const> {
+        using type = R(Args...);
+    };
+    
     template <typename LM>
     struct lambda_to_function {
         using type = typename functor_func_type<decltype(&LM::operator())>::type;

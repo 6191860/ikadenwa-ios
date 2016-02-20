@@ -15,6 +15,8 @@
 
 #include "data.h"
 #include "optional.h"
+#include "func.h"
+#include "any_func_forward.h"
 
 namespace Json {
     class Value;
@@ -37,6 +39,7 @@ namespace nwr {
             Data,
             Array,
             Object,
+            Function,
             Pointer
         };
         Any();
@@ -53,6 +56,7 @@ namespace nwr {
         explicit Any(const DataPtr & value);
         explicit Any(const ArrayType & value);
         explicit Any(const ObjectType & value);
+        Any(const AnyFuncPtr & value);
         explicit Any(const PointerType & value);
         
         Type type() const;
@@ -68,10 +72,14 @@ namespace nwr {
         Optional<DataPtr> AsData() const;
         Optional<ArrayType> AsArray() const;
         Optional<ObjectType> AsObject() const;
+        Optional<AnyFuncPtr> AsFunction() const;
         Optional<PointerType> AsPointer() const;
         
         Any & operator= (const Any & copy);
         Any & operator= (Any && move);
+        
+        bool operator== (const Any & cmp) const;
+        bool operator!= (const Any & cmp) const;
         
         // can not clone Pointer
         Any Clone() const;
@@ -84,7 +92,6 @@ namespace nwr {
         
         bool HasKey(const std::string & key) const;
         
-
         std::shared_ptr<Json::Value> ToJson() const;
         static Any FromJson(const Json::Value & json);
         
@@ -97,4 +104,5 @@ namespace nwr {
         Type type_;
         std::shared_ptr<void> value_;
     };
+
 }
