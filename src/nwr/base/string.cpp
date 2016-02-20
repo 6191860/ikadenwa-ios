@@ -60,6 +60,36 @@ namespace nwr {
         ret.push_back(str.substr(pos, str.length()));
         return ret;
     }
+    std::vector<std::string> Split(const std::string & str, const std::regex & delim) {
+        return Split(str, delim, -1);
+    }
+    std::vector<std::string> Split(const std::string & str, const std::regex & delim, int max_count) {
+        std::vector<std::string> ret;
+        if (str.length() == 0 || max_count == 0) {
+            return ret;
+        }
+        int pos = 0;
+        while (true) {
+            if (ret.size() + 1 == max_count) {
+                break;
+            }
+            
+            std::smatch mret;
+            std::regex_search(str.cbegin() + pos, str.cend(),
+                              mret, delim,
+                              std::regex_constants::format_first_only);
+            if (mret.size() == 0) {
+                break;
+            }
+            
+            int part_pos = pos + static_cast<int>(mret.position(0));
+            int part_len = static_cast<int>(mret.length(0));
+            ret.push_back(str.substr(pos, part_pos));
+            pos = part_pos + static_cast<int>(part_len);
+        }
+        ret.push_back(str.substr(pos, str.length()));
+        return ret;
+    }
     
     std::string Join(const std::vector<std::string> & parts) {
         return Join(parts, "");

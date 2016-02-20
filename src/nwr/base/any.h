@@ -89,7 +89,7 @@ namespace nwr {
         
         Any GetAt(const std::string & key) const;
         void SetAt(const std::string & key, const Any & value);
-        
+        void RemoveAt(const std::string & key);
         bool HasKey(const std::string & key) const;
         
         std::shared_ptr<Json::Value> ToJson() const;

@@ -252,6 +252,11 @@ namespace nwr {
         if (!dict) { Fatal("not dictionary"); }
         (*dict)[key] = value;
     }
+    void Any::RemoveAt(const std::string & key) {
+        auto dict = inner_object();
+        if (!dict) { Fatal("not dictionary"); }
+        (*dict).erase(key);
+    }
     bool Any::HasKey(const std::string & key) const {
         auto dict = inner_object();
         if (dict) {

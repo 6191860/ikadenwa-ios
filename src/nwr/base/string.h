@@ -25,6 +25,8 @@ namespace nwr {
     
     std::vector<std::string> Split(const std::string & str, const std::string & delim);
     std::vector<std::string> Split(const std::string & str, const std::string & delim, int max_count);
+    std::vector<std::string> Split(const std::string & str, const std::regex & delim);
+    std::vector<std::string> Split(const std::string & str, const std::regex & delim, int max_count);
     
     std::string Join(const std::vector<std::string> & parts);
     std::string Join(const std::vector<std::string> & parts, const std::string & glue);

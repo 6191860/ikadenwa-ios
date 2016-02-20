@@ -41,6 +41,7 @@
 #include "receive_peer.h"
 #include "aggregating_timer.h"
 #include "websocket_listener_entry.h"
+#include "fields.h"
 
 namespace nwr {
 namespace ert {
@@ -58,6 +59,7 @@ namespace ert {
 #warning todo clear all vars , especially check remove all retain cycles.
         void Close();
     private:
+        Any CreateIceServer(const std::string & url, const std::string & username, const std::string & credential);
         bool auto_init_user_media_;
         std::function<std::string(const std::string &)> sdp_local_filter_;
         std::function<std::string(const std::string &)> sdp_remote_filter_;
@@ -111,10 +113,10 @@ namespace ert {
         Any ack_message_;
         std::regex username_regexp_;
         std::string cookie_id_;
-        std::string username_;
+        Optional<std::string> username_;
         bool logging_out_;
         bool disconnecting_;
-        std::vector<std::string> session_fields_;
+        std::map<std::string, Any> session_fields_;
         MediaConstraints received_media_constraints_;
         void EnableAudioReceive(bool value);
         void EnableVideoReceive(bool value);
@@ -151,9 +153,8 @@ namespace ert {
         std::string application_name_;
         void set_application_name(const std::string & application_name);
         void EnableDebug(bool enable);
-        std::string presence_show_;
-        std::string presence_status_;
-        void UpdatePresence(const std::string & state, const std::string & status_text);
+        Optional<std::string> presence_show_;
+        Optional<std::string> presence_status_;
         bool SupportsGetUserMedia();
         bool SupportsPeerConnections();
         std::shared_ptr<RtcPeerConnection>
@@ -161,7 +162,7 @@ namespace ert {
                                 const webrtc::MediaConstraintsInterface & constraints);
         webrtc::DataChannelInit GetDataChannelConstraints();
         std::string server_path_;
-        Any last_logged_in_list_;
+        std::map<std::string, Any> last_logged_in_list_;
         ReceivePeer receive_peer_;
         std::map<std::string, std::shared_ptr<PeerConn>> peer_conns_;
         std::map<std::string, bool> acceptance_pending_;
@@ -181,8 +182,8 @@ namespace ert {
         void ShowError(const std::string & message_code, const std::string & message);
         //  CreateObjectURL
         std::string CleanId(const std::string & id_string);
-        std::function<void()> room_entry_listener_;
-        void set_room_entry_listener(const std::function<void()> & handler);
+        std::function<void(bool, const std::string &)> room_entry_listener_;
+        void set_room_entry_listener(const std::function<void(bool, const std::string &)> & handler);
         std::function<void(const Optional<std::string> &,
                            const std::map<std::string, Any> &,
                            const Any &)> room_occupant_listener_;
@@ -207,8 +208,8 @@ namespace ert {
         std::map<std::string, std::shared_ptr<MediaStream>> named_local_media_streams_;
         std::shared_ptr<MediaStream> GetLocalMediaStreamByName(const Optional<std::string> & stream_name);
         std::vector<std::string> GetLocalMediaIds();
-        Any BuildMediaIds();
-        std::map<std::string, int> room_data_;
+        std::map<std::string, Any> BuildMediaIds();
+        std::map<std::string, Any> room_data_;
         void RegisterLocalMediaStreamByName(const std::shared_ptr<MediaStream> & stream,
                                             const Optional<std::string> & stream_name);
         //  register3rdPartyLocalMediaStream
@@ -276,7 +277,7 @@ namespace ert {
         Any GetRoomApiField(const std::string & room_name,
                             const std::string & easyrtcid,
                             const std::string & field_name);
-        std::string credential_;
+        Optional<std::string> credential_;
         void set_credential(const Any & credential_param);
         std::function<void()> disconnect_listener_;
         void set_disconnect_listener(const std::function<void()> & disconnect_listener);
@@ -296,9 +297,8 @@ namespace ert {
         bool HaveVideoTrack(const Optional<std::string> & easyrtcid, const Optional<std::string> & stream_name);
         Any GetRoomField(const std::string & room_name, const std::string & field_name);
         bool SupportsStatistics();
-        Any fields_;
+        Fields fields_;
         bool IsEmptyObj(const Any & obj);
-        std::shared_ptr<sio::Socket> preallocated_socket_io_;
         void DisconnectBody();
         void Disconnect();
         void SendSignaling(const Optional<std::string> & dest_user,
@@ -422,23 +422,41 @@ namespace ert {
                                                         const std::string &)> & error_callback);
         Any BuildDeltaRecord(const Any & added, const Any & deleted);
         Any FindDeltas(const Any & old_version, const Any & new_version);
-        Any CollectConfigurationInfo();
+        Any CollectConfigurationInfo(bool forAuthentication);
         void UpdateConfiguration();
         void UpdateConfigurationInfo();
         std::function<void()> update_configuration_info_;
-        //---
-        
-        void SendDeltas();
-        
-        void GetFreshIceConfig(const std::function<void(bool)> & cb);
-        
-        void CallCanceled(const std::string & other_user, bool a);
-        
-        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
+        void UpdatePresence(const std::string & state, const std::string & status_text);
+        std::map<std::string, Any> GetSessionFields();
+        Any GetSessionField(const std::string & name);
+        Optional<std::string> easyrtcsid_;
         void ProcessSessionData(const Any & session_data);
         void ProcessRoomData(const Any & room_data);
-        void ProcessIceConfig(const Any & ice_config);
-        Any GetRoomFields(const std::string & room_name);
+        std::vector<std::string> GetRoomOccupantsAsArray(const std::string & room_name);
+        std::map<std::string, Any> GetRoomOccupantsAsMap(const std::string & room_name);
+        bool IsTurnServer(const std::string & ip_address);
+        void ProcessIceConfig(const Any & arg_ice_config);
+        void GetFreshIceConfig(const std::function<void(bool)> & callback);
+        void ProcessToken(const Any & msg);
+        void SendAuthenticate(const std::function<void (const std::string &)> & success_callback,
+                              const std::function<void (const std::string &,
+                                                        const std::string &)> & error_callback);
+        std::map<std::string, bool> GetRoomsJoined();
+        std::map<std::string, Any> GetRoomFields(const std::string & room_name);
+        std::map<std::string, Any> GetApplicationFields();
+        std::map<std::string, Any> GetConnectionFields();
+        std::shared_ptr<sio::Socket> preallocated_socket_io_;
+        void UseThisSocketConnection(const std::shared_ptr<sio::Socket> & already_allocated_socket_io);
+        void Connect(const std::string & application_name,
+                     const std::function<void()> & success_callback,
+                     const std::function<void(const std::string &,
+                                              const std::string &)> & arg_error_callback);
+        //---
+        
+        
+        void CallCanceled(const std::string & other_user, bool a);
+        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
+        
 
 
         static std::map<std::string, std::string> constant_strings_;

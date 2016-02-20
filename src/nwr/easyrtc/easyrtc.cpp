@@ -36,10 +36,8 @@ namespace ert {
         });
         username_regexp_ = std::regex("^(.){1,64}$");
         cookie_id_ = "easyrtcsid";
-        username_ = "";
         logging_out_ = false;
         disconnecting_ = false;
-        
         received_media_constraints_ = MediaConstraints();
         MediaConstraintsSet(received_media_constraints_.mandatory(),
                             webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, MediaConstraintsBoolValue(true));
@@ -64,7 +62,6 @@ namespace ert {
         };
         pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();
         use_fresh_ice_each_peer_ = false;
-        last_logged_in_list_ = Any(Any::ObjectType{});
         update_configuration_info_ = [this] {
             UpdateConfiguration();
         };
@@ -82,6 +79,14 @@ namespace ert {
         peer_connection_factory_ = nullptr;
         
         closed_ = true;
+    }
+    
+    Any Easyrtc::CreateIceServer(const std::string & url, const std::string & username, const std::string & credential) {
+        return Any(Any::ObjectType{
+            { "url", Any(url) },
+            { "username", Any(username) },
+            { "credential", Any(credential) }
+        });
     }
     
     void Easyrtc::StopStream(const std::shared_ptr<MediaStream> & stream) {
@@ -385,11 +390,6 @@ namespace ert {
         }
     }
     
-    void Easyrtc::UpdatePresence(const std::string & state, const std::string & status_text) {
-        presence_show_ = state;
-        presence_status_ = status_text;
-    }
-    
     bool Easyrtc::SupportsGetUserMedia() {
         return true;
     }
@@ -499,7 +499,7 @@ namespace ert {
         });
     }
     
-    void Easyrtc::set_room_entry_listener(const std::function<void()> & handler) {
+    void Easyrtc::set_room_entry_listener(const std::function<void(bool, const std::string &)> & handler) {
         room_entry_listener_ = handler;
     }
     
@@ -566,13 +566,13 @@ namespace ert {
         return Keys(named_local_media_streams_);
     }
     
-    Any Easyrtc::BuildMediaIds() {
+    std::map<std::string, Any> Easyrtc::BuildMediaIds() {
         std::map<std::string, Any> media_map;
         for (auto iter : named_local_media_streams_) {
             auto id = iter.second->id();
             media_map[iter.first] = Any(std::string(id != "" ? id : "default"));
         }
-        return Any(media_map);
+        return media_map;
     }
     
     void Easyrtc::RegisterLocalMediaStreamByName(const std::shared_ptr<MediaStream> & stream,
@@ -585,7 +585,7 @@ namespace ert {
         if (stream_name != "default") {
             auto media_ids = BuildMediaIds();
             for (const auto & i : room_data_) {
-                SetRoomApiField(i.first, "mediaIds", media_ids);
+                SetRoomApiField(i.first, "mediaIds", Any(media_ids));
             }
         }
     }
@@ -642,7 +642,7 @@ namespace ert {
             if (stream_name != "default") {
                 auto media_ids = BuildMediaIds();
                 for (const auto & i : room_data_) {
-                    SetRoomApiField(i.first, "mediaIds", media_ids);
+                    SetRoomApiField(i.first, "mediaIds", Any(media_ids));
                 }
             }
         }
@@ -994,7 +994,7 @@ namespace ert {
             return false;
         }
         else if (IsNameValid(username)) {
-            username_ = username;
+            username_ = Some(username);
             return true;
         }
         else {
@@ -1010,13 +1010,13 @@ namespace ert {
     {
         std::vector<std::tuple<std::string, std::string>> results;
         
-        for (const auto & room_name : last_logged_in_list_.keys()) {
+        for (const auto & room_name : Keys(last_logged_in_list_)) {
             if (room && room_name != *room) {
                 continue;
             }
             
-            for (const std::string & id : last_logged_in_list_.GetAt(room_name).keys()) {
-                auto entry = last_logged_in_list_.GetAt(room_name).GetAt(id);
+            for (const std::string & id : last_logged_in_list_[room_name].keys()) {
+                auto entry = last_logged_in_list_[room_name].GetAt(id);
                 if (entry.GetAt("username").AsString() == Some(username)) {
                     results.push_back(std::tuple<std::string, std::string>(id, room_name));
                 }
@@ -1030,10 +1030,10 @@ namespace ert {
                                  const std::string & field_name)
     {
 
-        if (last_logged_in_list_.HasKey(room_name) &&
-            last_logged_in_list_.GetAt(room_name).HasKey(easyrtcid))
+        if (HasKey(last_logged_in_list_, room_name) &&
+            last_logged_in_list_[room_name].HasKey(easyrtcid))
         {
-            auto info = last_logged_in_list_.GetAt(room_name).GetAt(easyrtcid);
+            auto info = last_logged_in_list_[room_name].GetAt(easyrtcid);
             if (info.GetAt("apiField").HasKey(field_name)) {
                 return info.GetAt("apiField").GetAt(field_name).GetAt("fieldValue");
             }
@@ -1042,7 +1042,7 @@ namespace ert {
     }
     
     void Easyrtc::set_credential(const Any & credential_param) {
-        credential_ = credential_param.ToJsonString();
+        credential_ = Some(credential_param.ToJsonString());
     }
     
     void Easyrtc::set_disconnect_listener(const std::function<void()> & disconnect_listener) {
@@ -1050,9 +1050,9 @@ namespace ert {
     }
     
     std::string Easyrtc::IdToName(const std::string & easyrtcid) {
-        for (const std::string & room_name : last_logged_in_list_.keys()) {
-            if (last_logged_in_list_.GetAt(room_name).HasKey(easyrtcid)) {
-                auto entry = last_logged_in_list_.GetAt(room_name).GetAt(easyrtcid);
+        for (const std::string & room_name : Keys(last_logged_in_list_)) {
+            if (last_logged_in_list_[room_name].HasKey(easyrtcid)) {
+                auto entry = last_logged_in_list_[room_name].GetAt(easyrtcid);
                 if (entry.GetAt("username")) {
                     return entry.GetAt("username").AsString().value();
                 }
@@ -1111,8 +1111,8 @@ namespace ert {
     }
     
     Any Easyrtc::GetRoomField(const std::string & room_name, const std::string & field_name) {
-        Any fields = GetRoomFields(room_name);
-        return fields.GetAt(field_name).GetAt("fieldValue");
+        auto fields = GetRoomFields(room_name);
+        return fields[field_name].GetAt("fieldValue");
     }
     
     bool Easyrtc::SupportsStatistics() {
@@ -1139,11 +1139,11 @@ namespace ert {
         }
         HangupAll();
         if (room_occupant_listener_) {
-            for (const auto & key : last_logged_in_list_.keys()) {
+            for (const auto & key : Keys(last_logged_in_list_)) {
                 (room_occupant_listener_)(Some(key), std::map<std::string, Any>{}, Any());
             }
         }
-        last_logged_in_list_ = Any(Any::ObjectType{});
+        last_logged_in_list_.clear();
         
         EmitEvent("roomOccupant", Any(Any::ObjectType{}));
         room_data_.clear();
@@ -2594,8 +2594,8 @@ namespace ert {
     }
     
     bool Easyrtc::IsPeerInAnyRoom(const std::string & id) {
-        for (const auto & room_name : last_logged_in_list_.keys()) {
-            if (last_logged_in_list_.GetAt(room_name).HasKey(id)) {
+        for (const auto & room_name : Keys(last_logged_in_list_)) {
+            if (last_logged_in_list_[room_name].HasKey(id)) {
                 return true;
             }
         }
@@ -2703,7 +2703,7 @@ namespace ert {
             thiz->EmitEvent("roomOccupants", Any(Any::ObjectType
                                                  {
                                                      { "roomName", Any(room_name) },
-                                                     { "occupants", thiz->last_logged_in_list_ }
+                                                     { "occupants", Any(thiz->last_logged_in_list_) }
                                                  }));
         }, Some(TimeDuration(0.1)));
     }
@@ -3163,7 +3163,7 @@ namespace ert {
         return BuildDeltaRecord(added, deleted);
     }
     
-    Any Easyrtc::CollectConfigurationInfo() {
+    Any Easyrtc::CollectConfigurationInfo(bool forAuthentication) {
         Any p2p_list(Any::ObjectType{});
         
         for (const std::string & i : Keys(peer_conns_)) {
@@ -3208,7 +3208,7 @@ namespace ert {
         auto thiz = shared_from_this();
         std::weak_ptr<Easyrtc> whiz = shared_from_this();
         
-        auto new_config = CollectConfigurationInfo();
+        auto new_config = CollectConfigurationInfo(false);
         //
         // we need to give the getStats calls a chance to fish out the data.
         // The longest I've seen it take is 5 milliseconds so 100 should be overkill.
@@ -3248,19 +3248,338 @@ namespace ert {
         FuncCall(update_configuration_info_);
     }
 
+    void Easyrtc::UpdatePresence(const std::string & state, const std::string & status_text) {
+        presence_show_ = Some(state);
+        presence_status_ = Some(status_text);
+        if (websocket_connected_) {
+            SendSignaling(None(), "setPresence", Any(Any::ObjectType
+                                                     {
+                                                         { "show", Any(state) },
+                                                         { "status", Any(status_text) }
+                                                     }),
+                          nullptr, nullptr);
+        }
+    }
     
+    std::map<std::string, Any> Easyrtc::GetSessionFields() {
+        return session_fields_;
+    }
     
-    // -----
+    Any Easyrtc::GetSessionField(const std::string & name) {
+        if (HasKey(session_fields_, name)) {
+            return session_fields_[name].GetAt("fieldValue");
+        }
+        else {
+            return nullptr;
+        }
+    }
     
-    
-    Any Easyrtc::GetRoomFields(const std::string & room_name) {
-        return fields_.GetAt("rooms").GetAt(room_name);
+    void Easyrtc::ProcessSessionData(const Any & session_data) {
+        if (session_data) {
+            if (session_data.GetAt("easyrtcsid")) {
+                easyrtcsid_ = Some(session_data.GetAt("easyrtcsid").AsString().value());
+            }
+            if (session_data.GetAt("field")) {
+                session_fields_ = session_data.GetAt("field").AsObject().value();
+            }
+        }
     }
     
     void Easyrtc::ProcessRoomData(const Any & room_data) {
+        room_data_ = room_data.AsObject().value();
         
-        
+        for (const auto & room_name : Keys(room_data_)) {
+            if (room_data_[room_name].GetAt("roomStatus").AsString() == Some(std::string("join"))) {
+                if (!HasKey(room_join_, room_name)) {
+#warning change js ref copy to cpp val copy; it may cause bugs.
+                    
+                    room_join_[room_name] = room_data_[room_name];
+                }
+                
+                auto media_ids = BuildMediaIds();
+                if (media_ids.size() != 0) {
+                    SetRoomApiField(room_name, "mediaIds", Any(media_ids));
+                }
+            }
+            else if (room_data_[room_name].GetAt("roomStatus").AsString() == Some(std::string("leave"))) {
+                FuncCall(room_entry_listener_, false, room_name);
+                room_join_.erase(room_name);
+                last_logged_in_list_.erase(room_name);
+                continue;
+            }
+            
+            if (room_data_[room_name].GetAt("clientList")) {
+                last_logged_in_list_[room_name] = room_data_[room_name].GetAt("clientList");
+            }
+            else if (room_data_[room_name].GetAt("clientListDelta")) {
+                auto stuff_to_add = room_data_[room_name].GetAt("clientListDelta").GetAt("updateClient");
+                if (stuff_to_add) {
+                    for (const std::string & id : stuff_to_add.keys()) {
+                        if (!HasKey(last_logged_in_list_, room_name)) {
+                            last_logged_in_list_[room_name] = Any(Any::ObjectType{});
+                        }
+                        if( !last_logged_in_list_[room_name].HasKey(id) ) {
+                            last_logged_in_list_[room_name].SetAt(id, stuff_to_add.GetAt(id));
+                        }
+                        for (const std::string & k : stuff_to_add.GetAt(id).keys()) {
+                            if( k == "apiField" || k == "presence") {
+                                last_logged_in_list_[room_name].GetAt(id).SetAt(k, stuff_to_add.GetAt(id).GetAt(k));
+                            }
+                        }
+                    }
+                }
+                auto stuff_to_remove = room_data_[room_name].GetAt("clientListDelta").GetAt("removeClient");
+                if (stuff_to_remove && HasKey(last_logged_in_list_, room_name)) {
+                    for (const std::string & remove_id : stuff_to_remove.keys()) {
+                        last_logged_in_list_[room_name].RemoveAt(remove_id);
+                    }
+                }
+            }
+            if (HasKey(room_join_, room_name) && room_data_[room_name].GetAt("field")) {
+                fields_.rooms[room_name] = room_data_[room_name].GetAt("field").AsObject().value();
+            }
+            if (room_data_[room_name].GetAt("roomStatus").AsString() == Some(std::string("join"))) {
+                FuncCall(room_entry_listener_, true, room_name);
+            }
+            ProcessOccupantList(room_name, last_logged_in_list_[room_name].AsObject().value());
+        }
+        EmitEvent("roomOccupant", Any(last_logged_in_list_));
     }
+    
+    std::vector<std::string> Easyrtc::GetRoomOccupantsAsArray(const std::string & room_name) {
+        if (!HasKey(last_logged_in_list_, room_name)) {
+            return {};
+        }
+        else {
+            return last_logged_in_list_[room_name].keys();
+        }
+    }
+    
+    std::map<std::string, Any> Easyrtc::GetRoomOccupantsAsMap(const std::string & room_name) {
+        return last_logged_in_list_[room_name].AsObject().value();
+    }
+    
+    bool Easyrtc::IsTurnServer(const std::string & ip_address) {
+        return turn_servers_[ip_address];
+    }
+    
+    void Easyrtc::ProcessIceConfig(const Any & arg_ice_config) {
+        Any ice_config = arg_ice_config;
+        
+        pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();
+        turn_servers_.clear();
+        
+        if (!ice_config || !ice_config.HasKey("iceServers") ||
+            ice_config.GetAt("iceServers").type() != Any::Type::Array)
+        {
+            ShowError(err_codes_DEVELOPER_ERR_, "iceConfig received from server didn't have an array called iceServers, ignoring it");
+            ice_config = Any(Any::ObjectType{
+                { "iceServers", Any(Any::ArrayType{}) }
+            });
+        }
+        
+        for (int i = 0; i < ice_config.GetAt("iceServers").count(); i++) {
+            auto item = ice_config.GetAt("iceServers").GetAt(i);
+            Any fixed_item;
+            
+            if (IndexOf(item.GetAt("url").AsString().value(), "turn:") == 0) {
+                if (item.HasKey("username")) {
+                    fixed_item = CreateIceServer(item.GetAt("url").AsString().value(),
+                                                 item.GetAt("username").AsString().value(),
+                                                 item.GetAt("credential").AsString().value());
+                }
+                else {
+                    ShowError(err_codes_DEVELOPER_ERR_, std::string("TURN server entry doesn't have a username: ") + item.ToJsonString());
+                }
+                std::string url_str = item.GetAt("url").AsString().value();
+                std::string ip_address = Split(url_str, std::regex("[@:&]"))[1];
+                turn_servers_[ip_address] = true;
+            }
+            else { // is stun server entry
+                fixed_item = item;
+            }
+            if (fixed_item) {
+                webrtc::PeerConnectionInterface::IceServer entry;
+                entry.uri = fixed_item.GetAt("url").AsString().value();
+                entry.username = fixed_item.GetAt("username").AsString().value();
+                entry.password = fixed_item.GetAt("credential").AsString().value();
+                pc_config_->servers.push_back(entry);
+            }
+        }
+    }
+    
+    void Easyrtc::GetFreshIceConfig(const std::function<void (bool)> & arg_callback) {
+        auto thiz = shared_from_this();
+        auto callback = arg_callback;
+        Any data_to_ship(Any::ObjectType{
+            { "msgType", Any("getIceConfig") },
+            { "msgData", Any(Any::ObjectType{})}
+        });
+        if (!callback) {
+            callback = [](bool v){};
+        }
+        websocket_->Emit("easyrtcCmd", {
+            data_to_ship,
+            AnyFuncMake([thiz, callback](const Any & ack_msg) -> Any{
+                if (ack_msg.GetAt("msgType").AsString() == Some(std::string("iceConfig"))) {
+                    thiz->ProcessIceConfig(ack_msg.GetAt("msgData").GetAt("iceConfig"));
+                    callback(true);
+                }
+                else {
+                    thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                                    ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
+                    callback(false);
+                }
+                return nullptr;
+            })
+        });
+    }
+    
+    void Easyrtc::ProcessToken(const Any & msg) {
+        FuncCall(debug_printer_, "entered process token");
+        
+        auto msg_data = msg.GetAt("msgData");
+        if (msg_data.HasKey("easyrtcid")) {
+            my_easyrtcid_ = Some(msg_data.GetAt("easyrtcid").AsString().value());
+        }
+        if (msg_data.HasKey("field")) {
+            fields_.connection = msg_data.GetAt("field").AsObject().value();
+        }
+        if (msg_data.HasKey("iceConfig")) {
+            ProcessIceConfig(msg_data.GetAt("iceConfig"));
+        }
+        if (msg_data.HasKey("sessionData")) {
+            ProcessSessionData(msg_data.GetAt("sessionData"));
+        }
+        if (msg_data.HasKey("roomData")) {
+            ProcessRoomData(msg_data.GetAt("roomData"));
+        }
+        if (msg_data.GetAt("application").HasKey("field")) {
+            fields_.application = msg_data.GetAt("application").GetAt("field").AsObject().value();
+        }
+    }
+    
+    void Easyrtc::SendAuthenticate(const std::function<void (const std::string &)> & success_callback,
+                                   const std::function<void (const std::string &,
+                                                             const std::string &)> & error_callback)
+    {
+        auto thiz = shared_from_this();
+        //
+        // find our easyrtcsid
+        //
+#warning todo! cookie handling emulation
+        easyrtcsid_ = None();
+
+        Any msg_data(Any::ObjectType{
+            { "apiVersion", Any(api_version_) },
+            { "applicationName", Any(application_name_) },
+            { "setUserCfg", CollectConfigurationInfo(true) }
+        });
+        
+        if (presence_show_) {
+            msg_data.SetAt("setPresence", Any(Any::ObjectType
+                                              {
+                                                  { "show", Any(presence_show_.value()) },
+                                                  { "status", Any(presence_status_.value()) }
+                                              }));
+        }
+        if (username_) {
+            msg_data.SetAt("username", Any(username_.value()));
+        }
+        if (room_join_.size() != 0) {
+            msg_data.SetAt("roomJoin", Any(room_join_));
+        }
+        if (easyrtcsid_) {
+            msg_data.SetAt("easyrtcsid", Any(easyrtcsid_.value()));
+        }
+        if (credential_) {
+            msg_data.SetAt("credential", Any(credential_.value()));
+        }
+        
+        websocket_->Emit("easyrtcAuth",
+                         {
+                             Any(Any::ObjectType
+                               {
+                                   { "msgType", Any("authenticate") },
+                                   { "msgData", msg_data }
+                               }),
+                             AnyFuncMake([thiz, success_callback, error_callback](const Any & msg) -> Any {
+                                 if (msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
+                                     
+                                     error_callback(msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
+                                                    msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
+                                     thiz->room_join_.clear();
+                                 }
+                                 else {
+                                     thiz->ProcessToken(msg);
+                                     
+                                     for (const std::string & room : Keys(thiz->room_api_fields_)) {
+                                         thiz->EnqueueSendRoomApi(room);
+                                     }
+                                     
+                                     FuncCall(success_callback, thiz->my_easyrtcid_.value());
+                                 }
+                                 return nullptr;
+                             })
+                         });
+    }
+    
+    std::map<std::string, bool> Easyrtc::GetRoomsJoined() {
+        std::map<std::string, bool> rooms_in;
+        for (const std::string & key : Keys(room_join_)) {
+            rooms_in[key] = true;
+        }
+        return rooms_in;
+    }
+    
+    std::map<std::string, Any> Easyrtc::GetRoomFields(const std::string & room_name) {
+        return fields_.rooms[room_name];
+    }
+    
+    std::map<std::string, Any> Easyrtc::GetApplicationFields() {
+        return fields_.application;
+    }
+    
+    std::map<std::string, Any> Easyrtc::GetConnectionFields() {
+        return fields_.connection;
+    }
+    
+    void Easyrtc::UseThisSocketConnection(const std::shared_ptr<sio::Socket> & already_allocated_socket_io) {
+        preallocated_socket_io_ = already_allocated_socket_io;
+    }
+    
+    void Easyrtc::Connect(const std::string & application_name,
+                          const std::function<void()> & success_callback,
+                          const std::function<void(const std::string &,
+                                                   const std::string &)> & arg_error_callback)
+    {
+        auto error_callback = arg_error_callback;
+        
+        if (!preallocated_socket_io_ && websocket_) {
+            printf("Developer error: attempt to connect when already connected to socket server\n");
+            return;
+        }
+        
+        pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();
+        closed_channel_ = nullptr;
+        old_config_ = Any(Any::ObjectType{}); // used internally by updateConfiguration
+        queued_messages_.clear();
+        application_name_ = application_name;
+        fields_ = Fields();
+        FuncCall(debug_printer_,
+                 std::string("attempt to connect to WebRTC signalling server with application name=") + application_name);
+
+        if (!error_callback) {
+            error_callback = [](const std::string & code, const std::string & text) {
+                printf("easyrtc.connect: %s\n", text.c_str());
+            };
+        }
+        
+        ConnectToWSServer(success_callback, error_callback);
+    }
+    
+    // -----
+    
     
 
     
