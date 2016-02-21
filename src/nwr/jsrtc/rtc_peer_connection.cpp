@@ -75,6 +75,13 @@ namespace jsrtc {
         return current_local_description();
     }
     
+    std::shared_ptr<const RtcSessionDescription> RtcPeerConnection::current_local_description() {
+        return current_local_description_;
+    }
+    std::shared_ptr<const RtcSessionDescription> RtcPeerConnection::pending_local_description() {
+        return pending_local_description_;
+    }
+    
     void RtcPeerConnection::
     SetRemoteDescription(const std::shared_ptr<const RtcSessionDescription> & description,
                          const std::function<void()> & success,
@@ -106,6 +113,14 @@ namespace jsrtc {
         auto desc = pending_remote_description();
         if (desc) { return desc; }
         return current_remote_description();
+    }
+    
+    std::shared_ptr<const RtcSessionDescription> RtcPeerConnection::current_remote_description() {
+        return current_remote_description_;
+    }
+    
+    std::shared_ptr<const RtcSessionDescription> RtcPeerConnection::pending_remote_description() {
+        return pending_remote_description_;
     }
     
     void RtcPeerConnection::AddIceCandidate(const std::shared_ptr<const RtcIceCandidate> & candidate) {

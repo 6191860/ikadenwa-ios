@@ -50,6 +50,7 @@ namespace ert {
     class Easyrtc: public std::enable_shared_from_this<Easyrtc> {
     public:
         friend PeerConn;
+        using VideoObject = std::string; // mock type
     private:
         Easyrtc();
         void Init();
@@ -224,8 +225,9 @@ namespace ert {
                               const std::vector<std::shared_ptr<MediaStreamTrack>> & video_tracks);
         //  muteVideoObject (DOM)
         //  getLocalStreamAsUrl ; for <video>, <canvas>
+        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
         //  clearMediaStream(DOM)
-        //  setVideoObjectSrc <video>
+        void SetVideoObjectSrc(const VideoObject & video, const std::shared_ptr<MediaStream> & stream);
         //  loadStylesheet
         std::string FormatError(const Any & error);
         void InitMediaSource(const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
@@ -246,7 +248,7 @@ namespace ert {
                                                           const std::string &)> & acceptor);
         std::function<void(const Any &)> on_error_;
         void set_on_error(const std::function<void(const Any &)> & err_listener);
-        std::function<void (const std::string &, bool)> call_cancelled_;
+        std::function<void (const std::string &, bool)> call_canceled_;
         void set_call_canceled(const std::function<void(const std::string &, bool)> & call_canceled);
         std::function<void (const std::string &,
                             const std::shared_ptr<MediaStream> &,
@@ -413,11 +415,7 @@ namespace ert {
         void OnChannelCmd(const Any & msg,
                           const std::function<void(const Any &)> & ack_acceptor_fn);
         std::vector<WebsocketListenerEntry> websocket_listeners_;
-        
-        void SendAuthenticate(const std::function<void()> & success_callback,
-                              const std::function<void(const std::string &,
-                                                       const std::string &)> & failure_callback);
-        void ConnectToWSServer(const std::function<void()> & success_callback,
+        void ConnectToWSServer(const std::function<void(const std::string &)> & success_callback,
                                const std::function<void(const std::string &,
                                                         const std::string &)> & error_callback);
         Any BuildDeltaRecord(const Any & added, const Any & deleted);
@@ -448,29 +446,47 @@ namespace ert {
         std::shared_ptr<sio::Socket> preallocated_socket_io_;
         void UseThisSocketConnection(const std::shared_ptr<sio::Socket> & already_allocated_socket_io);
         void Connect(const std::string & application_name,
-                     const std::function<void()> & success_callback,
+                     const std::function<void(const std::string &)> & success_callback,
                      const std::function<void(const std::string &,
                                               const std::string &)> & arg_error_callback);
-        //---
+        bool auto_add_close_buttons_;
+        void DontAddCloseButtons();
         
-        
-        void CallCanceled(const std::string & other_user, bool a);
-        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
-        
-
-
+        void EasyAppBody(const Optional<std::string> & monitor_video_id,
+                         const std::vector<std::string> & video_ids);
+        std::vector<std::string> video_ids_;
+        std::map<std::string, Optional<std::string>> video_id_to_caller_map_;
+        bool ValidateVideoIds(const std::string & monitor_video_id,
+                              const std::vector<std::string> & video_ids);
+        Optional<std::string> GetCallerOfVideo(const VideoObject & video_object);
+        void SetCallerOfVideo(const VideoObject & video_object, const Optional<std::string> & caller_easyrtcid);
+        bool VideoIsFree(const VideoObject & obj);
+        std::function<void(const VideoObject &, const Optional<int> &)> on_call_;
+        void set_on_call(const std::function<void(const VideoObject &, const Optional<int> &)> & cb);
+        std::function<void(const std::string &, int)> on_hangup_;
+        void set_on_hangup(const std::function<void(const std::string &, int)> & cb);
+        Optional<VideoObject> GetIthVideo(int i);
+        Optional<std::string> GetIthCaller(int i);
+        int GetSlotOfCaller(const std::string & easyrtcid);
+        void HideVideo(const VideoObject & video);
+        void ShowVideo(const VideoObject & video, const std::shared_ptr<MediaStream> & stream);
+        Optional<VideoObject> refresh_pane_;
+        void EasyApp(const std::string & application_name,
+                     const Optional<std::string> & monitor_video_id,
+                     const std::vector<std::string> & video_ids,
+                     const std::function<void()> & on_ready,
+                     const std::function<void()> & on_failure);
+        std::function<void(bool, const Optional<std::string> &)> got_media_callback_;
+        void set_got_media(const std::function<void(bool, const Optional<std::string> &)> & callback);
+        std::function<void(bool, const Optional<std::string> &)> got_connection_callback_;
+        void set_got_connection(const std::function<void(bool, const Optional<std::string> &)> & callback);
         static std::map<std::string, std::string> constant_strings_;
 
-        
-        
+        // ---
         bool closed_;
         std::shared_ptr<RtcPeerConnectionFactory> peer_connection_factory_;
         void SetPeerConn(const std::string & other_user, const std::shared_ptr<PeerConn> & peer_conn);
         void DeletePeerConn(const std::string & other_user);
-        
-
-        
-        
     };
 }
 }

@@ -65,12 +65,14 @@ namespace ert {
         update_configuration_info_ = [this] {
             UpdateConfiguration();
         };
+        auto_add_close_buttons_ = true;
     }
     
     Easyrtc::~Easyrtc() {
         if (!closed_) {
             Fatal("Easyrtc not closed");
         }
+        printf("[Easyrtc::dtor]\n");
     }
     
     void Easyrtc::Close() {
@@ -676,7 +678,6 @@ namespace ert {
         if (!stream_to_clone) {
             for (const auto & key : Keys(peer_conns_)) {
                 auto remote_streams = peer_conns_[key]->pc()->remote_streams();
-                // bug? : if( remoteStreams && remoteStreams.length > 1 ) {
                 if (remote_streams.size() > 0) {
                     stream_to_clone = remote_streams[0];
                 }
@@ -707,6 +708,14 @@ namespace ert {
         RegisterLocalMediaStreamByName(media_clone, Some(stream_name));
         
         return media_clone;
+    }
+    
+    std::shared_ptr<MediaStream> Easyrtc::GetLocalStream(const Optional<std::string> & stream_name) {
+        return GetLocalMediaStreamByName(stream_name);
+    }
+    
+    void Easyrtc::SetVideoObjectSrc(const VideoObject & video, const std::shared_ptr<MediaStream> & stream) {
+        printf("SetVideoObjectSrc\n");
     }
     
     std::string Easyrtc::FormatError(const Any & error) {
@@ -907,7 +916,7 @@ namespace ert {
     }
     
     void Easyrtc::set_call_canceled(const std::function<void(const std::string &, bool)> & call_canceled) {
-        call_cancelled_ = call_canceled;
+        call_canceled_ = call_canceled;
     }
     
     void Easyrtc::set_on_stream_closed(const std::function<void(const std::string &,
@@ -1552,7 +1561,7 @@ namespace ert {
             FuncCall(was_accepted_cb, true, other_user);
             DoAnswer(other_user, offers_pending_[other_user], stream_names);
             offers_pending_.erase(other_user);
-            CallCanceled(other_user, false);
+            FuncCall(call_canceled_, other_user, false);
             return;
         }
         
@@ -2577,13 +2586,13 @@ namespace ert {
                 peer_conns_[caller]->pc()->Close();
             }
             else {
-                FuncCall(call_cancelled_, caller, true);
+                FuncCall(call_canceled_, caller, true);
             }
             DeletePeerConn(caller);
             UpdateConfigurationInfo();
         }
         else {
-            FuncCall(call_cancelled_, caller, true);
+            FuncCall(call_canceled_, caller, true);
         }
     }
     
@@ -2997,7 +3006,7 @@ namespace ert {
         }
     }
     
-    void Easyrtc::ConnectToWSServer(const std::function<void()> & success_callback,
+    void Easyrtc::ConnectToWSServer(const std::function<void(const std::string &)> & success_callback,
                                     const std::function<void(const std::string &,
                                                              const std::string &)> & error_callback)
     {
@@ -3105,7 +3114,6 @@ namespace ert {
             thiz->update_configuration_info_ = [](){
                 
             }; // dummy update function
-#warning todo old config
             thiz->old_config_ = Any(Any::ObjectType{});
             thiz->DisconnectBody();
             FuncCall(thiz->disconnect_listener_);
@@ -3549,7 +3557,7 @@ namespace ert {
     }
     
     void Easyrtc::Connect(const std::string & application_name,
-                          const std::function<void()> & success_callback,
+                          const std::function<void(const std::string &)> & success_callback,
                           const std::function<void(const std::string &,
                                                    const std::string &)> & arg_error_callback)
     {
@@ -3578,12 +3586,321 @@ namespace ert {
         ConnectToWSServer(success_callback, error_callback);
     }
     
-    // -----
+    void Easyrtc::DontAddCloseButtons() {
+        auto_add_close_buttons_ = false;
+    }
     
-    
+    void Easyrtc::EasyAppBody(const Optional<std::string> & monitor_video_id,
+                              const std::vector<std::string> & video_ids)
+    {
+        auto thiz = shared_from_this();
+        
+        int num_people = static_cast<int>(video_ids.size());
+//        var videoIdsP = videoIds;
+//        var refreshPane = 0;
+//        var onCall = null, onHangup = null;
+//        var videoIdToCallerMap = {};
+//        if (!videoIdsP) {
+//            videoIdsP = [];
+//        }
+        
+        AddEventListener("roomOccupants",
+                         AnyEventListenerMake([thiz, num_people]
+                                              (const Any & event_name, const Any & event_data){
+                                                  for (int i = 0; i < num_people; i++) {
+                                                      
+                                                      auto video_opt = thiz->GetIthVideo(i);
+                                            
+                                                      if (video_opt && !thiz->VideoIsFree(video_opt.value())) {
+                                                          auto video = video_opt.value();
+                                                          if (!thiz->IsPeerInAnyRoom(thiz->GetCallerOfVideo(video).value())) {
+                                                              FuncCall(thiz->on_hangup_, thiz->GetCallerOfVideo(video).value(), i);
+                                                              thiz->SetCallerOfVideo(video, None());
+                                                          }
+                                                      }
+                                                  }
+                                              }));
+        
+        if (monitor_video_id && !ValidateVideoIds(monitor_video_id.value(), video_ids)) {
+            Fatal("bad video element id");
+        }
+        
+        if (monitor_video_id) {
+#warning todo mute monitor
+//            document.getElementById(monitorVideoId).muted = "muted";
+        }
+        
+        set_on_stream_closed([thiz, num_people]
+                             (const std::string & caller,
+                              const std::shared_ptr<MediaStream> & stream,
+                              const std::string & stream_name)
+                             {
+                                 for (int i = 0; i < num_people; i++) {
+                                     auto video_opt = thiz->GetIthVideo(i);
+                                     
+                                     if (video_opt && thiz->GetCallerOfVideo(video_opt.value()) == Some(caller)) {
+                                         auto video = video_opt.value();
+                                         thiz->HideVideo(video);
+                                         thiz->SetCallerOfVideo(video, None());
+                                         FuncCall(thiz->on_hangup_, caller, i);
+                                     }
+                                 }
+                             });
+        
+        set_accept_checker([thiz, num_people]
+                           (const std::string & caller,
+                            const std::function<void (bool,
+                                                      const Optional<std::vector<std::string> > &)> & helper)
+                           {
+                               for (int i = 0; i < num_people; i++) {
+                                   auto video = thiz->GetIthVideo(i);
+                                   if (video && thiz->VideoIsFree(video.value())) {
+                                       helper(true, None());
+                                       return;
+                                   }
+                               }
+                               helper(false, None());
+                           });
+        
+        set_stream_acceptor([thiz, num_people]
+                            (const std::string & caller,
+                             const std::shared_ptr<MediaStream> & stream,
+                             const std::string & stream_name)
+                            {
+                                FuncCall(thiz->debug_printer_, "stream acceptor called");
+                                
+                                if (thiz->refresh_pane_ && thiz->VideoIsFree(thiz->refresh_pane_.value())) {
+                                    thiz->ShowVideo(thiz->refresh_pane_.value(), stream);
+                                    FuncCall(thiz->on_call_, thiz->refresh_pane_.value(), None());
+                                    thiz->refresh_pane_ = None();
+                                    return;
+                                }
+                                
+                                Optional<VideoObject> video_opt;
+                                for (int i = 0; i < num_people; i++) {
+                                    video_opt = thiz->GetIthVideo(i);
+                                    if (video_opt && thiz->GetCallerOfVideo(video_opt.value()) == Some(caller)) {
+                                        thiz->ShowVideo(video_opt.value(), stream);
+                                        FuncCall(thiz->on_call_, caller, Some(i));
+                                        return;
+                                    }
+                                }
+ 
+                                //
+                                // no empty slots, so drop whatever caller we have in the first slot and use that one.
+                                //
+                                video_opt = thiz->GetIthVideo(0);
+                                
+                                if (video_opt) {
+                                    thiz->Hangup(thiz->GetCallerOfVideo(video_opt.value()).value());
+                                    thiz->ShowVideo(video_opt.value(), stream);
+                                    FuncCall(thiz->on_call_, caller, Some(0));
+                                }
+                                thiz->SetCallerOfVideo(video_opt.value(), Some(caller));
 
+                            });
+        
+        if (auto_add_close_buttons_) {
+//            addControls = function(video) {
+//                parentDiv = video.parentNode;
+//                setCallerOfVideo(video, "");
+//                closeButton = document.createElement("div");
+//                closeButton.className = "easyrtc_closeButton";
+//                closeButton.onclick = function() {
+//                    if (getCallerOfVideo(video)) {
+//                        easyrtc.hangup(getCallerOfVideo(video));
+//                        hideVideo(video);
+//                        setCallerOfVideo(video, "");
+//                    }
+//                };
+//                parentDiv.appendChild(closeButton);
+//            };
+//            for (i = 0; i < numPEOPLE; i++) {
+//                addControls(getIthVideo(i));
+//            }
+        }
+        
+        if (video_enabled_ && monitor_video_id) {
+#warning video tag setup
+//            monitorVideo = document.getElementById(monitorVideoId);
+//            if (!monitorVideo) {
+//                console.error("Programmer error: no object called " + monitorVideoId);
+//                return;
+//            }
+//            monitorVideo.muted = "muted";
+//            monitorVideo.defaultMuted = true;
+        }
+        
+    }
     
+    bool Easyrtc::ValidateVideoIds(const std::string & monitor_video_ids,
+                                   const std::vector<std::string> & video_ids)
+    {
+        return true;
+    }
+    
+    Optional<std::string> Easyrtc::GetCallerOfVideo(const VideoObject & video_object) {
+        if (HasKey(video_id_to_caller_map_, video_object)) {
+            return video_id_to_caller_map_[video_object];
+        } else {
+            return None();
+        }
+    }
+    void Easyrtc::SetCallerOfVideo(const VideoObject & video_object,
+                                   const Optional<std::string> & caller_easyrtcid) {
+        video_id_to_caller_map_[video_object] = caller_easyrtcid;
+    }
+    
+    bool Easyrtc::VideoIsFree(const VideoObject & obj) {
+        auto caller = GetCallerOfVideo(obj);
+        return !caller;
+    }
+    
+    void Easyrtc::set_on_call(const std::function<void(const VideoObject &, const Optional<int> &)> & cb) {
+        on_call_ = cb;
+    }
+    
+    void Easyrtc::set_on_hangup(const std::function<void(const std::string &, int)> & cb) {
+        on_hangup_ = cb;
+    }
+    
+    Optional<Easyrtc::VideoObject> Easyrtc::GetIthVideo(int i) {
+        if (0 <= i && i < video_ids_.size()) {
+            return Some(video_ids_[i]);
+        }
+        return None();
+    }
+    
+    Optional<std::string> Easyrtc::GetIthCaller(int i) {
+#warning open issue
+        if (i < 0 || i >= video_ids_.size()) {
+            return None();
+        }
+        auto vid = GetIthVideo(i);
+        if (!vid) { return None(); }
+        return GetCallerOfVideo(vid.value());
+    }
+    
+    int Easyrtc::GetSlotOfCaller(const std::string & easyrtcid) {
+        for (int i = 0; i < video_ids_.size(); i++) {
+            if (GetIthCaller(i) == Some(easyrtcid)) {
+                return i;
+            }
+        }
+        return -1; // caller not connected
+    }
+    
+    void Easyrtc::HideVideo(const VideoObject & video) {
+        
+    }
+    
+    void Easyrtc::ShowVideo(const VideoObject & video, const std::shared_ptr<MediaStream> & stream) {
+        SetVideoObjectSrc(video, stream);
+#warning todo video visible
+//        if (video.style.visibility) {
+//            video.style.visibility = 'visible';
+//        }
+    }
+    
+    void Easyrtc::EasyApp(const std::string & application_name,
+                          const Optional<std::string> & monitor_video_id,
+                          const std::vector<std::string> & video_ids,
+                          const std::function<void(const std::string &)> & on_ready,
+                          const std::function<void(const std::string &,
+                                                   const std::string &)> & on_failure)
+    {
+        auto thiz = shared_from_this();
+        
+//        var gotMediaCallback = null,
+//        gotConnectionCallback = null;
+        EasyAppBody(monitor_video_id, video_ids);
+        
+        //
+        // try to restablish broken connections that weren't caused by a hangup
+        //
+        
+        set_peer_closed_listener([thiz](const std::string & easyrtcid){
+            Timer::Create(TimeDuration(1.0), [thiz, easyrtcid](){
+                if (thiz->GetSlotOfCaller(easyrtcid) >= 0 && thiz->IsPeerInAnyRoom(easyrtcid)) {
+                    thiz->Call(easyrtcid,
+                               nullptr,
+                               nullptr,
+                               nullptr,
+                               None());
+                }
+            });
+        });
+        
+        
+        /** Sets an event handler that gets called when a connection to the signaling
+         * server has or has not been made. Can only be called after calling easyrtc.easyApp.
+         * @param {Function} gotConnectionCB has the signature (gotConnection, errorText)
+         * @example
+         */
+        
+        auto next_initialization_step = [thiz, on_ready](const std::string & id){
+            FuncCall(thiz->got_connection_callback_, true, None());
+            on_ready(thiz->my_easyrtcid_.value());
+        };
+        
+        auto post_get_user_media = [thiz, application_name, monitor_video_id, on_failure,
+                                    next_initialization_step]
+        (){
+            FuncCall(thiz->got_media_callback_, true, None());
 
+            if (monitor_video_id) {
+                thiz->SetVideoObjectSrc(VideoObject(), thiz->GetLocalStream(None()));
+            }
+            
+            auto connect_error = [thiz, application_name,  on_failure](const std::string & error_code, const std::string & error_text) {
+                if (thiz->got_connection_callback_) {
+                    thiz->got_connection_callback_(false, Some(error_text));
+                }
+                else if (on_failure) {
+                    on_failure(thiz->err_codes_CONNECT_ERR_, error_text);
+                }
+                else {
+                    thiz->ShowError(thiz->err_codes_CONNECT_ERR_, error_text);
+                }
+            };
+            
+            thiz->Connect(application_name,
+                          next_initialization_step,
+                          connect_error);
+        };
+        
+        auto stream = GetLocalStream(None());
+        if (stream) {
+            post_get_user_media();
+        }
+        else {
+            InitMediaSource([post_get_user_media](const std::shared_ptr<MediaStream> &)
+                            {
+                                post_get_user_media();
+                            },
+                            [thiz, on_failure](const std::string & error_code, const std::string & error_text)
+                            {
+                                if (thiz->got_media_callback_) {
+                                    thiz->got_media_callback_(false, Some(error_text));
+                                }
+                                else if (on_failure) {
+                                    on_failure(thiz->err_codes_MEDIA_ERR_, error_text);
+                                }
+                                else {
+                                    thiz->ShowError(thiz->err_codes_MEDIA_ERR_, error_text);
+                                }
+                            },
+                            None());
+        }
+    }
+    
+    void Easyrtc::set_got_media(const std::function<void(bool, const Optional<std::string> &)> & callback) {
+        got_media_callback_ = callback;
+    }
+    
+    void Easyrtc::set_got_connection(const std::function<void(bool, const Optional<std::string> &)> & callback) {
+        got_connection_callback_ = callback;
+    }
     
     std::map<std::string, std::string> Easyrtc::constant_strings_ = {
         { "unableToEnterRoom", "Unable to enter room {0} because {1}" },

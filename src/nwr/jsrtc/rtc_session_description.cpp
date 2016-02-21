@@ -59,8 +59,8 @@ namespace jsrtc {
         return CreateWebrtc(type_, sdp_);
     }
     
-    webrtc::SessionDescriptionInterface * CreateWebrtc(const std::string & type,
-                                                       const std::string & sdp)
+    webrtc::SessionDescriptionInterface * RtcSessionDescription::CreateWebrtc(const std::string & type,
+                                                                              const std::string & sdp)
     {
         webrtc::SdpParseError err;
         auto * wdesc = webrtc::CreateSessionDescription(type, sdp, &err);
