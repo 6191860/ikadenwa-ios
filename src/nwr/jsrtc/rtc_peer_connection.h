@@ -14,7 +14,7 @@
 #include <nwr/base/array.h>
 #include <nwr/base/func.h>
 #include <nwr/base/task_queue.h>
-#include "lib_webrtc.h"
+#include <nwr/base/lib_webrtc.h>
 #include "post_target.h"
 
 namespace nwr {
@@ -24,14 +24,15 @@ namespace nwr {
         class RtcPeerConnectionFactory;
         class RtcDataChannel;
         class MediaStream;
+        class MediaTrackConstraints;
         
         class RtcPeerConnection : public PostTarget<RtcPeerConnection> {
             friend RtcPeerConnectionFactory;
         public:
-            void CreateOffer(const webrtc::MediaConstraintsInterface * options,
+            void CreateOffer(const MediaTrackConstraints * options,
                              const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                              const std::function<void(const std::string &)> & failure);
-            void CreateAnswer(const webrtc::MediaConstraintsInterface * options,
+            void CreateAnswer(const MediaTrackConstraints * options,
                               const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                               const std::function<void(const std::string &)> & failure);
             void SetLocalDescription(const std::shared_ptr<const RtcSessionDescription> & description,

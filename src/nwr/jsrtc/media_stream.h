@@ -15,7 +15,7 @@
 #include <nwr/base/optional.h>
 #include <nwr/base/array.h>
 #include <nwr/base/emitter.h>
-#include <nwr/jsrtc/lib_webrtc.h>
+#include <nwr/base/lib_webrtc.h>
 
 #include "post_target.h"
 #include "media_stream_track.h"

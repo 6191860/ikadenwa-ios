@@ -8,6 +8,7 @@
 
 #include "rtc_peer_connection.h"
 
+#include "media_track_constraints.h"
 #include "media_stream.h"
 #include "rtc_data_channel.h"
 #include "rtc_session_description.h"
@@ -17,7 +18,7 @@ namespace nwr {
 namespace jsrtc {
     
     void RtcPeerConnection::
-    CreateOffer(const webrtc::MediaConstraintsInterface * options,
+    CreateOffer(const MediaTrackConstraints * options,
                 const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                 const std::function<void(const std::string &)> & failure)
     {
@@ -26,11 +27,12 @@ namespace jsrtc {
                                                       success,
                                                       failure));
         
-        inner_connection_->CreateOffer(observer.get(), options);
+        inner_connection_->CreateOffer(observer.get(),
+                                       options ? &options->inner_constraints() : nullptr);
     }
     
     void RtcPeerConnection::
-    CreateAnswer(const webrtc::MediaConstraintsInterface * options,
+    CreateAnswer(const MediaTrackConstraints * options,
                  const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                  const std::function<void(const std::string &)> & failure)
     {
@@ -39,7 +41,8 @@ namespace jsrtc {
                                                       success,
                                                       failure));
         
-        inner_connection_->CreateAnswer(observer.get(), options);
+        inner_connection_->CreateAnswer(observer.get(),
+                                        options ? &options->inner_constraints() : nullptr);
     }
     
     void RtcPeerConnection::

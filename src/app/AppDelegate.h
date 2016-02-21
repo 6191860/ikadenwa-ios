@@ -8,6 +8,8 @@
 
 #pragma once
 
+#import <UIKit/UIKit.h>
+
 #include <cstdio>
 #include <string>
 #include <thread>
@@ -19,6 +21,7 @@
 #include <nwr/base/timer.h>
 #include <nwr/base/base64.h>
 #include <nwr/base/time.h>
+#include <nwr/base/lib_webrtc.h>
 #include <nwr/engineio/yeast.h>
 #include <nwr/engineio/socket.h>
 
@@ -27,14 +30,19 @@
 #include "sio_test.h"
 #include "ert_test.h"
 
-namespace app {
-    class App {
-    public:
-        void Test1();
-        
-        std::shared_ptr<EioTest> eio_test_;
-        std::shared_ptr<AnyTest> any_test_;
-        std::shared_ptr<SioTest> sio_test_;
-        std::shared_ptr<ErtTest> ert_test_;
-    };
+@interface AppDelegate : UIResponder<UIApplicationDelegate> {
+    std::shared_ptr<app::EioTest> eio_test_;
+    std::shared_ptr<app::AnyTest> any_test_;
+    std::shared_ptr<app::SioTest> sio_test_;
+    std::shared_ptr<app::ErtTest> ert_test_;
 }
+
+- (BOOL)application:(UIApplication *)application
+didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
+
+- (void)applicationWillTerminate:(UIApplication *)application;
+
+- (void)runTest;
+
+@end
+

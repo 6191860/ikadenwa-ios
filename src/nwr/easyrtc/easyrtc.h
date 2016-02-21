@@ -27,8 +27,10 @@
 #include <nwr/base/any.h>
 #include <nwr/base/any_func.h>
 #include <nwr/base/any_emitter.h>
+#include <nwr/base/lib_webrtc.h>
 #include <nwr/socketio/io.h>
-#include <nwr/jsrtc/media_constraints.h>
+#include <nwr/jsrtc/media_track_constraints.h>
+#include <nwr/jsrtc/media_stream_constraints.h>
 #include <nwr/jsrtc/media_stream.h>
 #include <nwr/jsrtc/media_stream_track.h>
 #include <nwr/jsrtc/rtc_session_description.h>
@@ -36,7 +38,6 @@
 #include <nwr/jsrtc/rtc_peer_connection.h>
 #include <nwr/jsrtc/rtc_peer_connection_factory.h>
 
-#include "video_audio_constraints.h"
 #include "peer_conn.h"
 #include "receive_peer.h"
 #include "aggregating_timer.h"
@@ -118,7 +119,7 @@ namespace ert {
         bool logging_out_;
         bool disconnecting_;
         std::map<std::string, Any> session_fields_;
-        MediaConstraints received_media_constraints_;
+        MediaTrackConstraints received_media_constraints_;
         void EnableAudioReceive(bool value);
         void EnableVideoReceive(bool value);
         //  GetSourcesList
@@ -149,8 +150,8 @@ namespace ert {
         //  set_video_source
         void set_video_dims(int width, int height, const Optional<double> & frame_rate);
         //  set_screen_capture
-        Optional<VideoAudioConstraints> preset_media_constraints_;
-        VideoAudioConstraints GetUserMediaConstraints();
+        Optional<MediaStreamConstraints> preset_media_constraints_;
+        MediaStreamConstraints GetUserMediaConstraints();
         std::string application_name_;
         void set_application_name(const std::string & application_name);
         void EnableDebug(bool enable);
@@ -160,7 +161,7 @@ namespace ert {
         bool SupportsPeerConnections();
         std::shared_ptr<RtcPeerConnection>
         CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                                const webrtc::MediaConstraintsInterface & constraints);
+                                const MediaTrackConstraints * constraints);
         webrtc::DataChannelInit GetDataChannelConstraints();
         std::string server_path_;
         std::map<std::string, Any> last_logged_in_list_;
@@ -345,7 +346,7 @@ namespace ert {
             IsConnected
         };
         ConnectStatus GetConnectStatus(const std::string & other_user);
-        jsrtc::MediaConstraints BuildPeerConstraints();
+        MediaTrackConstraints BuildPeerConstraints();
         void Call(const std::string & other_user,
                   const std::function<void(const std::string &,
                                            const std::string &)> & call_success_cb,
@@ -474,8 +475,9 @@ namespace ert {
         void EasyApp(const std::string & application_name,
                      const Optional<std::string> & monitor_video_id,
                      const std::vector<std::string> & video_ids,
-                     const std::function<void()> & on_ready,
-                     const std::function<void()> & on_failure);
+                     const std::function<void(const std::string &)> & on_ready,
+                     const std::function<void(const std::string &,
+                                              const std::string &)> & on_failure);
         std::function<void(bool, const Optional<std::string> &)> got_media_callback_;
         void set_got_media(const std::function<void(bool, const Optional<std::string> &)> & callback);
         std::function<void(bool, const Optional<std::string> &)> got_connection_callback_;

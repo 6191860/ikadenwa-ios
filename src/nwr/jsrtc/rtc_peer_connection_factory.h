@@ -10,13 +10,14 @@
 
 #include <memory>
 #include <nwr/base/env.h>
-#include "lib_webrtc.h"
+#include <nwr/base/lib_webrtc.h>
 
 namespace nwr {
 namespace jsrtc {
     class RtcPeerConnection;
     class MediaStream;
     class MediaStreamTrack;
+    class MediaTrackConstraints;
         
     class RtcPeerConnectionFactory {
     public:
@@ -24,7 +25,7 @@ namespace jsrtc {
         
         std::shared_ptr<RtcPeerConnection>
         CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                             const webrtc::MediaConstraintsInterface & constraints);
+                             const MediaTrackConstraints * constraints);
         std::shared_ptr<MediaStream>
         CreateMediaStream(const std::string & label);
 //        std::shared_ptr<MediaStream>

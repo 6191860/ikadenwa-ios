@@ -11,7 +11,7 @@
 #include <string>
 #include <memory>
 #include <nwr/base/any.h>
-#include "lib_webrtc.h"
+#include <nwr/base/lib_webrtc.h>
 
 namespace nwr {
 namespace jsrtc {

@@ -8,6 +8,7 @@
 
 #include "rtc_peer_connection_factory.h"
 
+#include "media_track_constraints.h"
 #include "rtc_peer_connection.h"
 #include "media_stream_track.h"
 #include "media_stream.h"
@@ -32,13 +33,13 @@ namespace jsrtc {
     
     std::shared_ptr<RtcPeerConnection> RtcPeerConnectionFactory::
     CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                         const webrtc::MediaConstraintsInterface & constraints)
+                         const MediaTrackConstraints * constraints)
     {
         auto connection = std::shared_ptr<RtcPeerConnection>(new RtcPeerConnection());
         auto inner_observer = std::make_shared<RtcPeerConnection::InnerObserver>(connection);
         
         auto inner_connection = inner_factory_->CreatePeerConnection(configuration,
-                                                                     &constraints,
+                                                                     constraints ? &constraints->inner_constraints() : nullptr,
                                                                      nullptr,
                                                                      nullptr,
                                                                      inner_observer.get());

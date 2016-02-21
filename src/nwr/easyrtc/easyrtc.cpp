@@ -38,11 +38,11 @@ namespace ert {
         cookie_id_ = "easyrtcsid";
         logging_out_ = false;
         disconnecting_ = false;
-        received_media_constraints_ = MediaConstraints();
-        MediaConstraintsSet(received_media_constraints_.mandatory(),
-                            webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, MediaConstraintsBoolValue(true));
-        MediaConstraintsSet(received_media_constraints_.mandatory(),
-                            webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, MediaConstraintsBoolValue(true));
+        received_media_constraints_ = MediaTrackConstraints();
+        received_media_constraints_.mandatory()
+        .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, true);
+        received_media_constraints_.mandatory()
+        .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, true);
         audio_enabled_ = true;
         video_enabled_ = true;
         data_channel_name_ = "dc";
@@ -200,15 +200,13 @@ namespace ert {
     std::string Easyrtc::err_codes_SIGNAL_ERROR_ = "SIGNAL_ERROR";
     
     void Easyrtc::EnableAudioReceive(bool value) {
-        MediaConstraintsSet(received_media_constraints_.mandatory(),
-                            webrtc::MediaConstraintsInterface::kOfferToReceiveAudio,
-                            MediaConstraintsBoolValue(value));
+        received_media_constraints_.mandatory()
+        .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, value);
     }
     
     void Easyrtc::EnableVideoReceive(bool value) {
-        MediaConstraintsSet(received_media_constraints_.mandatory(),
-                            webrtc::MediaConstraintsInterface::kOfferToReceiveVideo,
-                            MediaConstraintsBoolValue(value));
+        received_media_constraints_.mandatory()
+        .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, value);
     }
     
     bool Easyrtc::IsNameValid(const std::string & name) {
@@ -334,8 +332,8 @@ namespace ert {
         }
     }
     
-    VideoAudioConstraints Easyrtc::GetUserMediaConstraints() {
-        VideoAudioConstraints constraints;
+    MediaStreamConstraints Easyrtc::GetUserMediaConstraints() {
+        MediaStreamConstraints constraints;
         //
         // _presetMediaConstraints allow you to provide your own constraints to be used
         // with initMediaSource.
@@ -347,33 +345,33 @@ namespace ert {
         }
         //  else if (self._desiredVideoProperties.screenCapture) { ... }
         else if (!video_enabled_) {
-            constraints.video = None();
+            constraints.video() = None();
         }
         else {
-            constraints.video = Some(MediaConstraints());
-            auto & mandatory = constraints.video->mandatory();
+            constraints.video() = Some(MediaTrackConstraints());
+            auto & mandatory = constraints.video()->mandatory();
             
             if (desired_video_properties_.GetAt("width").AsInt()){
-                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxWidth,
-                                    nwr::Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
-                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMinWidth,
-                                    nwr::Format("%d", desired_video_properties_.GetAt("width").AsInt().value()));
+                mandatory.SetEntry(webrtc::MediaConstraintsInterface::kMaxWidth,
+                                   desired_video_properties_.GetAt("width").AsInt().value());
+                mandatory.SetEntry(webrtc::MediaConstraintsInterface::kMinWidth,
+                                   desired_video_properties_.GetAt("width").AsInt().value());
             }
             if (desired_video_properties_.GetAt("height").AsInt()) {
-                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
-                                    nwr::Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
-                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxHeight,
-                                    nwr::Format("%d", desired_video_properties_.GetAt("height").AsInt().value()));
+                mandatory.SetEntry(webrtc::MediaConstraintsInterface::kMaxHeight,
+                                   desired_video_properties_.GetAt("height").AsInt().value());
+                mandatory.SetEntry(webrtc::MediaConstraintsInterface::kMinHeight,
+                                   desired_video_properties_.GetAt("height").AsInt().value());
             }
             if (desired_video_properties_.GetAt("frameRate").AsDouble()) {
-                MediaConstraintsSet(mandatory, webrtc::MediaConstraintsInterface::kMaxFrameRate,
-                                    nwr::Format("%f", desired_video_properties_.GetAt("frameRate").AsDouble().value()));
+                mandatory.SetEntry(webrtc::MediaConstraintsInterface::kMaxFrameRate,
+                                   desired_video_properties_.GetAt("frameRate").AsDouble().value());
             }
 //            if (self._desiredVideoProperties.videoSrcId) {
 //                constraints.video.optional.push({sourceId: self._desiredVideoProperties.videoSrcId});
 //            }
         }
-        constraints.audio = audio_enabled_;
+        constraints.audio() = audio_enabled_ ? Some(MediaTrackConstraints()) : None();
 
         return constraints;
     }
@@ -405,7 +403,7 @@ namespace ert {
     
     std::shared_ptr<RtcPeerConnection>
     Easyrtc::CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                                     const webrtc::MediaConstraintsInterface & constraints)
+                                     const MediaTrackConstraints * constraints)
     {
         return peer_connection_factory_->CreatePeerConnection(configuration,
                                                               constraints);
@@ -1492,14 +1490,13 @@ namespace ert {
         }
     }
     
-    MediaConstraints Easyrtc::BuildPeerConstraints() {
-        webrtc::MediaConstraintsInterface::Constraints mandatory;
-        webrtc::MediaConstraintsInterface::Constraints options;
-        
+    MediaTrackConstraints Easyrtc::BuildPeerConstraints() {
         //  TODO: google
         //        options.push({'DtlsSrtpKeyAgreement': 'true'}); // for interoperability
         
-        return MediaConstraints(mandatory, options);
+        auto consts = MediaTrackConstraints();
+    
+        return consts;
     }
     
     void Easyrtc::Call(const std::string & other_user,
@@ -1985,7 +1982,8 @@ namespace ert {
         // we don't support data channels on chrome versions < 31
         //
         
-        auto pc = CreateRtcPeerConnection(*ice_config, BuildPeerConstraints());
+        auto consts = BuildPeerConstraints();
+        auto pc = CreateRtcPeerConnection(*ice_config, &consts);
         if (!pc) {
             std::string message("Unable to create PeerConnection object, check your ice configuration");
             //                JSON.stringify(ice_config)

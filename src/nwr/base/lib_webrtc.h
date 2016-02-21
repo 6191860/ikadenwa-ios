@@ -2,7 +2,7 @@
 //  lib_webrtc.h
 //  Ikadenwa
 //
-//  Created by omochimetaru on 2016/02/16.
+//  Created by omochimetaru on 2016/02/21.
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
@@ -17,6 +17,7 @@
 #include <webrtc/base/scoped_ptr.h>
 #include <webrtc/base/refcount.h>
 #include <webrtc/base/thread.h>
+#include <webrtc/base/ssladapter.h>
 
 #include <talk/app/webrtc/audiotrack.h>
 #include <talk/app/webrtc/datachannel.h>

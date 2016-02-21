@@ -14,7 +14,7 @@
 #include <nwr/base/func.h>
 #include <nwr/base/none.h>
 #include <nwr/base/emitter.h>
-#include <nwr/jsrtc/lib_webrtc.h>
+#include <nwr/base/lib_webrtc.h>
 #include "post_target.h"
 
 namespace nwr {
