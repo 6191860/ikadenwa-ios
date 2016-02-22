@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <nwr/base/env.h>
+#include <nwr/base/task_queue.h>
 #include <nwr/base/lib_webrtc.h>
 
 namespace nwr {
@@ -18,6 +19,7 @@ namespace jsrtc {
     class MediaStream;
     class MediaStreamTrack;
     class MediaTrackConstraints;
+    class MediaStreamConstraints;
         
     class RtcPeerConnectionFactory {
     public:
@@ -28,17 +30,18 @@ namespace jsrtc {
                              const MediaTrackConstraints * constraints);
         std::shared_ptr<MediaStream>
         CreateMediaStream(const std::string & label);
-//        std::shared_ptr<MediaStream>
-//        CreateLocalMediaStraem(const std::string & label);
-//        rtc::scoped_refptr<webrtc::AudioSourceInterface>
-//        CreateAudioSource(const MediaConstraintsInterface* constraints);
-//        rtc::scoped_refptr<webrtc::VideoSourceInterface>
-//        CreateVideoSource(cricket::VideoCapturer* capturer,
-//                          const MediaConstraintsInterface* constraints);
+
+        rtc::scoped_refptr<webrtc::AudioSourceInterface>
+        CreateAudioSource(const MediaTrackConstraints * constraints);
         
+        rtc::scoped_refptr<webrtc::VideoSourceInterface>
+        CreateVideoSource(cricket::VideoCapturer* capturer,
+                          const MediaTrackConstraints * constraints);
+        
+#warning todo; apply constraints
         std::shared_ptr<MediaStreamTrack>
         CreateAudioTrack(const std::string& label,
-                         webrtc::AudioSourceInterface* source);
+                         webrtc::AudioSourceInterface * source);
         std::shared_ptr<MediaStreamTrack>
         CreateVideoTrack(const std::string& label,
                          webrtc::VideoSourceInterface * source);
@@ -47,6 +50,10 @@ namespace jsrtc {
 //        bool StartRtcEventLog(rtc::PlatformFile file);
 //        void StopRtcEventLog();
 
+        void GetUserMedia(const MediaStreamConstraints & constraints,
+                          const std::function<void(const std::shared_ptr<MediaStream> &)> & success,
+                          const std::function<void(const std::string &)> & failure);
+        
     private:
         rtc::scoped_ptr<rtc::Thread> signaling_thread_;
         rtc::scoped_ptr<rtc::Thread> worker_thread_;

@@ -13,7 +13,16 @@ namespace jsrtc {
     Optional<MediaTrackConstraints> & MediaStreamConstraints::video() {
         return video_;
     }
+    
+    const Optional<MediaTrackConstraints> & MediaStreamConstraints::video() const {
+        return video_;
+    }
+    
     Optional<MediaTrackConstraints> & MediaStreamConstraints::audio() {
+        return audio_;
+    }
+    
+    const Optional<MediaTrackConstraints> & MediaStreamConstraints::audio() const {
         return audio_;
     }
 }

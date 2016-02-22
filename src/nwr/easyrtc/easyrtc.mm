@@ -8,13 +8,15 @@
 
 #include "easyrtc.h"
 
+#include <nwr/jsrtc/NWRHtmlMediaElementView.h>
+
 namespace nwr {
 namespace ert {
     Easyrtc::Easyrtc() {
         closed_ = false;
     }
     
-    void Easyrtc::Init() {
+    void Easyrtc::Init(const ObjcPointer & work_view) {
         peer_connection_factory_ = std::make_shared<RtcPeerConnectionFactory>();
         
         auto_init_user_media_ = true;
@@ -48,9 +50,9 @@ namespace ert {
         data_channel_name_ = "dc";
         debug_printer_ = nullptr;
         old_config_ = Any(Any::ObjectType{});
+        native_video_width_ = 0;
         native_video_height_ = 0;
         max_p2p_message_length_ = 1000;
-        native_video_width_ = 0;
         desired_video_properties_ = Any(Any::ObjectType {
         });
         application_name_ = "";
@@ -66,6 +68,13 @@ namespace ert {
             UpdateConfiguration();
         };
         auto_add_close_buttons_ = true;
+        work_view_ = work_view;
+    }
+    
+    std::shared_ptr<Easyrtc> Easyrtc::Create(const ObjcPointer & work_view) {
+        auto thiz = std::shared_ptr<Easyrtc>(new Easyrtc());
+        thiz->Init(work_view);
+        return thiz;
     }
     
     Easyrtc::~Easyrtc() {
@@ -590,6 +599,12 @@ namespace ert {
         }
     }
     
+    void Easyrtc::Register3rdPartyLocalMediaStream(const std::shared_ptr<MediaStream> & stream,
+                                                   const Optional<std::string> & stream_name)
+    {
+        RegisterLocalMediaStreamByName(stream, stream_name);
+    }
+    
     Optional<std::string> Easyrtc::GetNameOfRemoteStream(const std::string & easyrtcid,
                                                          const Optional<std::string> & arg_webrtc_stream_id)
     {
@@ -662,6 +677,28 @@ namespace ert {
         }
     }
     
+    std::shared_ptr<MediaStream> Easyrtc::GetLocalStream(const Optional<std::string> & stream_name) {
+        return GetLocalMediaStreamByName(stream_name);
+    }
+    
+    void Easyrtc::ClearMediaStream(const ObjcPointer & arg_element) {
+        auto element = (NWRHtmlMediaElementView *)ObjcPointerGet(arg_element);
+        element.srcObject = nullptr;
+    }
+    
+    void Easyrtc::SetVideoObjectSrc(const ObjcPointer & arg_video_object,
+                                    const std::shared_ptr<MediaStream> & stream)
+    {
+        auto video_object = (NWRHtmlMediaElementView *)ObjcPointerGet(arg_video_object);
+        
+        if (stream) {
+            video_object.srcObject = stream;
+        }
+        else {
+            video_object.srcObject = nullptr;
+        }
+    }
+    
     std::shared_ptr<MediaStream>
     Easyrtc::BuildLocalMediaStream(const std::string & stream_name,
                                    const std::vector<std::shared_ptr<MediaStreamTrack>> & audio_tracks,
@@ -694,7 +731,7 @@ namespace ert {
         //
         
         auto media_clone = peer_connection_factory_->CreateMediaStream(stream_name);
-
+        
         for (const auto & track : audio_tracks) {
             media_clone->AddTrack(track);
         }
@@ -708,23 +745,16 @@ namespace ert {
         return media_clone;
     }
     
-    std::shared_ptr<MediaStream> Easyrtc::GetLocalStream(const Optional<std::string> & stream_name) {
-        return GetLocalMediaStreamByName(stream_name);
-    }
-    
-    void Easyrtc::SetVideoObjectSrc(const VideoObject & video, const std::shared_ptr<MediaStream> & stream) {
-        printf("SetVideoObjectSrc\n");
-    }
-    
     std::string Easyrtc::FormatError(const Any & error) {
         return error.ToJsonString();
     }
     
-    void Easyrtc::InitMediaSource(const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
+    void Easyrtc::InitMediaSource(const Optional<std::string> & arg_stream_name,
+                                  const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
                                   const std::function<void(const std::string &,
-                                                           const std::string &)> & arg_error_callback,
-                                  const Optional<std::string> & arg_stream_name)
+                                                           const std::string &)> & arg_error_callback)
     {
+        UIView * work_view = (UIView *)ObjcPointerGet(work_view_);
         std::string stream_name = arg_stream_name || std::string("default");
         
         auto thiz = shared_from_this();
@@ -757,144 +787,86 @@ namespace ert {
 
         auto mode = GetUserMediaConstraints();
         
-        auto on_user_media_success = FuncMake
-        ([thiz, stream_name, success_callback]
-         (const std::shared_ptr<MediaStream> & stream){
-             FuncCall(thiz->debug_printer_, "getUserMedia success callback entered");
-             FuncCall(thiz->debug_printer_, "successfully got local media");
-             
-#warning todo : port [getUserMedia]
-             //            stream.streamName = streamName;
-             thiz->RegisterLocalMediaStreamByName(stream, Some(stream_name));
-             
-             if (thiz->have_video_) {
-                 //                videoObj = document.createElement('video');
-                 //                videoObj.muted = true;
-                 //                triesLeft = 30;
-                 //                tryToGetSize = function() {
-                 //                    if (videoObj.videoWidth > 0 || triesLeft < 0) {
-                 //
-                 //                        self.nativeVideoWidth = videoObj.videoWidth; [TODO]
-                 //                        self.nativeVideoHeight = videoObj.videoHeight; [TODO]
-                 //                        if (self._desiredVideoProperties.height &&
-                 //                            (self.nativeVideoHeight !== self._desiredVideoProperties.height ||
-                 //                             self.nativeVideoWidth !== self._desiredVideoProperties.width)) {
-                 //                                [TODO]
-                 //                                self.showError(self.errCodes.MEDIA_WARNING,
-                 //                                               self.format(self.getConstantString("resolutionWarning"),
-                 //                                                           self._desiredVideoProperties.width, self._desiredVideoProperties.height,
-                 //                                                           self.nativeVideoWidth, self.nativeVideoHeight));
-                 //                            }
-                 //                        self.setVideoObjectSrc(videoObj, "");
-                 //                        if (videoObj.removeNode) {
-                 //                            videoObj.removeNode(true);
-                 //                        }
-                 //                        else {
-                 //                            ele = document.createElement('div');
-                 //                            ele.appendChild(videoObj);
-                 //                            ele.removeChild(videoObj);
-                 //                        }
-                 //
-                 //                        updateConfigurationInfo(); [TODO]
-                 //                        if (successCallback) {
-                 //                            successCallback(stream); [TODO]
-                 //                        }
-                 //                    }
-                 //                    else {
-                 //                        triesLeft -= 1;
-                 //                        setTimeout(tryToGetSize, 300); [TODO]
-                 //                    }
-                 //                };
-                 //                self.setVideoObjectSrc(videoObj, stream);
-                 //                tryToGetSize();
+        auto on_user_media_success = [thiz, work_view, stream_name, success_callback]
+        (const std::shared_ptr<MediaStream> & stream)
+        {
+            FuncCall(thiz->debug_printer_, "getUserMedia success callback entered");
+            FuncCall(thiz->debug_printer_, "successfully got local media");
             
-                 
-                 thiz->UpdateConfigurationInfo();
-                 if (success_callback) {
-                     success_callback(stream);
-                 }
-             }
-             else {
-                 thiz->UpdateConfigurationInfo();
-                 if (success_callback) {
-                     success_callback(stream);
-                 }
-             }
-         });
-        
-#warning todo : port [getUserMedia]
-//        var onUserMediaError = function(error) {
-//            console.log("getusermedia failed");
-//            if (self.debugPrinter) {
-//                self.debugPrinter("failed to get local media");
-//            }
-//            var errText;
-//            if (typeof error === 'string') {
-//                errText = error;
-//            }
-//            else if (error.name) {
-//                errText = error.name;
-//            }
-//            else {
-//                errText = "Unknown";
-//            }
-//            if (errorCallback) {
-//                console.log("invoking error callback", errText);
-//                errorCallback(self.errCodes.MEDIA_ERR, self.format(self.getConstantString("gumFailed"), errText));
-//            }
-//            closeLocalMediaStreamByName(streamName);
-//            haveAudioVideo = {
-//            audio: false,
-//            video: false
-//            };
-//            updateConfigurationInfo();
-//        };
-//        if (!self.audioEnabled && !self.videoEnabled) {
-//            onUserMediaError(self.getConstantString("requireAudioOrVideo"));
-//            return;
-//        }
-//        
-//        function getCurrentTime() {
-//            return (new Date()).getTime();
-//        }
-//        
-//        var firstCallTime;
-//        function tryAgain(error) {
-//            var currentTime = getCurrentTime();
-//            if (currentTime < firstCallTime + 1000) {
-//                console.log("Trying getUserMedia a second time");
-//                setTimeout(function() {
-//                    getUserMedia(mode, onUserMediaSuccess, onUserMediaError);
-//                }, 3000);
-//            }
-//            else {
-//                onUserMediaError(error);
-//            }
-//        }
-        
-        if (video_enabled_ || audio_enabled_) {
-            //
-            // getUserMedia sometimes fails the first time I call it. I suspect it's a page loading
-            // issue. So I'm going to try adding a 3 second delay to allow things to settle down first.
-            // In addition, I'm going to try again after 3 seconds.
-            //
+            //            stream.streamName = streamName;
+            thiz->RegisterLocalMediaStreamByName(stream, Some(stream_name));
             
-//            
-//            
-//            setTimeout(function() {
-//                try {
-//                    firstCallTime = getCurrentTime();
-//                    getUserMedia(mode, onUserMediaSuccess, tryAgain);[TODO]
-//                } catch (e) {
-//                    tryAgain(e);
-//                }
-//            }, 1000);
+            if (thiz->have_video_) {
+#warning todo temporary visible
+                auto video_obj = [[NWRHtmlMediaElementView alloc] initWithFrame: CGRectMake(0, 0, 100, 100)];
+                video_obj.videoSizeEmitter->Once([thiz, stream, video_obj, success_callback](const CGSize & videoSize){
+                    thiz->native_video_width_ = videoSize.width;
+                    thiz->native_video_height_ = videoSize.height;
+                    
+                    bool width_not_match = thiz->desired_video_properties_.HasKey("width") &&
+                    thiz->desired_video_properties_.GetAt("width").AsInt() != Some(thiz->native_video_width_);
+                    bool height_not_match = thiz->desired_video_properties_.HasKey("height") &&
+                    thiz->desired_video_properties_.GetAt("height").AsInt() != Some(thiz->native_video_height_);
+                    
+                    if (width_not_match || height_not_match)
+                    {
+                        int dw = thiz->desired_video_properties_.GetAt("width").AsInt() || 0;
+                        int dh = thiz->desired_video_properties_.GetAt("height").AsInt() || 0;
+                        
+                        thiz->ShowError(thiz->err_codes_MEDIA_WARNING_,
+                                        thiz->Format(thiz->GetConstantString("resolutionWarning"),
+                                                     {
+                                                         nwr::Format("%d", dw),
+                                                         nwr::Format("%d", dh),
+                                                         nwr::Format("%d", thiz->native_video_width_),
+                                                         nwr::Format("%d", thiz->native_video_height_)
+                                                     } ));
+                    }
+                    
+                    thiz->SetVideoObjectSrc(ObjcPointerMake(video_obj), nullptr);
+                    [video_obj removeFromSuperview];
+                    
+                    thiz->UpdateConfigurationInfo();
+                    FuncCall(success_callback, stream);
+                });
+                [work_view addSubview: video_obj];
+                thiz->SetVideoObjectSrc(ObjcPointerMake(video_obj), stream);
+#warning todo porting timeout
+            }
+            else {
+                thiz->UpdateConfigurationInfo();
+                if (success_callback) {
+                    success_callback(stream);
+                }
+            }
+        };
+
+        auto on_user_media_error = [thiz, stream_name, error_callback](const std::string & error) {
+            printf("getusermedia failed\n");
+            FuncCall(thiz->debug_printer_, "failed to get local media");
+            
+            if (error_callback) {
+                printf("invoking error callback: %s\n", error.c_str());
+                error_callback(thiz->err_codes_MEDIA_ERR_,
+                               thiz->Format(thiz->GetConstantString("gumFailed"), { error }));
+            }
+            
+            thiz->CloseLocalMediaStreamByName(Some(stream_name));
+            
+            thiz->have_audio_ = false;
+            thiz->have_video_ = false;
+            thiz->UpdateConfigurationInfo();
+        };
+        
+        if (!audio_enabled_ && !video_enabled_) {
+            on_user_media_error(thiz->GetConstantString("requireAudioOrVideo"));
+            return;
         }
-        else {
-            Fatal("bug?");
-//            FuncCall(on_user_media_success, nullptr);
-        }
-    };
+
+        peer_connection_factory_->GetUserMedia(mode,
+                                               on_user_media_success,
+                                               on_user_media_error);
+    }
     
     void Easyrtc::set_accept_checker(const std::function<void (const std::string &,
                                                                const std::function<void (bool,
@@ -1530,7 +1502,8 @@ namespace ert {
             auto stream = GetLocalStream(None());
             if (!stream && (audio_enabled_ || video_enabled_)) {
                 
-                InitMediaSource([thiz, other_user, call_success_cb, call_failure_cb, was_accepted_cb]
+                InitMediaSource(None(),
+                                [thiz, other_user, call_success_cb, call_failure_cb, was_accepted_cb]
                                 (const std::shared_ptr<MediaStream> & stream){
                                     thiz->Call(other_user,
                                                call_success_cb,
@@ -1538,8 +1511,7 @@ namespace ert {
                                                was_accepted_cb,
                                                None());
                                 },
-                                call_failure_cb,
-                                None());
+                                call_failure_cb);
                 return;
             }
         }
@@ -2437,15 +2409,15 @@ namespace ert {
         if (!stream_names && auto_init_user_media_) {
             auto local_stream = GetLocalStream(None());
             if (!local_stream && (video_enabled_ || audio_enabled_)) {
-                InitMediaSource([thiz, caller, msg_data](const std::shared_ptr<MediaStream> & stream)
+                InitMediaSource(None(),
+                                [thiz, caller, msg_data](const std::shared_ptr<MediaStream> & stream)
                                 {
                                     thiz->DoAnswer(caller, msg_data, None());
                                 },
                                 [thiz](const std::string & code, const std::string & text){
                                     thiz->ShowError(thiz->err_codes_MEDIA_ERR_,
                                                     thiz->Format(thiz->GetConstantString("localMediaError"), {} ));
-                                },
-                                None());
+                                });
                 return;
             }
         }
@@ -3588,8 +3560,8 @@ namespace ert {
         auto_add_close_buttons_ = false;
     }
     
-    void Easyrtc::EasyAppBody(const Optional<std::string> & monitor_video_id,
-                              const std::vector<std::string> & video_ids)
+    void Easyrtc::EasyAppBody(const Optional<ElementId> & monitor_video_id,
+                              const std::vector<ElementId> & video_ids)
     {
         auto thiz = shared_from_this();
         
@@ -3667,19 +3639,20 @@ namespace ert {
                             {
                                 FuncCall(thiz->debug_printer_, "stream acceptor called");
                                 
-                                if (thiz->refresh_pane_ && thiz->VideoIsFree(thiz->refresh_pane_.value())) {
-                                    thiz->ShowVideo(thiz->refresh_pane_.value(), stream);
-                                    FuncCall(thiz->on_call_, thiz->refresh_pane_.value(), None());
-                                    thiz->refresh_pane_ = None();
-                                    return;
-                                }
+#warning track original bug fix
+//                                if (thiz->refresh_pane_ && thiz->VideoIsFree(thiz->refresh_pane_.value())) {
+//                                    thiz->ShowVideo(thiz->refresh_pane_.value(), stream);
+////                                    FuncCall(thiz->on_call_, caller, thiz->refresh_pane_.value());
+//                                    thiz->refresh_pane_ = None();
+//                                    return;
+//                                }
                                 
-                                Optional<VideoObject> video_opt;
+                                Optional<ObjcPointer> video_opt;
                                 for (int i = 0; i < num_people; i++) {
                                     video_opt = thiz->GetIthVideo(i);
                                     if (video_opt && thiz->GetCallerOfVideo(video_opt.value()) == Some(caller)) {
                                         thiz->ShowVideo(video_opt.value(), stream);
-                                        FuncCall(thiz->on_call_, caller, Some(i));
+                                        FuncCall(thiz->on_call_, caller, i);
                                         return;
                                     }
                                 }
@@ -3692,7 +3665,7 @@ namespace ert {
                                 if (video_opt) {
                                     thiz->Hangup(thiz->GetCallerOfVideo(video_opt.value()).value());
                                     thiz->ShowVideo(video_opt.value(), stream);
-                                    FuncCall(thiz->on_call_, caller, Some(0));
+                                    FuncCall(thiz->on_call_, caller, 0);
                                 }
                                 thiz->SetCallerOfVideo(video_opt.value(), Some(caller));
 
@@ -3719,42 +3692,66 @@ namespace ert {
         }
         
         if (video_enabled_ && monitor_video_id) {
-#warning video tag setup
-//            monitorVideo = document.getElementById(monitorVideoId);
-//            if (!monitorVideo) {
-//                console.error("Programmer error: no object called " + monitorVideoId);
-//                return;
-//            }
+#warning open issue about mute control
+            auto monitor_video = GetElementById(monitor_video_id.value());
+            if (!monitor_video) {
+                printf("Programmer error: no object called %d\n", monitor_video_id.value());
+                return;
+            }
 //            monitorVideo.muted = "muted";
 //            monitorVideo.defaultMuted = true;
         }
         
     }
     
-    bool Easyrtc::ValidateVideoIds(const std::string & monitor_video_ids,
-                                   const std::vector<std::string> & video_ids)
+    ObjcPointer Easyrtc::GetElementById(ElementId id) {
+        UIView * work_view = (UIView *)ObjcPointerGet(work_view_);
+        for (UIView * view in work_view.subviews) {
+            if (view.tag == id) {
+                return ObjcPointerMake(view);
+            }
+        }
+        return nullptr;
+    }
+    
+    bool Easyrtc::ValidateVideoIds(const ElementId & monitor_video_id,
+                                   const std::vector<ElementId> & video_ids)
     {
+        if (!GetElementById(monitor_video_id)) {
+            ShowError(err_codes_DEVELOPER_ERR_,
+                      nwr::Format("The monitor video id passed to easyApp was bad, saw %d", monitor_video_id));
+            return false;
+        }
+        
+        for (const auto & i : video_ids) {
+            if (!GetElementById(i)) {
+                ShowError(err_codes_DEVELOPER_ERR_,
+                          nwr::Format("The caller video id %d passed to easyApp was bad.", i));
+                return false;
+            }
+        }
+        
         return true;
     }
     
-    Optional<std::string> Easyrtc::GetCallerOfVideo(const VideoObject & video_object) {
+    Optional<std::string> Easyrtc::GetCallerOfVideo(const ObjcPointer & video_object) {
         if (HasKey(video_id_to_caller_map_, video_object)) {
             return video_id_to_caller_map_[video_object];
         } else {
             return None();
         }
     }
-    void Easyrtc::SetCallerOfVideo(const VideoObject & video_object,
+    void Easyrtc::SetCallerOfVideo(const ObjcPointer & video_object,
                                    const Optional<std::string> & caller_easyrtcid) {
         video_id_to_caller_map_[video_object] = caller_easyrtcid;
     }
     
-    bool Easyrtc::VideoIsFree(const VideoObject & obj) {
+    bool Easyrtc::VideoIsFree(const ObjcPointer & obj) {
         auto caller = GetCallerOfVideo(obj);
         return !caller;
     }
     
-    void Easyrtc::set_on_call(const std::function<void(const VideoObject &, const Optional<int> &)> & cb) {
+    void Easyrtc::set_on_call(const std::function<void(const std::string &, const int &)> & cb) {
         on_call_ = cb;
     }
     
@@ -3762,15 +3759,14 @@ namespace ert {
         on_hangup_ = cb;
     }
     
-    Optional<Easyrtc::VideoObject> Easyrtc::GetIthVideo(int i) {
+    Optional<ObjcPointer> Easyrtc::GetIthVideo(int i) {
         if (0 <= i && i < video_ids_.size()) {
-            return Some(video_ids_[i]);
+            return Some(GetElementById(video_ids_[i]));
         }
         return None();
     }
     
     Optional<std::string> Easyrtc::GetIthCaller(int i) {
-#warning open issue
         if (i < 0 || i >= video_ids_.size()) {
             return None();
         }
@@ -3788,21 +3784,21 @@ namespace ert {
         return -1; // caller not connected
     }
     
-    void Easyrtc::HideVideo(const VideoObject & video) {
-        
+    void Easyrtc::HideVideo(const ObjcPointer & video) {
+        NWRHtmlMediaElementView * video_o = (NWRHtmlMediaElementView *)ObjcPointerGet(video);
+        SetVideoObjectSrc(video, nullptr);
+        video_o.hidden = YES;
     }
     
-    void Easyrtc::ShowVideo(const VideoObject & video, const std::shared_ptr<MediaStream> & stream) {
+    void Easyrtc::ShowVideo(const ObjcPointer & video, const std::shared_ptr<MediaStream> & stream) {
+        NWRHtmlMediaElementView * video_o = (NWRHtmlMediaElementView *)ObjcPointerGet(video);
         SetVideoObjectSrc(video, stream);
-#warning todo video visible
-//        if (video.style.visibility) {
-//            video.style.visibility = 'visible';
-//        }
+        video_o.hidden = NO;
     }
     
     void Easyrtc::EasyApp(const std::string & application_name,
-                          const Optional<std::string> & monitor_video_id,
-                          const std::vector<std::string> & video_ids,
+                          const Optional<ElementId> & monitor_video_id,
+                          const std::vector<ElementId> & video_ids,
                           const std::function<void(const std::string &)> & on_ready,
                           const std::function<void(const std::string &,
                                                    const std::string &)> & on_failure)
@@ -3847,7 +3843,7 @@ namespace ert {
             FuncCall(thiz->got_media_callback_, true, None());
 
             if (monitor_video_id) {
-                thiz->SetVideoObjectSrc(VideoObject(), thiz->GetLocalStream(None()));
+                thiz->SetVideoObjectSrc(thiz->GetElementById(monitor_video_id.value()), thiz->GetLocalStream(None()));
             }
             
             auto connect_error = [thiz, application_name,  on_failure](const std::string & error_code, const std::string & error_text) {
@@ -3872,7 +3868,8 @@ namespace ert {
             post_get_user_media();
         }
         else {
-            InitMediaSource([post_get_user_media](const std::shared_ptr<MediaStream> &)
+            InitMediaSource(None(),
+                            [post_get_user_media](const std::shared_ptr<MediaStream> &)
                             {
                                 post_get_user_media();
                             },
@@ -3887,8 +3884,7 @@ namespace ert {
                                 else {
                                     thiz->ShowError(thiz->err_codes_MEDIA_ERR_, error_text);
                                 }
-                            },
-                            None());
+                            });
         }
     }
     

@@ -16,7 +16,9 @@ namespace jsrtc {
     class MediaStreamConstraints {
     public:
         Optional<MediaTrackConstraints> & video();
+        const Optional<MediaTrackConstraints> & video() const;
         Optional<MediaTrackConstraints> & audio();
+        const Optional<MediaTrackConstraints> & audio() const;
     private:
         Optional<MediaTrackConstraints> video_;
         Optional<MediaTrackConstraints> audio_;

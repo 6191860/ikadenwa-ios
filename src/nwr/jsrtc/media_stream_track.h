@@ -60,7 +60,10 @@ namespace jsrtc {
         webrtc::AudioSourceInterface * inner_audio_source();
         webrtc::VideoSourceInterface * inner_video_source();
         
-        EmitterPtr<None> change_emitter() const { return change_emitter_; }
+        EmitterPtr<None> change_emitter() const;
+        
+        void AddVideoRenderer(webrtc::VideoRendererInterface & renderer);
+        void RemoveVideoRenderer(webrtc::VideoRendererInterface & renderer);
         
         void Close();
     private:

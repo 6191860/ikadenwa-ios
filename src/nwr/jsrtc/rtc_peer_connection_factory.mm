@@ -9,6 +9,7 @@
 #include "rtc_peer_connection_factory.h"
 
 #include "media_track_constraints.h"
+#include "media_stream_constraints.h"
 #include "rtc_peer_connection.h"
 #include "media_stream_track.h"
 #include "media_stream.h"
@@ -53,6 +54,20 @@ namespace jsrtc {
         return std::make_shared<MediaStream>(*inner_stream);
     }
     
+    rtc::scoped_refptr<webrtc::AudioSourceInterface> RtcPeerConnectionFactory::
+    CreateAudioSource(const MediaTrackConstraints * constraints)
+    {
+        return inner_factory_->CreateAudioSource(constraints ? &constraints->inner_constraints() : nullptr);
+    }
+    
+    rtc::scoped_refptr<webrtc::VideoSourceInterface> RtcPeerConnectionFactory::
+    CreateVideoSource(cricket::VideoCapturer* capturer,
+                      const MediaTrackConstraints * constraints)
+    {
+        return inner_factory_->CreateVideoSource(capturer,
+                                                 constraints ? &constraints->inner_constraints() : nullptr);
+    }
+    
     std::shared_ptr<MediaStreamTrack> RtcPeerConnectionFactory::
     CreateAudioTrack(const std::string& label,
                      webrtc::AudioSourceInterface* source)
@@ -67,6 +82,34 @@ namespace jsrtc {
     {
         auto inner_track = inner_factory_->CreateVideoTrack(label, source);
         return std::make_shared<MediaStreamTrack>(*inner_track);
+    }
+    
+    void RtcPeerConnectionFactory::
+    GetUserMedia(const MediaStreamConstraints & constraints,
+                 const std::function<void(const std::shared_ptr<MediaStream> &)> & success,
+                 const std::function<void(const std::string &)> & failure)
+    {
+        auto stream = CreateMediaStream("LocalStream");
+        
+#if !TARGET_IPHONE_SIMULATOR && TARGET_OS_IPHONE
+        if (constraints.video()) {
+            webrtc::AVFoundationVideoCapturer * capturer = new webrtc::AVFoundationVideoCapturer();
+            auto video_source = CreateVideoSource(capturer, &constraints.video().value());
+            auto video_track = CreateVideoTrack("LocalVideo", video_source);
+            stream->AddTrack(video_track);
+        }
+        
+        if (constraints.audio()) {
+            auto audio_source = CreateAudioSource(&constraints.audio().value());
+            auto audio_track = CreateAudioTrack("LocalAudio", audio_source);
+            stream->AddTrack(audio_track);
+        }
+#endif
+        TaskQueue::system_current_queue()->PostTask([stream, success, failure](){
+            if (stream) {
+                success(stream);
+            }
+        });
     }
     
 }

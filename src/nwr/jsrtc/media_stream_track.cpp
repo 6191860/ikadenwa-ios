@@ -102,13 +102,50 @@ namespace jsrtc {
         inner_track_->set_state(webrtc::MediaStreamTrackInterface::kEnded);
     }
     
+    webrtc::MediaSourceInterface * MediaStreamTrack::inner_source() {
+        auto audio_source = inner_audio_source();
+        if (audio_source) { return audio_source; }
+        auto video_source = inner_video_source();
+        if (video_source) { return video_source; }
+        Fatal("invalid state");
+    }
+    webrtc::AudioSourceInterface * MediaStreamTrack::inner_audio_source() {
+        auto inner_track = inner_audio_track();
+        if (inner_track) {
+            return inner_track->GetSource();
+        }
+        return nullptr;
+    }
+    webrtc::VideoSourceInterface * MediaStreamTrack::inner_video_source() {
+        auto inner_track = inner_video_track();
+        if (inner_track) {
+            return inner_track->GetSource();
+        }
+        return nullptr;
+    }
+    
+    EmitterPtr<None> MediaStreamTrack::change_emitter() const {
+        return change_emitter_;
+    }
+    
+    void MediaStreamTrack::AddVideoRenderer(webrtc::VideoRendererInterface & renderer) {
+        auto inner_track = inner_video_track();
+        if (!inner_track) { Fatal("not video track"); }
+        inner_track->AddRenderer(&renderer);
+    }
+    void MediaStreamTrack::RemoveVideoRenderer(webrtc::VideoRendererInterface & renderer) {
+        auto inner_track = inner_video_track();
+        if (!inner_track) { Fatal("not video track"); }
+        inner_track->RemoveRenderer(&renderer);
+    }
+
     void MediaStreamTrack::Close() {
         if (closed_) { return; }
         
         Stop();
         inner_track_ = nullptr;
         inner_observer_ = nullptr;
-
+        
         id_.clear();
         enabled_ = false;
         ready_state_ = MediaStreamTrackState::Ended;
@@ -119,29 +156,7 @@ namespace jsrtc {
         
         closed_ = true;
     }
-
-    webrtc::MediaSourceInterface * MediaStreamTrack::inner_source() {
-        auto audio_source = inner_audio_source();
-        if (audio_source) { return audio_source; }
-        auto video_source = inner_video_source();
-        if (video_source) { return video_source; }
-        Fatal("invalid state");
-    }
-    webrtc::AudioSourceInterface * MediaStreamTrack::inner_audio_source() {
-        auto audio_track = inner_audio_track();
-        if (audio_track) {
-            return audio_track->GetSource();
-        }
-        return nullptr;
-    }
-    webrtc::VideoSourceInterface * MediaStreamTrack::inner_video_source() {
-        auto video_track = inner_video_track();
-        if (video_track) {
-            return video_track->GetSource();
-        }
-        return nullptr;
-    }
-
+    
     MediaStreamTrack::ChangeObserver::
     ChangeObserver(MediaStreamTrack & owner):
     owner(owner)

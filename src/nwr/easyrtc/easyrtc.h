@@ -27,6 +27,7 @@
 #include <nwr/base/any.h>
 #include <nwr/base/any_func.h>
 #include <nwr/base/any_emitter.h>
+#include <nwr/base/objc_pointer.h>
 #include <nwr/base/lib_webrtc.h>
 #include <nwr/socketio/io.h>
 #include <nwr/jsrtc/media_track_constraints.h>
@@ -51,11 +52,12 @@ namespace ert {
     class Easyrtc: public std::enable_shared_from_this<Easyrtc> {
     public:
         friend PeerConn;
-        using VideoObject = std::string; // mock type
     private:
         Easyrtc();
-        void Init();
+        void Init(const ObjcPointer & work_view);
     public:
+        //  work_view: UIView
+        static std::shared_ptr<Easyrtc> Create(const ObjcPointer & work_view);
         ~Easyrtc();
         
 #warning todo clear all vars , especially check remove all retain cycles.
@@ -214,27 +216,31 @@ namespace ert {
         std::map<std::string, Any> room_data_;
         void RegisterLocalMediaStreamByName(const std::shared_ptr<MediaStream> & stream,
                                             const Optional<std::string> & stream_name);
-        //  register3rdPartyLocalMediaStream
+        void Register3rdPartyLocalMediaStream(const std::shared_ptr<MediaStream> & stream,
+                                              const Optional<std::string> & stream_name);
         Optional<std::string> GetNameOfRemoteStream(const std::string & easyrtcid,
                                                     const Optional<std::string> & webrtc_stream_id);
         void CloseLocalMediaStreamByName(const Optional<std::string> & stream_name);
         void EnableCamera(bool enable, const Optional<std::string> & stream_name);
         void EnableMicrophone(bool enable, const Optional<std::string> & stream_name);
+        //  muteVideoObject (DOM)
+        //  getLocalStreamAsUrl ; for <video>, <canvas>
+        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
+        
+        //  NWRHtmlMediaElementView
+        void ClearMediaStream(const ObjcPointer & element);
+        void SetVideoObjectSrc(const ObjcPointer & video_object, const std::shared_ptr<MediaStream> & stream);
         std::shared_ptr<MediaStream>
         BuildLocalMediaStream(const std::string & stream_name,
                               const std::vector<std::shared_ptr<MediaStreamTrack>> & audio_tracks,
                               const std::vector<std::shared_ptr<MediaStreamTrack>> & video_tracks);
-        //  muteVideoObject (DOM)
-        //  getLocalStreamAsUrl ; for <video>, <canvas>
-        std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
-        //  clearMediaStream(DOM)
-        void SetVideoObjectSrc(const VideoObject & video, const std::shared_ptr<MediaStream> & stream);
         //  loadStylesheet
         std::string FormatError(const Any & error);
-        void InitMediaSource(const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
+        
+        void InitMediaSource(const Optional<std::string> & stream_name,
+                             const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
                              const std::function<void(const std::string &,
-                                                      const std::string &)> & error_callback,
-                             const Optional<std::string> & stream_name);
+                                                      const std::string &)> & error_callback);
         std::function<void (const std::string &,
                             const std::function<void (bool,
                                                       const Optional<std::vector<std::string>> &)> &)> accept_check_;
@@ -453,28 +459,31 @@ namespace ert {
         bool auto_add_close_buttons_;
         void DontAddCloseButtons();
         
-        void EasyAppBody(const Optional<std::string> & monitor_video_id,
-                         const std::vector<std::string> & video_ids);
-        std::vector<std::string> video_ids_;
-        std::map<std::string, Optional<std::string>> video_id_to_caller_map_;
-        bool ValidateVideoIds(const std::string & monitor_video_id,
-                              const std::vector<std::string> & video_ids);
-        Optional<std::string> GetCallerOfVideo(const VideoObject & video_object);
-        void SetCallerOfVideo(const VideoObject & video_object, const Optional<std::string> & caller_easyrtcid);
-        bool VideoIsFree(const VideoObject & obj);
-        std::function<void(const VideoObject &, const Optional<int> &)> on_call_;
-        void set_on_call(const std::function<void(const VideoObject &, const Optional<int> &)> & cb);
+        using ElementId = int;
+        void EasyAppBody(const Optional<ElementId> & monitor_video_id,
+                         const std::vector<ElementId> & video_ids);
+        // search view in work view not recursively
+        ObjcPointer GetElementById(ElementId id);
+        std::vector<ElementId> video_ids_;
+        std::map<ObjcPointer, Optional<std::string>> video_id_to_caller_map_;
+        bool ValidateVideoIds(const ElementId & monitor_video_id,
+                              const std::vector<ElementId> & video_ids);
+        Optional<std::string> GetCallerOfVideo(const ObjcPointer & video_object);
+        void SetCallerOfVideo(const ObjcPointer & video_object, const Optional<std::string> & caller_easyrtcid);
+        bool VideoIsFree(const ObjcPointer & obj);
+        std::function<void(const std::string &, const int &)> on_call_;
+        void set_on_call(const std::function<void(const std::string &, const int &)> & cb);
         std::function<void(const std::string &, int)> on_hangup_;
         void set_on_hangup(const std::function<void(const std::string &, int)> & cb);
-        Optional<VideoObject> GetIthVideo(int i);
+        Optional<ObjcPointer> GetIthVideo(int i);
         Optional<std::string> GetIthCaller(int i);
         int GetSlotOfCaller(const std::string & easyrtcid);
-        void HideVideo(const VideoObject & video);
-        void ShowVideo(const VideoObject & video, const std::shared_ptr<MediaStream> & stream);
-        Optional<VideoObject> refresh_pane_;
+        void HideVideo(const ObjcPointer & video);
+        void ShowVideo(const ObjcPointer & video, const std::shared_ptr<MediaStream> & stream);
+        Optional<ObjcPointer> refresh_pane_;
         void EasyApp(const std::string & application_name,
-                     const Optional<std::string> & monitor_video_id,
-                     const std::vector<std::string> & video_ids,
+                     const Optional<ElementId> & monitor_video_id,
+                     const std::vector<ElementId> & video_ids,
                      const std::function<void(const std::string &)> & on_ready,
                      const std::function<void(const std::string &,
                                               const std::string &)> & on_failure);
@@ -487,6 +496,7 @@ namespace ert {
         // ---
         bool closed_;
         std::shared_ptr<RtcPeerConnectionFactory> peer_connection_factory_;
+        ObjcPointer work_view_;
         void SetPeerConn(const std::string & other_user, const std::shared_ptr<PeerConn> & peer_conn);
         void DeletePeerConn(const std::string & other_user);
     };

@@ -24,6 +24,8 @@
 		D65236F51C790E1B00D399F6 /* fields.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236F31C790E1B00D399F6 /* fields.cpp */; };
 		D65236FA1C7A096B00D399F6 /* media_track_constraints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236F81C7A096B00D399F6 /* media_track_constraints.cpp */; };
 		D65236FD1C7A0F6700D399F6 /* media_stream_constraints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236FB1C7A0F6700D399F6 /* media_stream_constraints.cpp */; };
+		D65237031C7B329300D399F6 /* NWRHtmlMediaElementView.mm in Sources */ = {isa = PBXBuildFile; fileRef = D65237021C7B329300D399F6 /* NWRHtmlMediaElementView.mm */; };
+		D65237061C7B561200D399F6 /* objc_pointer.mm in Sources */ = {isa = PBXBuildFile; fileRef = D65237041C7B561200D399F6 /* objc_pointer.mm */; };
 		D664369D1C4A544C0059A94B /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D664369B1C4A544C0059A94B /* AppDelegate.mm */; };
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
 		D66436A51C4A64110059A94B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D66436A41C4A64110059A94B /* main.m */; };
@@ -57,11 +59,11 @@
 		D6B9DE311C6BDBBD00EBF183 /* any_emitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */; };
 		D6B9DE341C6C8E4700EBF183 /* sio_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE321C6C8E4700EBF183 /* sio_test.cpp */; };
 		D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE351C6C8F4400EBF183 /* io.cpp */; };
-		D6B9DE3E1C6CDB3200EBF183 /* easyrtc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */; };
+		D6B9DE3E1C6CDB3200EBF183 /* easyrtc.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE3C1C6CDB3200EBF183 /* easyrtc.mm */; };
 		D6B9DE411C6CE19A00EBF183 /* ert_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE3F1C6CE19A00EBF183 /* ert_test.cpp */; };
 		D6B9DE541C6E44C700EBF183 /* peer_conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */; };
 		D6B9DE5D1C6F2A0B00EBF183 /* receive_peer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */; };
-		D6B9DE651C720E4200EBF183 /* rtc_peer_connection_factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE631C720E4200EBF183 /* rtc_peer_connection_factory.cpp */; };
+		D6B9DE651C720E4200EBF183 /* rtc_peer_connection_factory.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE631C720E4200EBF183 /* rtc_peer_connection_factory.mm */; };
 		D6B9DE681C7220A300EBF183 /* rtc_peer_connection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE661C7220A300EBF183 /* rtc_peer_connection.cpp */; };
 		D6B9DE711C72C8D200EBF183 /* media_stream_track.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE6F1C72C8D200EBF183 /* media_stream_track.cpp */; };
 		D6B9DE741C72D5DB00EBF183 /* media_stream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE721C72D5DB00EBF183 /* media_stream.cpp */; };
@@ -144,6 +146,10 @@
 		D65236F91C7A096B00D399F6 /* media_track_constraints.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = media_track_constraints.h; path = nwr/jsrtc/media_track_constraints.h; sourceTree = "<group>"; };
 		D65236FB1C7A0F6700D399F6 /* media_stream_constraints.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = media_stream_constraints.cpp; path = nwr/jsrtc/media_stream_constraints.cpp; sourceTree = "<group>"; };
 		D65236FC1C7A0F6700D399F6 /* media_stream_constraints.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = media_stream_constraints.h; path = nwr/jsrtc/media_stream_constraints.h; sourceTree = "<group>"; };
+		D65237011C7B329300D399F6 /* NWRHtmlMediaElementView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NWRHtmlMediaElementView.h; path = nwr/jsrtc/NWRHtmlMediaElementView.h; sourceTree = "<group>"; };
+		D65237021C7B329300D399F6 /* NWRHtmlMediaElementView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = NWRHtmlMediaElementView.mm; path = nwr/jsrtc/NWRHtmlMediaElementView.mm; sourceTree = "<group>"; };
+		D65237041C7B561200D399F6 /* objc_pointer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = objc_pointer.mm; sourceTree = "<group>"; };
+		D65237051C7B561200D399F6 /* objc_pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = objc_pointer.h; sourceTree = "<group>"; };
 		D664369B1C4A544C0059A94B /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = app/AppDelegate.mm; sourceTree = "<group>"; };
 		D664369C1C4A544C0059A94B /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = app/AppDelegate.h; sourceTree = "<group>"; };
 		D66436A11C4A60E70059A94B /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
@@ -209,7 +215,7 @@
 		D6B9DE351C6C8F4400EBF183 /* io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = io.cpp; path = nwr/socketio/io.cpp; sourceTree = "<group>"; };
 		D6B9DE361C6C8F4400EBF183 /* io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = io.h; path = nwr/socketio/io.h; sourceTree = "<group>"; };
 		D6B9DE391C6CB79B00EBF183 /* array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = array.h; sourceTree = "<group>"; };
-		D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = easyrtc.cpp; path = nwr/easyrtc/easyrtc.cpp; sourceTree = "<group>"; };
+		D6B9DE3C1C6CDB3200EBF183 /* easyrtc.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = easyrtc.mm; path = nwr/easyrtc/easyrtc.mm; sourceTree = "<group>"; };
 		D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = easyrtc.h; path = nwr/easyrtc/easyrtc.h; sourceTree = "<group>"; };
 		D6B9DE3F1C6CE19A00EBF183 /* ert_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ert_test.cpp; path = app/ert_test.cpp; sourceTree = "<group>"; };
 		D6B9DE401C6CE19A00EBF183 /* ert_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ert_test.h; path = app/ert_test.h; sourceTree = "<group>"; };
@@ -219,7 +225,7 @@
 		D6B9DE571C6ED2CC00EBF183 /* func.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = func.h; sourceTree = "<group>"; };
 		D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = receive_peer.cpp; path = nwr/easyrtc/receive_peer.cpp; sourceTree = "<group>"; };
 		D6B9DE5C1C6F2A0B00EBF183 /* receive_peer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = receive_peer.h; path = nwr/easyrtc/receive_peer.h; sourceTree = "<group>"; };
-		D6B9DE631C720E4200EBF183 /* rtc_peer_connection_factory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_peer_connection_factory.cpp; path = nwr/jsrtc/rtc_peer_connection_factory.cpp; sourceTree = "<group>"; };
+		D6B9DE631C720E4200EBF183 /* rtc_peer_connection_factory.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = rtc_peer_connection_factory.mm; path = nwr/jsrtc/rtc_peer_connection_factory.mm; sourceTree = "<group>"; };
 		D6B9DE641C720E4200EBF183 /* rtc_peer_connection_factory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_peer_connection_factory.h; path = nwr/jsrtc/rtc_peer_connection_factory.h; sourceTree = "<group>"; };
 		D6B9DE661C7220A300EBF183 /* rtc_peer_connection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_peer_connection.cpp; path = nwr/jsrtc/rtc_peer_connection.cpp; sourceTree = "<group>"; };
 		D6B9DE671C7220A300EBF183 /* rtc_peer_connection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_peer_connection.h; path = nwr/jsrtc/rtc_peer_connection.h; sourceTree = "<group>"; };
@@ -421,6 +427,8 @@
 				D66436BC1C4D2BFD0059A94B /* timer.cpp */,
 				D66436F21C5014BF0059A94B /* timer_pool.h */,
 				D66436F11C5014BF0059A94B /* timer_pool.cpp */,
+				D65237051C7B561200D399F6 /* objc_pointer.h */,
+				D65237041C7B561200D399F6 /* objc_pointer.mm */,
 				D66436E41C4F6C5A0059A94B /* error.h */,
 				D66436E31C4F6C5A0059A94B /* error.cpp */,
 				D6F78A451C54110700B21614 /* json.h */,
@@ -455,7 +463,7 @@
 				D65236F41C790E1B00D399F6 /* fields.h */,
 				D65236F31C790E1B00D399F6 /* fields.cpp */,
 				D6B9DE3D1C6CDB3200EBF183 /* easyrtc.h */,
-				D6B9DE3C1C6CDB3200EBF183 /* easyrtc.cpp */,
+				D6B9DE3C1C6CDB3200EBF183 /* easyrtc.mm */,
 			);
 			name = easyrtc;
 			sourceTree = "<group>";
@@ -481,7 +489,9 @@
 				D6B9DE671C7220A300EBF183 /* rtc_peer_connection.h */,
 				D6B9DE661C7220A300EBF183 /* rtc_peer_connection.cpp */,
 				D6B9DE641C720E4200EBF183 /* rtc_peer_connection_factory.h */,
-				D6B9DE631C720E4200EBF183 /* rtc_peer_connection_factory.cpp */,
+				D6B9DE631C720E4200EBF183 /* rtc_peer_connection_factory.mm */,
+				D65237011C7B329300D399F6 /* NWRHtmlMediaElementView.h */,
+				D65237021C7B329300D399F6 /* NWRHtmlMediaElementView.mm */,
 			);
 			name = jsrtc;
 			sourceTree = "<group>";
@@ -640,6 +650,8 @@
 				D60852A61C50DF6000CEE554 /* data.cpp in Sources */,
 				D65236F21C78E70700D399F6 /* any_func.cpp in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
+				D65237031C7B329300D399F6 /* NWRHtmlMediaElementView.mm in Sources */,
+				D65237061C7B561200D399F6 /* objc_pointer.mm in Sources */,
 				D65236D91C74E4B500D399F6 /* rtc_data_channel.cpp in Sources */,
 				D6155E8D1C64DC3700A8B6CA /* eio_test.cpp in Sources */,
 				D60852A41C50B95100CEE554 /* path.cpp in Sources */,
@@ -647,7 +659,7 @@
 				D6155E961C6615B100A8B6CA /* packet.cpp in Sources */,
 				D6B9DE681C7220A300EBF183 /* rtc_peer_connection.cpp in Sources */,
 				D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */,
-				D6B9DE3E1C6CDB3200EBF183 /* easyrtc.cpp in Sources */,
+				D6B9DE3E1C6CDB3200EBF183 /* easyrtc.mm in Sources */,
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
 				D65236FA1C7A096B00D399F6 /* media_track_constraints.cpp in Sources */,
 				D6F78A531C55018A00B21614 /* manager.cpp in Sources */,
@@ -657,7 +669,7 @@
 				D66436CC1C4DC8F10059A94B /* parser.cpp in Sources */,
 				D6F78A4D1C54DAE900B21614 /* on.cpp in Sources */,
 				D66436E51C4F6C5A0059A94B /* error.cpp in Sources */,
-				D6B9DE651C720E4200EBF183 /* rtc_peer_connection_factory.cpp in Sources */,
+				D6B9DE651C720E4200EBF183 /* rtc_peer_connection_factory.mm in Sources */,
 				D6B9DE411C6CE19A00EBF183 /* ert_test.cpp in Sources */,
 				D6B9DE2E1C6B862900EBF183 /* any_test.cpp in Sources */,
 				D66436F01C5000B40059A94B /* websocket_transport.cpp in Sources */,
@@ -797,6 +809,7 @@
 					"$(SRCROOT)/lib/openssl/include",
 					"$(SRCROOT)/lib/websockets/include",
 					"$(SRCROOT)/lib/webrtc/out/include",
+					"$(SRCROOT)/lib/webrtc/out/include/talk/app/webrtc/objc/public",
 					"$(SRCROOT)/src",
 				);
 				INFOPLIST_FILE = Ikadenwa/Info.plist;
@@ -825,6 +838,7 @@
 					"$(SRCROOT)/lib/openssl/include",
 					"$(SRCROOT)/lib/websockets/include",
 					"$(SRCROOT)/lib/webrtc/out/include",
+					"$(SRCROOT)/lib/webrtc/out/include/talk/app/webrtc/objc/public",
 					"$(SRCROOT)/src",
 				);
 				INFOPLIST_FILE = Ikadenwa/Info.plist;

@@ -14,6 +14,8 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winconsistent-missing-override"
 
+#include <TargetConditionals.h>
+
 #include <webrtc/base/scoped_ptr.h>
 #include <webrtc/base/refcount.h>
 #include <webrtc/base/thread.h>
@@ -29,6 +31,13 @@
 #include <talk/app/webrtc/mediastreaminterface.h>
 #include <talk/app/webrtc/peerconnectioninterface.h>
 #include <talk/app/webrtc/videotrack.h>
+
+#ifdef __OBJC__
+#   import <talk/app/webrtc/objc/public/RTCVideoRenderer.h>
+#   import <talk/app/webrtc/objc/public/RTCEAGLVideoView.h>
+#   import <talk/app/webrtc/objc/avfoundationvideocapturer.h>
+#   import <talk/app/webrtc/objc/RTCVideoRendererAdapter.h>
+#endif
 
 #pragma clang diagnostic pop
 
