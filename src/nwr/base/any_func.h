@@ -11,7 +11,18 @@
 #include "any_func_forward.h"
 #include "any.h"
 
-namespace nwr {    
+namespace nwr {
+    template <> class AnyFuncImpl <void()> : public AnyFunc {
+    public:
+        AnyFuncImpl(const std::function<void()> & func): func_(func) {}
+        Any Call(const std::vector<Any> & args) const override {
+            func_();
+            return nullptr;
+        }
+    private:
+        std::function<void()> func_;
+    };
+    
     template <> class AnyFuncImpl <Any()> : public AnyFunc {
     public:
         AnyFuncImpl(const std::function<Any()> & func): func_(func) {}
@@ -20,6 +31,18 @@ namespace nwr {
         }
     private:
         std::function<Any()> func_;
+    };
+    
+    template <> class AnyFuncImpl <void(const Any &)> : public AnyFunc {
+    public:
+        AnyFuncImpl(const std::function<void(const Any &)> & func): func_(func) {}
+        Any Call(const std::vector<Any> & args) const override {
+            Any a0 = 0 < args.size() ? args[0] : nullptr;
+            func_(a0);
+            return nullptr;
+        }
+    private:
+        std::function<void(const Any &)> func_;
     };
     
     template <> class AnyFuncImpl <Any(const Any &)> : public AnyFunc {
@@ -31,6 +54,19 @@ namespace nwr {
         }
     private:
         std::function<Any(const Any &)> func_;
+    };
+    
+    template <> class AnyFuncImpl <void(const Any &, const Any &)> : public AnyFunc {
+    public:
+        AnyFuncImpl(const std::function<void(const Any &, const Any &)> & func): func_(func) {}
+        Any Call(const std::vector<Any> & args) const override {
+            Any a0 = 0 < args.size() ? args[0] : nullptr;
+            Any a1 = 1 < args.size() ? args[1] : nullptr;
+            func_(a0, a1);
+            return nullptr;
+        }
+    private:
+        std::function<void(const Any &, const Any &)> func_;
     };
     
     template <> class AnyFuncImpl <Any(const Any &, const Any &)> : public AnyFunc {

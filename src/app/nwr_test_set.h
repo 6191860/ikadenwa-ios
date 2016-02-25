@@ -8,12 +8,19 @@
 
 #pragma once
 
+#include <memory>
+#include <nwr/base/any.h>
 #include <nwr/base/timer.h>
+#include <nwr/engineio/socket.h>
 #include <nwr/socketio/io.h>
+#include <nwr/socketio0/io.h>
 
 namespace app {
-    class SioTest {
+    class NwrTestSet {
     public:
-        void Run();
+        void TestAnyType();
+        void TestEio();
+        void TestSio();
+        void TestSio0();
     };
 }

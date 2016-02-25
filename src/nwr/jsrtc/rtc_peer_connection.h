@@ -93,7 +93,6 @@ namespace nwr {
                 InnerObserver(const std::shared_ptr<RtcPeerConnection> & owner);
                 
                 void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState new_state) override;
-                void OnStateChange(StateType state_changed) override;
                 void OnAddStream(webrtc::MediaStreamInterface* stream) override;
                 void OnRemoveStream(webrtc::MediaStreamInterface* stream) override;
                 void OnDataChannel(webrtc::DataChannelInterface* data_channel) override;
@@ -101,7 +100,6 @@ namespace nwr {
                 void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState new_state) override;
                 void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState new_state) override;
                 void OnIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
-                void OnIceComplete() override;
                 void OnIceConnectionReceivingChange(bool receiving) override;
                 
                 std::shared_ptr<RtcPeerConnection> owner;

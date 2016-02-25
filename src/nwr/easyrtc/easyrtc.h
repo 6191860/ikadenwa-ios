@@ -52,14 +52,15 @@ namespace ert {
     class Easyrtc: public std::enable_shared_from_this<Easyrtc> {
     public:
         friend PeerConn;
-    private:
-        Easyrtc();
-        void Init(const ObjcPointer & work_view);
-    public:
         //  work_view: UIView
-        static std::shared_ptr<Easyrtc> Create(const ObjcPointer & work_view);
+        static std::shared_ptr<Easyrtc> Create(const std::string & server_path,
+                                               const ObjcPointer & work_view);
         ~Easyrtc();
         
+    private:
+        Easyrtc();
+        void Init(const std::string & server_path,
+                  const ObjcPointer & work_view);
 #warning todo clear all vars , especially check remove all retain cycles.
         void Close();
     private:
@@ -183,7 +184,9 @@ namespace ert {
         void EnqueueSendRoomApi(const std::string & room_name);
         void SendRoomApiFields(const std::string & roomName,
                                const std::map<std::string, Any> & fields);
+    public:
         void ShowError(const std::string & message_code, const std::string & message);
+    private:
         //  CreateObjectURL
         std::string CleanId(const std::string & id_string);
         std::function<void(bool, const std::string &)> room_entry_listener_;
@@ -191,9 +194,11 @@ namespace ert {
         std::function<void(const Optional<std::string> &,
                            const std::map<std::string, Any> &,
                            const Any &)> room_occupant_listener_;
+    public:
         void set_room_occupant_listener(const std::function<void(const Optional<std::string> &,
                                                                  const std::map<std::string, Any> &,
                                                                  const Any &)> & listener);
+    private:
         std::function<void(const std::string &, bool)> on_data_channel_open_;
         void set_data_channel_open_listener(const std::function<void(const std::string &, bool)> & listener);
         std::function<void(const std::string &)> on_data_channel_close_;
@@ -265,9 +270,11 @@ namespace ert {
                                                            const std::string &)> & on_stream_closed);
         //  setVideoBandwidth ; deprecated in original
         bool SupportsDataChannels();
-        void SetPeerListener(const ReceivePeerCallback & listener,
-                             const Optional<std::string> & msg_type,
-                             const Optional<std::string> & source);
+    public:
+        void SetPeerListener(const Optional<std::string> & msg_type,
+                             const Optional<std::string> & source,
+                             const ReceivePeerCallback & listener);
+    private:
         void ReceivePeerDistribute(const std::string & easyrtcid,
                                    const Any & msg,
                                    const Any & targeting);
@@ -452,10 +459,12 @@ namespace ert {
         std::map<std::string, Any> GetConnectionFields();
         std::shared_ptr<sio::Socket> preallocated_socket_io_;
         void UseThisSocketConnection(const std::shared_ptr<sio::Socket> & already_allocated_socket_io);
+    public:
         void Connect(const std::string & application_name,
                      const std::function<void(const std::string &)> & success_callback,
                      const std::function<void(const std::string &,
                                               const std::string &)> & arg_error_callback);
+    private:
         bool auto_add_close_buttons_;
         void DontAddCloseButtons();
         

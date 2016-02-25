@@ -58,7 +58,7 @@ static CGRect CGSizeFit(CGSize size, CGRect bounds) {
     [self addSubview:_glVideoView];
     _glVideoView.translatesAutoresizingMaskIntoConstraints = YES;
     
-    _glVideoViewAdapter = [[RTCVideoRendererAdapter alloc] initWithVideoRenderer:_glVideoView];
+    _glVideoViewAdapter = [[RTCVideoRendererAdapter alloc] initWithNativeRenderer:_glVideoView];
     
     _videoSize = CGSizeMake(0, 0);
     

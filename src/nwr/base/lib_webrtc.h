@@ -21,22 +21,22 @@
 #include <webrtc/base/thread.h>
 #include <webrtc/base/ssladapter.h>
 
-#include <talk/app/webrtc/audiotrack.h>
-#include <talk/app/webrtc/datachannel.h>
-#include <talk/app/webrtc/datachannelinterface.h>
-#include <talk/app/webrtc/jsep.h>
-#include <talk/app/webrtc/mediaconstraintsinterface.h>
-#include <talk/app/webrtc/mediastream.h>
-#include <talk/app/webrtc/mediastreamtrack.h>
-#include <talk/app/webrtc/mediastreaminterface.h>
-#include <talk/app/webrtc/peerconnectioninterface.h>
-#include <talk/app/webrtc/videotrack.h>
+#include <webrtc/api/audiotrack.h>
+#include <webrtc/api/datachannel.h>
+#include <webrtc/api/datachannelinterface.h>
+#include <webrtc/api/jsep.h>
+#include <webrtc/api/mediaconstraintsinterface.h>
+#include <webrtc/api/mediastream.h>
+#include <webrtc/api/mediastreamtrack.h>
+#include <webrtc/api/mediastreaminterface.h>
+#include <webrtc/api/peerconnectioninterface.h>
+#include <webrtc/api/videotrack.h>
 
 #ifdef __OBJC__
-#   import <talk/app/webrtc/objc/public/RTCVideoRenderer.h>
-#   import <talk/app/webrtc/objc/public/RTCEAGLVideoView.h>
-#   import <talk/app/webrtc/objc/avfoundationvideocapturer.h>
-#   import <talk/app/webrtc/objc/RTCVideoRendererAdapter.h>
+#   import <webrtc/api/objc/RTCVideoRenderer.h>
+#   import <webrtc/api/objc/RTCEAGLVideoView.h>
+#   import <webrtc/api/objc/avfoundationvideocapturer.h>
+#   import <webrtc/api/objc/RTCVideoRendererAdapter+Private.h>
 #endif
 
 #pragma clang diagnostic pop

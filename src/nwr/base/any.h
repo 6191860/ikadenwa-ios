@@ -58,6 +58,9 @@ namespace nwr {
         explicit Any(const ObjectType & value);
         Any(const AnyFuncPtr & value);
         explicit Any(const PointerType & value);
+        template <typename T> explicit Any(const Optional<T> & value):
+        Any(value ? *value : nullptr)
+        {}
         
         Type type() const;
         int count() const;

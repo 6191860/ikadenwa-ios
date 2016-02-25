@@ -15,9 +15,11 @@
 namespace nwr {
     class IosTaskQueue: public TaskQueue {
     public:
+        NSOperationQueue * inner_queue() { return operation_queue_; }
+        
         IosTaskQueue(NSOperationQueue * operation_queue);
         virtual ~IosTaskQueue() {}
-        virtual void PostTask(const Task & task);
+        void PostTask(const Task & task) override;
         static std::shared_ptr<IosTaskQueue> current_queue();
     private:
         NSOperationQueue * operation_queue_;

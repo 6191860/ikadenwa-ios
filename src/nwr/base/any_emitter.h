@@ -17,6 +17,7 @@
 
 #include "func.h"
 #include "any.h"
+#include "any_func.h"
 
 namespace nwr {
     class AnyEmitter;
@@ -32,7 +33,6 @@ namespace nwr {
     AnyEventListener AnyEventListenerMake(const std::function<void (const Any &, const Any &)> & func);
     AnyEventListener AnyEventListenerMake(const std::function<void (const Any &, const Any &, const Any &)> & func);
 
-    
     class AnyEmitter {
     public:
         virtual ~AnyEmitter();

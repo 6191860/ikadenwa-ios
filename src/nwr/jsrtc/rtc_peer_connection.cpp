@@ -259,11 +259,7 @@ namespace jsrtc {
             FuncCall(owner.on_signaling_state_change_, new_state);
         });
     }
-    void RtcPeerConnection::InnerObserver::
-    OnStateChange(StateType state_changed)
-    {
-        
-    }
+    
     void RtcPeerConnection::InnerObserver::
     OnAddStream(webrtc::MediaStreamInterface* inner_stream)
     {
@@ -322,10 +318,7 @@ namespace jsrtc {
             FuncCall(owner.on_ice_candidate_, candidate);
         });
     }
-    void RtcPeerConnection::InnerObserver::OnIceComplete()
-    {
-        
-    }
+    
     void RtcPeerConnection::InnerObserver::OnIceConnectionReceivingChange(bool receiving)
     {
         

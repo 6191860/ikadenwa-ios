@@ -12,11 +12,28 @@
 
 namespace nwr {
 namespace ert {
+    std::shared_ptr<Easyrtc> Easyrtc::Create(const std::string & server_path,
+                                             const ObjcPointer & work_view)
+    {
+        auto thiz = std::shared_ptr<Easyrtc>(new Easyrtc());
+        thiz->Init(server_path, work_view);
+        return thiz;
+    }
+    
+    Easyrtc::~Easyrtc() {
+        if (!closed_) {
+            Fatal("Easyrtc not closed");
+        }
+        printf("[Easyrtc::dtor]\n");
+    }
+    
     Easyrtc::Easyrtc() {
         closed_ = false;
     }
     
-    void Easyrtc::Init(const ObjcPointer & work_view) {
+    void Easyrtc::Init(const std::string & server_path,
+                       const ObjcPointer & work_view)
+    {
         peer_connection_factory_ = std::make_shared<RtcPeerConnectionFactory>();
         
         auto_init_user_media_ = true;
@@ -68,20 +85,9 @@ namespace ert {
             UpdateConfiguration();
         };
         auto_add_close_buttons_ = true;
+        
+        server_path_ = server_path;
         work_view_ = work_view;
-    }
-    
-    std::shared_ptr<Easyrtc> Easyrtc::Create(const ObjcPointer & work_view) {
-        auto thiz = std::shared_ptr<Easyrtc>(new Easyrtc());
-        thiz->Init(work_view);
-        return thiz;
-    }
-    
-    Easyrtc::~Easyrtc() {
-        if (!closed_) {
-            Fatal("Easyrtc not closed");
-        }
-        printf("[Easyrtc::dtor]\n");
     }
     
     void Easyrtc::Close() {
@@ -148,7 +154,7 @@ namespace ert {
     }
     
     bool Easyrtc::IsSocketConnected(const std::shared_ptr<const sio::Socket> & socket) {
-        return socket->connected();
+        return socket && socket->connected();
     }
     
     std::string Easyrtc::GetConstantString(const std::string & key) {
@@ -480,12 +486,11 @@ namespace ert {
         
         websocket_->Emit("easyrtcCmd", {
             data_to_ship,
-            AnyFuncMake([thiz](const Any & ack_msg) -> Any {
+            AnyFuncMake([thiz](const Any & ack_msg) {
                 if (ack_msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
                     thiz->ShowError(ack_msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
                                     ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
                 }
-                return nullptr;
             })
         });
     }
@@ -900,9 +905,9 @@ namespace ert {
         return true;
     }
     
-    void Easyrtc::SetPeerListener(const ReceivePeerCallback & listener,
-                                  const Optional<std::string> & msg_type,
-                                  const Optional<std::string> & source)
+    void Easyrtc::SetPeerListener(const Optional<std::string> & msg_type,
+                                  const Optional<std::string> & source,
+                                  const ReceivePeerCallback & listener)
     {
         if (!msg_type) {
             receive_peer_.cb = listener;
@@ -1197,7 +1202,7 @@ namespace ert {
             websocket_->Emit("easyrtcCmd", {
                 data_to_ship,
                 AnyFuncMake([thiz, success_callback, error_callback]
-                            (const Any & arg_ack_msg) -> Any {
+                            (const Any & arg_ack_msg) {
                                 Any ack_msg = arg_ack_msg;
                                 
                                 if (ack_msg.GetAt("msgType").AsString() != Some(std::string("error")) ) {
@@ -1219,7 +1224,6 @@ namespace ert {
                                         thiz->ShowError(error_code, error_text);
                                     }
                                 }
-                                return nullptr;
                             })
             });
         }
@@ -1300,9 +1304,8 @@ namespace ert {
     {
         auto thiz = shared_from_this();
         
-        std::function<Any(const Any &)> ack_handler = [arg_ack_handler](const Any & a) -> Any {
+        std::function<void(const Any &)> ack_handler = [arg_ack_handler](const Any & a) {
             FuncCall(arg_ack_handler, a);
-            return nullptr;
         };
         
         FuncCall(debug_printer_,
@@ -1310,12 +1313,11 @@ namespace ert {
                  " with data=" + msg_data.ToJsonString());
         
         if (!ack_handler) {
-            ack_handler = [thiz](const Any & msg) -> Any {
+            ack_handler = [thiz](const Any & msg) {
                 if (msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
                     thiz->ShowError(msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
                                     msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
                 }
-                return nullptr;
             };
         }
         
@@ -1843,7 +1845,7 @@ namespace ert {
             }
         };
         
-        SetPeerListener(func, Some(std::string("__addedMediaStream")), None());
+        SetPeerListener(Some(std::string("__addedMediaStream")), None(), func);
     }
     
     void Easyrtc::SetupPeerListener2() {
@@ -1875,7 +1877,7 @@ namespace ert {
             }
         };
         
-        SetPeerListener(func, Some(std::string("__gotAddedMediaStream")), None());
+        SetPeerListener(Some(std::string("__gotAddedMediaStream")), None(), func);
     }
     
     void Easyrtc::SetupPeerListener3() {
@@ -1898,7 +1900,7 @@ namespace ert {
             }
         };
         
-        SetPeerListener(func, Some(std::string("__closingMediaStream")), None());
+        SetPeerListener(Some(std::string("__closingMediaStream")), None(), func);
     }
     
     void Easyrtc::OnRemoveStreamHelper(const std::string & easyrtcid,
@@ -2355,7 +2357,9 @@ namespace ert {
         }
 
         if (do_data_channels) {
-            SetPeerListener([thiz, other_user](const std::string & easyrtcid,
+            SetPeerListener(Some(std::string("dataChannelPrimed")),
+                            Some(other_user),
+                            [thiz, other_user](const std::string & easyrtcid,
                                                const std::string & msg_type,
                                                const Any & msd_data,
                                                const Any & targeting)
@@ -2369,7 +2373,7 @@ namespace ert {
                                     thiz->on_data_channel_open_(other_user, true);
                                 }
                                 thiz->UpdateConfigurationInfo();
-                            }, Some(std::string("dataChannelPrimed")), Some(other_user));
+                            });
             
             
             if (is_initiator) {
@@ -2385,7 +2389,9 @@ namespace ert {
         // Temporary support for responding to acknowledgements of about streams being added.
         //
         
-        SetPeerListener([thiz, new_peer_conn](const std::string & easyrtcid,
+        SetPeerListener(Some(std::string("easyrtc_streamReceived")),
+                        Some(other_user),
+                        [thiz, new_peer_conn](const std::string & easyrtcid,
                                               const std::string & msg_type,
                                               const Any & msg_data,
                                               const Any & targeting)
@@ -2395,7 +2401,7 @@ namespace ert {
                                 (new_peer_conn->streams_added_acks()[stream_name])(easyrtcid, stream_name);
                                 new_peer_conn->streams_added_acks().erase(stream_name);
                             }
-                        }, Some(std::string("easyrtc_streamReceived")), Some(other_user));
+                        });
         
         return pc;
     }
@@ -3398,7 +3404,7 @@ namespace ert {
         }
         websocket_->Emit("easyrtcCmd", {
             data_to_ship,
-            AnyFuncMake([thiz, callback](const Any & ack_msg) -> Any{
+            AnyFuncMake([thiz, callback](const Any & ack_msg) {
                 if (ack_msg.GetAt("msgType").AsString() == Some(std::string("iceConfig"))) {
                     thiz->ProcessIceConfig(ack_msg.GetAt("msgData").GetAt("iceConfig"));
                     callback(true);
@@ -3408,7 +3414,6 @@ namespace ert {
                                     ack_msg.GetAt("msgData").GetAt("errorText").AsString() || std::string());
                     callback(false);
                 }
-                return nullptr;
             })
         });
     }
@@ -3481,7 +3486,7 @@ namespace ert {
                                    { "msgType", Any("authenticate") },
                                    { "msgData", msg_data }
                                }),
-                             AnyFuncMake([thiz, success_callback, error_callback](const Any & msg) -> Any {
+                             AnyFuncMake([thiz, success_callback, error_callback](const Any & msg) {
                                  if (msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
                                      
                                      error_callback(msg.GetAt("msgData").GetAt("errorCode").AsString() || std::string(),
@@ -3497,7 +3502,6 @@ namespace ert {
                                      
                                      FuncCall(success_callback, thiz->my_easyrtcid_.value());
                                  }
-                                 return nullptr;
                              })
                          });
     }

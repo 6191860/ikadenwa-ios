@@ -220,9 +220,9 @@ namespace sio {
         
         auto sent_ptr = std::make_shared<bool>(false);
         
-        return AnyFuncMake([thiz, sent_ptr, id](const Any & args) -> Any {
+        return AnyFuncMake([thiz, sent_ptr, id](const Any & args) {
             // prevent double callbacks
-            if (*sent_ptr) { return nullptr; }
+            if (*sent_ptr) { return; }
             *sent_ptr = true;
             
             printf("[%s] sending ack\n", __PRETTY_FUNCTION__);
@@ -234,8 +234,6 @@ namespace sio {
             packet.data = args;
             
             thiz->SendPacket(packet);
-            
-            return nullptr;
         });
     }
     

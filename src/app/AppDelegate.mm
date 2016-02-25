@@ -10,8 +10,6 @@
 
 @implementation AppDelegate
 
-using namespace app;
-
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -19,8 +17,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     if (!initialized) {
         nwr::Fatal("InitializeSSL failed");
     }
-    
-    [self runTest];
     
     return YES;
 }
@@ -31,11 +27,6 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     if (!initialized) {
         nwr::Fatal("CleanupSSL failed");
     }
-}
-
-- (void)runTest {
-    ert_test_ = std::make_shared<app::ErtTest>();
-    ert_test_->Run();
 }
 
 @end
