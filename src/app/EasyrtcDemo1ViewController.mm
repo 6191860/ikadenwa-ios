@@ -15,6 +15,8 @@ using namespace nwr;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    _destButtons = [NSMutableArray array];
+    
     nwr_test_set_ = std::make_shared<app::NwrTestSet>();
     nwr_test_set_->TestSio0();
 }
@@ -40,15 +42,15 @@ using namespace nwr;
 msgType:(const std::string &)msgType
 content:(const nwr::Any &)content
 {
-    NSMutableString * text = [NSMutableString stringWithString:_textView.text];
+    NSMutableString * text = [NSMutableString stringWithString:_receiveTextView.text];
     if (text.length != 0) {
         [text appendString:@"\n"];
     }
     
     std::string content_str = content.AsString() || std::string();
-    
-    [text appendFormat:@"%s: %s", who.c_str(), content_str.c_str()];
-    _textView.text = text;
+
+    [text appendFormat:@"%@: %@", ToNSString(who), ToNSString(content_str)];
+    _receiveTextView.text = text;
 }
 
 - (void)connect {
@@ -81,55 +83,84 @@ content:(const nwr::Any &)content
 occupants:(const std::map<std::string, Any> &)occupants
 isPrimary:(const Any &)isPrimary
 {
+    for (UIButton * button in _destButtons) {
+        [button removeFromSuperview];
+    }
+    [_destButtons removeAllObjects];
     
+    occupants_.clear();
+    for (const auto & easyrtcid : Keys(occupants)) {
+        auto occupant = occupants.at(easyrtcid);
+        occupants_.push_back(occupant);
+        printf("%s\n", occupant.ToJsonString().c_str());
+        
+        
+        UIButton * button = [UIButton buttonWithType:UIButtonTypeSystem];
+        [self.view addSubview:button];
+        [_destButtons addObject:button];
+        
+        [button setTitle:[NSString stringWithFormat:@"send to %@", ToNSString(easyrtcid)]
+                forState:UIControlStateNormal];
+        [button addTarget:self action:@selector(onDestButton:)
+         forControlEvents:UIControlEventTouchUpInside];
+    }
+    
+    for (int i = 0; i < _destButtons.count; i++) {
+        UIButton * button = _destButtons[i];
+        [button setTranslatesAutoresizingMaskIntoConstraints:NO];
+        
+        if (i == 0) {
+            [self.view addConstraints:
+             [NSLayoutConstraint
+              constraintsWithVisualFormat:@"V:[a]-(8)-[v]"
+              options:0 metrics:nil
+              views:@{@"a": _sendTextView,
+                      @"v": button}]];
+        } else {
+            [self.view addConstraints:
+             [NSLayoutConstraint
+              constraintsWithVisualFormat:@"V:[a]-(8)-[v]"
+              options:0 metrics:nil
+              views:@{@"a": _destButtons[i-1],
+                      @"v": button}]];
+        }
+        
+        [self.view addConstraints:
+         [NSLayoutConstraint
+          constraintsWithVisualFormat:@"|-(8)-[v]"
+          options:0 metrics:nil
+          views:@{@"v": button}]];
+        
+    }
 }
-
-//
-//function convertListToButtons (roomName, occupants, isPrimary) {
-//    var otherClientDiv = document.getElementById("otherClients");
-//    while (otherClientDiv.hasChildNodes()) {
-//        otherClientDiv.removeChild(otherClientDiv.lastChild);
-//    }
-//    
-//    for(var easyrtcid in occupants) {
-//        var button = document.createElement("button");
-//        button.onclick = function(easyrtcid) {
-//            return function() {
-//                sendStuffWS(easyrtcid);
-//            };
-//        }(easyrtcid);
-//        var label = document.createTextNode("Send to " + easyrtc.idToName(easyrtcid));
-//        button.appendChild(label);
-//        
-//        otherClientDiv.appendChild(button);
-//    }
-//    if( !otherClientDiv.hasChildNodes() ) {
-//        otherClientDiv.innerHTML = "<em>Nobody else logged in to talk to...</em>";
-//    }
-//}
-//
-//
-//function sendStuffWS(otherEasyrtcid) {
-//    var text = document.getElementById("sendMessageText").value;
-//    if(text.replace(/\s/g, "").length === 0) { // Don"t send just whitespace
-//        return;
-//    }
-//    
-//    easyrtc.sendDataWS(otherEasyrtcid, "message",  text);
-//    addToConversation("Me", "message", text);
-//    document.getElementById("sendMessageText").value = "";
-//}
-//
-//
 
 - (void)loginSuccess:(const std::string &)easyrtcid
 {
-    NSLog(@"I am %s", easyrtcid.c_str());
+    _myNameLabel.text = [NSString stringWithFormat:@"I am %@", ToNSString(easyrtcid)];
 }
 - (void)loginFailure:(const std::string &)code
 text:(const std::string &)text
 {
     _easyrtc->ShowError(code, text);
+}
+
+- (IBAction)onTapGesture:(UITapGestureRecognizer *)recr {
+    [self.view endEditing:YES];
+}
+
+- (void)onDestButton:(UIButton *)button {
+    int index = (int)[_destButtons indexOfObject:button];
+    const Any & occupant = occupants_[index];
+    std::string dest_id = occupant.GetAt("easyrtcid").AsString().value();
+    
+    auto text = Format("%s", [_sendTextView.text UTF8String]);
+
+    _easyrtc->SendDataWS(Any(dest_id),
+                         "message",
+                         Any(text),
+                         nullptr);
+    [self addToConversation:"Me" msgType:"message" content:Any(text)];
+    _sendTextView.text = @"";
 }
 
 @end

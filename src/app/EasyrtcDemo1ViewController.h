@@ -16,11 +16,15 @@
 
 #include "nwr_test_set.h"
 
-@interface EasyrtcDemo1ViewController : UIViewController {
+@interface EasyrtcDemo1ViewController : UIViewController{
     std::shared_ptr<app::NwrTestSet> nwr_test_set_;
+    std::vector<nwr::Any> occupants_;
 }
 
-@property(nonatomic, retain) IBOutlet UITextView * textView;
+@property(nonatomic, retain) IBOutlet UILabel * myNameLabel;
+@property(nonatomic, retain) IBOutlet UITextView * sendTextView;
+@property(nonatomic, retain) IBOutlet UITextView * receiveTextView;
+@property(nonatomic, retain) NSMutableArray<UIButton *> * destButtons;
 
 @property(nonatomic, assign) std::shared_ptr<nwr::ert::Easyrtc> easyrtc;
 @property(nonatomic, assign) std::string selfEasyrtcid;

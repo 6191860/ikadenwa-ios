@@ -163,5 +163,13 @@ namespace nwr {
         }
         return ss.str();
     }
+    
+    std::string ToString(NSString * str) {
+        return std::string([str UTF8String]);
+    }
+    
+    NSString * ToNSString(const std::string & str, NSStringEncoding encoding) {
+        return [NSString stringWithCString:str.c_str() encoding:encoding];
+    }
 }
 

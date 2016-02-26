@@ -16,6 +16,10 @@
 #include <functional>
 #include <random>
 
+#ifdef __OBJC__
+#import <Foundation/Foundation.h>
+#endif
+
 #include "data.h"
 
 namespace nwr {
@@ -43,4 +47,10 @@ namespace nwr {
                         const std::function<std::string(const std::string &)> & func);
     
     std::string GetRandomString(int len);
+    
+#ifdef __OBJC__
+    std::string ToString(NSString * str);
+    NSString * ToNSString(const std::string & str,
+                          NSStringEncoding encoding = NSUTF8StringEncoding);
+#endif
 }

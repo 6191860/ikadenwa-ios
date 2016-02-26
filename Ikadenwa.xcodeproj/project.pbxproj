@@ -39,7 +39,7 @@
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
 		D66436A51C4A64110059A94B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D66436A41C4A64110059A94B /* main.m */; };
 		D66436A81C4A73420059A94B /* websocket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436A71C4A73420059A94B /* websocket.cpp */; };
-		D66436AB1C4A74C20059A94B /* string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436AA1C4A74C20059A94B /* string.cpp */; };
+		D66436AB1C4A74C20059A94B /* string.mm in Sources */ = {isa = PBXBuildFile; fileRef = D66436AA1C4A74C20059A94B /* string.mm */; };
 		D66436AE1C4A805F0059A94B /* url.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436AD1C4A805F0059A94B /* url.cpp */; };
 		D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */ = {isa = PBXBuildFile; fileRef = D66436B21C4CD89D0059A94B /* ios_task_queue.mm */; };
 		D66436B91C4CEA740059A94B /* task_queue.mm in Sources */ = {isa = PBXBuildFile; fileRef = D66436B81C4CEA740059A94B /* task_queue.mm */; };
@@ -183,7 +183,7 @@
 		D66436A61C4A73240059A94B /* websocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = websocket.h; sourceTree = "<group>"; };
 		D66436A71C4A73420059A94B /* websocket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = websocket.cpp; sourceTree = "<group>"; };
 		D66436A91C4A74AB0059A94B /* string.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = string.h; sourceTree = "<group>"; };
-		D66436AA1C4A74C20059A94B /* string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = string.cpp; sourceTree = "<group>"; };
+		D66436AA1C4A74C20059A94B /* string.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = string.mm; sourceTree = "<group>"; };
 		D66436AC1C4A80540059A94B /* url.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = url.h; sourceTree = "<group>"; };
 		D66436AD1C4A805F0059A94B /* url.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = url.cpp; sourceTree = "<group>"; };
 		D66436B01C4CD7B50059A94B /* task_queue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = task_queue.h; sourceTree = "<group>"; };
@@ -444,7 +444,7 @@
 				D6155E971C66273500A8B6CA /* env.cpp */,
 				D65236D21C73812800D399F6 /* type_helper.h */,
 				D66436A91C4A74AB0059A94B /* string.h */,
-				D66436AA1C4A74C20059A94B /* string.cpp */,
+				D66436AA1C4A74C20059A94B /* string.mm */,
 				D6B9DE391C6CB79B00EBF183 /* array.h */,
 				D6B9DE471C6E190A00EBF183 /* map.h */,
 				D66436E61C4FD8780059A94B /* none.h */,
@@ -687,7 +687,7 @@
 				D66436A81C4A73420059A94B /* websocket.cpp in Sources */,
 				D65236DF1C75136F00D399F6 /* packet.cpp in Sources */,
 				D60852A11C50B24D00CEE554 /* socket.cpp in Sources */,
-				D66436AB1C4A74C20059A94B /* string.cpp in Sources */,
+				D66436AB1C4A74C20059A94B /* string.mm in Sources */,
 				D66436C11C4D40D80059A94B /* ios_looper.mm in Sources */,
 				D66436C31C4D42980059A94B /* looper.mm in Sources */,
 				D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */,

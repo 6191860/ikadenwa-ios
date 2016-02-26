@@ -238,6 +238,7 @@ namespace nwr {
         }
         (*array)[index] = value;
     }
+    
     Any Any::GetAt(const std::string & key) const {
         auto dict = inner_object();
         if (dict) {

@@ -86,7 +86,7 @@ namespace nwr {
         
         // can not clone Pointer
         Any Clone() const;
-                
+
         Any GetAt(int index) const;
         void SetAt(int index, const Any & value);
         

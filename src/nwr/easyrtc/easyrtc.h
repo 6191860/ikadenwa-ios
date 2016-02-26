@@ -332,10 +332,12 @@ namespace ert {
         void SendDataP2P(const std::string & dest_user,
                          const std::string & msg_type,
                          const Any & msg_data);
+    public:
         void SendDataWS(const Any & destination,
                         const std::string & msg_type,
                         const Any & msg_data,
                         const std::function<void(const Any &)> & arg_ack_handler);
+    private:
         void SendData(const std::string & dest_user,
                       const std::string & msg_type,
                       const Any & msg_data,

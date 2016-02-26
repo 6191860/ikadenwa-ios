@@ -2747,17 +2747,18 @@ namespace ert {
     {
         auto thiz = shared_from_this();
         
-        std::string caller = msg.GetAt("senderEasyrtcid").AsString().value();
+        printf("%s\n", msg.ToJsonString().c_str());
+        
+        Optional<std::string> caller = msg.GetAt("senderEasyrtcid").AsString();
         std::string msg_type = msg.GetAt("msgType").AsString().value();
         Any msg_data = msg.GetAt("msgData");
         
-        std::shared_ptr<std::shared_ptr<RtcPeerConnection>> pc_ptr;
-        *pc_ptr = std::shared_ptr<RtcPeerConnection>(nullptr);
+        auto pc_ptr = std::make_shared<std::shared_ptr<RtcPeerConnection>>(nullptr);
         
         FuncCall(debug_printer_, std::string("received message of type ") + msg_type);
 
-        if (HasKey(queued_messages_, caller)) {
-            ClearQueuedMessages(caller);
+        if (caller && HasKey(queued_messages_, *caller)) {
+            ClearQueuedMessages(*caller);
         }
         
         auto process_candidate_body = [thiz, pc_ptr](const std::string & caller, const Any & arg_msg_data){
@@ -2959,16 +2960,16 @@ namespace ert {
         } else if (msg_type == "forwardToUrl") {
             printf("forward to url: %s\n", msg_data.ToJsonString().c_str());
         } else if (msg_type == "offer") {
-            process_offer(caller, msg_data);
+            process_offer(*caller, msg_data);
         } else if (msg_type == "reject") {
-            process_reject(caller);
+            process_reject(*caller);
         } else if (msg_type == "answer") {
-            process_answer(caller, msg_data);
+            process_answer(*caller, msg_data);
         } else if (msg_type == "candidate") {
-            process_candidate_queue(caller, msg_data);
+            process_candidate_queue(*caller, msg_data);
         } else if (msg_type == "hangup") {
-            OnRemoteHangup(caller);
-            ClearQueuedMessages(caller);
+            OnRemoteHangup(*caller);
+            ClearQueuedMessages(*caller);
         } else if (msg_type == "error") {
             ShowError(msg_data.GetAt("errorCode").AsString().value(),
                       msg_data.GetAt("errorText").AsString().value());
