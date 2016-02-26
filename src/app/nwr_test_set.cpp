@@ -104,10 +104,23 @@ namespace app {
     
     void NwrTestSet::TestSio0() {
         sio0::SocketOptions options;
-        auto socket = sio0::Io::Connect("http://192.168.1.6", options);
-        socket->Emit("my other event", { Any("abc") }, [](const Any & params){
-            printf("ack %s\n", params.ToJsonString().c_str());
-        });
+        auto socket = sio0::Io::Connect("http://192.168.1.6:3000", options);
+        
+        socket->emitter()->On("connect", AnyEventListenerMake([socket](const Any & arg){
+            printf("socket on connect\n");
+            
+            Timer::Create(TimeDuration(5.0), [socket](){
+                socket->Emit("my other event",
+                             {
+                                 Any("abc"),
+                                 AnyFuncMake([socket](const Any & a)
+                                             {
+                                                 printf("ack %s\n", a.ToJsonString().c_str());
+                                             })
+                             });
+            });
+        }));
+        
         socket->emitter()->On("news", AnyEventListenerMake([](const Any & params){
             printf("news %s\n", params.ToJsonString().c_str());
         }));

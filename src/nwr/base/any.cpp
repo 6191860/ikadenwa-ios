@@ -303,9 +303,21 @@ namespace nwr {
             case Json::nullValue:
                 return Any(nullptr);
             case Json::intValue:
-                return Any(json.asInt());
+                if (json.isInt64()) {
+                    return Any(static_cast<double>(json.asInt64()));
+                } else if (json.isInt()) {
+                    return Any(static_cast<double>(json.asInt()));
+                } else {
+                    Fatal("invalid flow");
+                }
             case Json::uintValue:
-                return Any(static_cast<double>(json.asUInt()));
+                if (json.isUInt64()) {
+                    return Any(static_cast<double>(json.asUInt64()));
+                } else if (json.isUInt()) {
+                    return Any(static_cast<double>(json.asUInt()));
+                } else {
+                    Fatal("invalid flow");
+                }
             case Json::realValue:
                 return Any(json.asDouble());
             case Json::stringValue:

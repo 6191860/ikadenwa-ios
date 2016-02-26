@@ -22,12 +22,10 @@ using namespace nwr;
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     
-
-    
-    
-//    _easyrtc = ert::Easyrtc::Create("http://192.168.1.6:8080/",
-//                                    ObjcPointerMake(self.view));
-//    [self connect];
+    _easyrtc = ert::Easyrtc::Create("http://192.168.1.6:8080/",
+                                    ObjcPointerMake(self.view));
+    _easyrtc->EnableDebug(true);
+    [self connect];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

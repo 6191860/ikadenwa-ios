@@ -21,7 +21,7 @@ namespace sio0 {
     {}
     
     std::shared_ptr<CoreSocket> CoreSocket::Create(const SocketOptions & options) {
-        auto thiz = std::shared_ptr<CoreSocket>();
+        auto thiz = std::shared_ptr<CoreSocket>(new CoreSocket());
         thiz->Init(options);
         return thiz;
     }
@@ -62,25 +62,25 @@ namespace sio0 {
         
     }
     
-    AnyEmitterPtr CoreSocket::emitter() {
+    AnyEmitterPtr CoreSocket::emitter() const {
         return emitter_;
     }
-    bool CoreSocket::connected() {
+    bool CoreSocket::connected() const {
         return connected_;
     }
-    bool CoreSocket::connecting() {
+    bool CoreSocket::connecting() const {
         return connecting_;
     }
     
-    bool CoreSocket::reconnecting() {
+    bool CoreSocket::reconnecting() const {
         return reconnecting_;
     }
     
-    TimeDuration CoreSocket::close_timeout() {
+    TimeDuration CoreSocket::close_timeout() const {
         return close_timeout_;
     }
     
-    const SocketOptions & CoreSocket::options() {
+    const SocketOptions & CoreSocket::options() const {
         return options_;
     }
     
@@ -171,7 +171,6 @@ namespace sio0 {
             thiz->close_timeout_ = TimeDuration(atoi(close.c_str()));
             thiz->heartbeat_timeout_ = TimeDuration(atoi(heartbeat.c_str()));
             
-
             thiz->SetHeartbeatTimeout();
             
             auto connect = [thiz](){
@@ -210,7 +209,7 @@ namespace sio0 {
                     thiz->connect_timeout_timer_ = nullptr;
                 }
                 
-                fn();
+                FuncCall(fn);
             }));
         });
     }
@@ -300,7 +299,7 @@ namespace sio0 {
     }
     
     void CoreSocket::OnError(const std::string & error) {
-        OnError(error);
+        OnError(error, "");
     }
     
     void CoreSocket::OnError(const std::string & error, const std::string & advice) {

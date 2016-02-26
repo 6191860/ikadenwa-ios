@@ -43,7 +43,7 @@ namespace sio0 {
         Optional<std::string> advice;
         Any data;
         std::string name;
-        Any args;
+        std::vector<Any> args;
         Optional<std::string> qs;
         int ack_id;
     };

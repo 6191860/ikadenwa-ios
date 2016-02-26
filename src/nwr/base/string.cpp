@@ -54,7 +54,7 @@ namespace nwr {
             if (next_pos == -1) {
                 break;
             }
-            ret.push_back(str.substr(pos, next_pos));
+            ret.push_back(str.substr(pos, next_pos - pos));
             pos = next_pos + static_cast<int>(delim.length());
         }
         ret.push_back(str.substr(pos, str.length()));

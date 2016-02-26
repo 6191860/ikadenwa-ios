@@ -57,12 +57,12 @@ namespace sio0 {
         void Init(const SocketOptions & options);
         ~CoreSocket();
         
-        AnyEmitterPtr emitter();
-        bool connected();
-        bool connecting();
-        bool reconnecting();
-        TimeDuration close_timeout();
-        const SocketOptions & options();
+        AnyEmitterPtr emitter() const;
+        bool connected() const;
+        bool connecting() const;
+        bool reconnecting() const;
+        TimeDuration close_timeout() const;
+        const SocketOptions & options() const;
     private:
         CoreSocket();
     public:

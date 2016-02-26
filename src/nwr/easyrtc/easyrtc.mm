@@ -38,8 +38,8 @@ namespace ert {
         
         auto_init_user_media_ = true;
         
-        connection_options_.timeout = TimeDuration(10.0);
-        connection_options_.force_new = true;
+        connection_options_.connect_timeout = Some(TimeDuration(10.0));
+        connection_options_.force_new_connection = Some(true);
         
         have_audio_ = false;
         have_video_ = false;
@@ -153,8 +153,8 @@ namespace ert {
         return formatted;
     }
     
-    bool Easyrtc::IsSocketConnected(const std::shared_ptr<const sio::Socket> & socket) {
-        return socket && socket->connected();
+    bool Easyrtc::IsSocketConnected(const std::shared_ptr<const sio0::Socket> & socket) {
+        return socket && socket->socket() && socket->socket()->connected();
     }
     
     std::string Easyrtc::GetConstantString(const std::string & key) {
@@ -484,7 +484,7 @@ namespace ert {
             }) }
         });
         
-        websocket_->Emit("easyrtcCmd", {
+        websocket_->JsonEmit("easyrtcCmd", {
             data_to_ship,
             AnyFuncMake([thiz](const Any & ack_msg) {
                 if (ack_msg.GetAt("msgType").AsString() == Some(std::string("error"))) {
@@ -962,7 +962,7 @@ namespace ert {
     }
     
     void Easyrtc::set_socket_url(const std::string & socket_url,
-                                 const Optional<eio::Socket::ConstructorParams> & options)
+                                 const Optional<sio0::SocketOptions> & options)
     {
         FuncCall(debug_printer_, "WebRTC signaling server URL set to " + socket_url);
         
@@ -1117,7 +1117,7 @@ namespace ert {
         closed_channel_ = websocket_;
         if (websocket_connected_) {
             if (!preallocated_socket_io_) {
-                websocket_->Close();
+                websocket_->Disconnect();
             }
             websocket_connected_ = false;
         }
@@ -1156,7 +1156,7 @@ namespace ert {
         
         Timer::Create(TimeDuration(0.25), [thiz](){
             if (thiz->websocket_) {
-                thiz->websocket_->Close();
+                thiz->websocket_->Disconnect();
                 
                 thiz->closed_channel_ = thiz->websocket_;
                 thiz->websocket_ = nullptr;
@@ -1199,7 +1199,7 @@ namespace ert {
             FuncCall(debug_printer_,
                      std::string("sending socket message ") + data_to_ship.ToJsonString());
             
-            websocket_->Emit("easyrtcCmd", {
+            websocket_->JsonEmit("easyrtcCmd", {
                 data_to_ship,
                 AnyFuncMake([thiz, success_callback, error_callback]
                             (const Any & arg_ack_msg) {
@@ -1344,7 +1344,7 @@ namespace ert {
         }
         
         if (websocket_) {
-            websocket_->Emit("easyrtcMsg", { outgoing_message, AnyFuncMake(ack_handler) });
+            websocket_->JsonEmit("easyrtcMsg", { outgoing_message, AnyFuncMake(ack_handler) });
         }
         else {
             FuncCall(debug_printer_,
@@ -2992,7 +2992,7 @@ namespace ert {
             websocket_ = preallocated_socket_io_;
         }
         else if (!websocket_) {
-            websocket_ = sio::Io(server_path_, connection_options_);
+            websocket_ = sio0::Io::Connect(server_path_, connection_options_);
             if (!websocket_) {
                 Fatal("sio::Io failed");
             }
@@ -3366,6 +3366,8 @@ namespace ert {
             auto item = ice_config.GetAt("iceServers").GetAt(i);
             Any fixed_item;
             
+//            printf("ice server [%d] %s\n", i, item.ToJsonString().c_str());
+            
             if (IndexOf(item.GetAt("url").AsString().value(), "turn:") == 0) {
                 if (item.HasKey("username")) {
                     fixed_item = CreateIceServer(item.GetAt("url").AsString().value(),
@@ -3385,8 +3387,8 @@ namespace ert {
             if (fixed_item) {
                 webrtc::PeerConnectionInterface::IceServer entry;
                 entry.uri = fixed_item.GetAt("url").AsString().value();
-                entry.username = fixed_item.GetAt("username").AsString().value();
-                entry.password = fixed_item.GetAt("credential").AsString().value();
+                entry.username = fixed_item.GetAt("username").AsString() || std::string();
+                entry.password = fixed_item.GetAt("credential").AsString() || std::string();
                 pc_config_->servers.push_back(entry);
             }
         }
@@ -3402,7 +3404,7 @@ namespace ert {
         if (!callback) {
             callback = [](bool v){};
         }
-        websocket_->Emit("easyrtcCmd", {
+        websocket_->JsonEmit("easyrtcCmd", {
             data_to_ship,
             AnyFuncMake([thiz, callback](const Any & ack_msg) {
                 if (ack_msg.GetAt("msgType").AsString() == Some(std::string("iceConfig"))) {
@@ -3479,7 +3481,7 @@ namespace ert {
             msg_data.SetAt("credential", Any(credential_.value()));
         }
         
-        websocket_->Emit("easyrtcAuth",
+        websocket_->JsonEmit("easyrtcAuth",
                          {
                              Any(Any::ObjectType
                                {
@@ -3526,7 +3528,7 @@ namespace ert {
         return fields_.connection;
     }
     
-    void Easyrtc::UseThisSocketConnection(const std::shared_ptr<sio::Socket> & already_allocated_socket_io) {
+    void Easyrtc::UseThisSocketConnection(const std::shared_ptr<sio0::Socket> & already_allocated_socket_io) {
         preallocated_socket_io_ = already_allocated_socket_io;
     }
     

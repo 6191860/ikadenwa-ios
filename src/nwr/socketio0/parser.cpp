@@ -63,9 +63,7 @@ namespace sio0 {
                     { "name", Any(packet.name) }
                 });
                 
-                if (packet.args.type() == Any::Type::Array) {
-                    ev.SetAt("args", packet.args);
-                }
+                ev.SetAt("args", Any(packet.args));
                 
                 data = Some(ev.ToJsonString());
                 
@@ -84,9 +82,7 @@ namespace sio0 {
             case PacketType::Ack: {
                 std::string data_str = Format("%d", packet.ack_id);
                 
-                if (packet.args.type() == Any::Type::Array) {
-                    data_str += "+" + packet.args.ToJsonString();
-                }
+                data_str += "+" + Any(packet.args).ToJsonString();
 
                 data = Some(data_str);
                 break;
@@ -148,12 +144,8 @@ namespace sio0 {
             case PacketType::Event: {
                 Any opts = Any::FromJsonString(data);
                 packet.name = opts.GetAt("name").AsString().value();
-                packet.args = opts.GetAt("args");
+                packet.args = opts.GetAt("args").AsArray() || std::vector<Any>();
                 
-                if (packet.args.type() != Any::Type::Array) {
-                    packet.args = Any(Any::ArrayType {});
-                }
-
                 break;
             }
             case PacketType::Json: {
@@ -172,10 +164,14 @@ namespace sio0 {
                 std::regex_match(data, pieces, re);
                 if (pieces.size() != 0) {
                     packet.ack_id = atoi(pieces[1].str().c_str());
-                    packet.args = Any(Any::ArrayType{});
+                    packet.args = std::vector<Any>();
                     
                     if (pieces[3].length() != 0) {
-                        packet.args = Any::FromJsonString(pieces[3].str());
+                        std::string array_json = pieces[3].str();
+                        auto array_opt = Any::FromJsonString(array_json).AsArray();
+                        if (array_opt) {
+                            packet.args = *array_opt;
+                        }
                     }
                 }
                 break;

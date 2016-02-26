@@ -23,8 +23,12 @@ namespace sio0 {
         acks_.clear();
     }
     
-    AnyEmitterPtr Socket::emitter() {
+    AnyEmitterPtr Socket::emitter() const {
         return emitter_;
+    }
+    
+    std::shared_ptr<CoreSocket> Socket::socket() const {
+        return socket_;
     }
     
     std::shared_ptr<Socket> Socket::Of(const std::string & name) {
@@ -38,38 +42,65 @@ namespace sio0 {
         flags_.clear();
     }
     
-    void Socket::Send(const Any & data, const std::function<void(const Any &)> & fn) {
+    void Socket::Send(const Any & data,
+                      const AnyFuncPtr & ack)
+    {
         Packet packet;
         packet.type = flags_["json"] ? PacketType::Json : PacketType::Message;
         packet.data = data;
         
-        if (fn) {
+        if (ack) {
             ack_packets_ += 1;
             packet.id = Some(ack_packets_);
             packet.ack = Some(std::string());
-            acks_[*packet.id] = fn;
+            acks_[*packet.id] = ack;
         }
         
         SendPacket(packet);
     }
     
-    void Socket::Emit(const std::string & name,
-                      const Any & args,
-                      const std::function<void(const Any &)> & ack)
+    void Socket::JsonSend(const Any & data,
+                          const AnyFuncPtr & ack)
     {
+        flags_["json"] = true;
+        Send(data, ack);
+    }
+    
+    void Socket::Emit(const std::string & name,
+                      const std::vector<Any> & arg_args)
+    {
+        auto args = arg_args;
+        
         Packet packet;
         packet.type = PacketType::Event;
         packet.name = name;
         
-        if (ack) {
+        Any last_arg = nullptr;
+        if (args.size() > 0) {
+            last_arg = args.back();
+        }
+        
+        auto ack_opt = last_arg.AsFunction();
+        if (ack_opt) {
+            
             ack_packets_ += 1;
             packet.id = Some(ack_packets_);
             packet.ack = Some(std::string("data"));
-            acks_[*packet.id] = ack;
+            acks_[*packet.id] = *ack_opt;
+            
+            args.erase(args.end() - 1);
         }
+
         packet.args = args;
         
         SendPacket(packet);
+    }
+    
+    void Socket::JsonEmit(const std::string & name,
+                          const std::vector<Any> & args)
+    {
+        flags_["json"] = true;
+        Emit(name, args);
     }
     
     void Socket::Disconnect() {
@@ -86,7 +117,7 @@ namespace sio0 {
     void Socket::OnPacket(const Packet & packet) {
         auto thiz = shared_from_this();
         
-        auto ack = [thiz, packet](const Any & args){
+        auto ack = [thiz, packet](const std::vector<Any> & args){
             Packet pkt;
             pkt.type = PacketType::Ack;
             pkt.args = args;
@@ -127,7 +158,7 @@ namespace sio0 {
                 break;
             }
             case PacketType::Event: {
-                std::vector<Any> params = packet.args.AsArray().value();
+                std::vector<Any> params = packet.args;
                 
                 if (packet.ack == Some(std::string("data"))) {
                     params.push_back(AnyFuncMake(ack));
@@ -138,7 +169,10 @@ namespace sio0 {
             }
             case PacketType::Ack: {
                 if (HasKey(acks_, packet.ack_id)) {
-                    acks_[packet.ack_id](packet.args);
+                    AnyFuncPtr ack = acks_[packet.ack_id];
+                    if (ack) {
+                        ack->Call(packet.args);
+                    }
                     acks_.erase(packet.ack_id);
                 }
                 break;

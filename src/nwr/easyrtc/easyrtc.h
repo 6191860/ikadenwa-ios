@@ -29,7 +29,8 @@
 #include <nwr/base/any_emitter.h>
 #include <nwr/base/objc_pointer.h>
 #include <nwr/base/lib_webrtc.h>
-#include <nwr/socketio/io.h>
+#include <nwr/engineio/packet.h>
+#include <nwr/socketio0/io.h>
 #include <nwr/jsrtc/media_track_constraints.h>
 #include <nwr/jsrtc/media_stream_constraints.h>
 #include <nwr/jsrtc/media_stream.h>
@@ -89,7 +90,7 @@ namespace ert {
     public:
         std::string Format(const std::string & format, const std::vector<std::string> & args);
     private:
-        bool IsSocketConnected(const std::shared_ptr<const sio::Socket> & socket);
+        bool IsSocketConnected(const std::shared_ptr<const sio0::Socket> & socket);
         bool have_audio_;
         bool have_video_;
         std::string GetConstantString(const std::string & key);
@@ -157,7 +158,9 @@ namespace ert {
         MediaStreamConstraints GetUserMediaConstraints();
         std::string application_name_;
         void set_application_name(const std::string & application_name);
+    public:
         void EnableDebug(bool enable);
+    private:
         Optional<std::string> presence_show_;
         Optional<std::string> presence_status_;
         bool SupportsGetUserMedia();
@@ -284,9 +287,9 @@ namespace ert {
         void set_server_listener(const std::function<void(const std::string &,
                                                           const Any &,
                                                           const Any &)> & listener);
-        eio::Socket::ConstructorParams connection_options_;
+        sio0::SocketOptions connection_options_;
         void set_socket_url(const std::string & socket_url,
-                            const Optional<eio::Socket::ConstructorParams> & options);
+                            const Optional<sio0::SocketOptions> & options);
         bool set_user_name(const std::string & username);
         std::vector<std::tuple<std::string, std::string>> UsernameToIds(const std::string & username,
                                                                         const Optional<std::string> & room);
@@ -298,14 +301,14 @@ namespace ert {
         std::function<void()> disconnect_listener_;
         void set_disconnect_listener(const std::function<void()> & disconnect_listener);
         std::string IdToName(const std::string & easyrtcid);
-        std::shared_ptr<sio::Socket> websocket_;
+        std::shared_ptr<sio0::Socket> websocket_;
         std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> pc_config_;
         std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> pc_config_to_use_;
         bool use_fresh_ice_each_peer_;
         void set_use_fresh_ice_each_peer_connection(bool value);
         std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> server_ice();
         //  setIceUsedInCalls
-        std::shared_ptr<sio::Socket> closed_channel_;
+        std::shared_ptr<sio0::Socket> closed_channel_;
         bool HaveTracks(const Optional<std::string> & easyrtcid,
                         bool check_audio,
                         const Optional<std::string> & stream_name);
@@ -457,8 +460,8 @@ namespace ert {
         std::map<std::string, Any> GetRoomFields(const std::string & room_name);
         std::map<std::string, Any> GetApplicationFields();
         std::map<std::string, Any> GetConnectionFields();
-        std::shared_ptr<sio::Socket> preallocated_socket_io_;
-        void UseThisSocketConnection(const std::shared_ptr<sio::Socket> & already_allocated_socket_io);
+        std::shared_ptr<sio0::Socket> preallocated_socket_io_;
+        void UseThisSocketConnection(const std::shared_ptr<sio0::Socket> & already_allocated_socket_io);
     public:
         void Connect(const std::string & application_name,
                      const std::function<void(const std::string &)> & success_callback,

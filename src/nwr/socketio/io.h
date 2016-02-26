@@ -15,6 +15,7 @@
 #include <nwr/engineio/socket.h>
 #include "socket.h"
 
+#warning todo open issue : manager leakage
 namespace nwr {
 namespace sio {
     class Socket;
@@ -28,6 +29,6 @@ namespace sio {
     
     std::shared_ptr<Socket> Io(const std::string & uri, const eio::Socket::ConstructorParams & params);
     
-    
+    extern std::map<std::string, std::shared_ptr<Manager>> cache_;
 }
 }

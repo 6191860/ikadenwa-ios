@@ -52,7 +52,7 @@ namespace sio0 {
         
         // if path is different from '' or /
         std::string path = url_parts.path;
-        if (path == "") { path = "/"; }
+        path = path.length() > 1 ? path : "";
 
         return socket->Of(path);
     }

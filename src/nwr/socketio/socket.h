@@ -25,7 +25,6 @@
 
 namespace nwr {
 namespace sio {
-    
     class OnToken;
     class Packet;
     class Manager;

@@ -81,6 +81,27 @@ namespace nwr {
         std::function<Any(const Any &, const Any &)> func_;
     };
     
+    template <> class AnyFuncImpl <void(const std::vector<Any> &)> : public AnyFunc {
+    public:
+        AnyFuncImpl(const std::function<void(const std::vector<Any> &)> & func): func_(func) {}
+        Any Call(const std::vector<Any> & args) const override {
+            func_(args);
+            return nullptr;
+        }
+    private:
+        std::function<void(const std::vector<Any> &)> func_;
+    };
+    
+    template <> class AnyFuncImpl <Any(const std::vector<Any> &)> : public AnyFunc {
+    public:
+        AnyFuncImpl(const std::function<Any(const std::vector<Any> &)> & func): func_(func) {}
+        Any Call(const std::vector<Any> & args) const override {
+            return func_(args);
+        }
+    private:
+        std::function<Any(const std::vector<Any> &)> func_;
+    };
+    
     template <typename F>
     AnyFuncPtr AnyFuncMake(const F & func) {
         auto impl = new AnyFuncImpl<typename functor_func_ptr_type<decltype(&F::operator())>::type>(func);

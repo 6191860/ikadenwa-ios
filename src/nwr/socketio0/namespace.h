@@ -14,6 +14,7 @@
 #include <nwr/base/map.h>
 #include <nwr/base/any.h>
 #include <nwr/base/any_emitter.h>
+#include <nwr/base/any_func.h>
 
 #include "parser.h"
 #include "socket.h"
@@ -25,14 +26,19 @@ namespace sio0 {
         Socket(const std::shared_ptr<CoreSocket> & socket,
                const std::string & name);
         
-        AnyEmitterPtr emitter();
+        AnyEmitterPtr emitter() const;
+        std::shared_ptr<CoreSocket> socket() const;
         
         std::shared_ptr<Socket> Of(const std::string & name);
         void SendPacket(const Packet & packet);
-        void Send(const Any & data, const std::function<void(const Any &)> & fn);
+        void Send(const Any & data,
+                  const AnyFuncPtr & ack = nullptr);
+        void JsonSend(const Any & data,
+                      const AnyFuncPtr & ack = nullptr);
         void Emit(const std::string & name,
-                  const Any & args,
-                  const std::function<void(const Any &)> & ack);
+                  const std::vector<Any> & args);
+        void JsonEmit(const std::string & name,
+                      const std::vector<Any> & args);
         void Disconnect();
         void OnPacket(const Packet & packet);
 
@@ -41,7 +47,7 @@ namespace sio0 {
         std::string name_;
         std::map<std::string, bool> flags_;
         int ack_packets_;
-        std::map<int, std::function<void(const Any &)>> acks_;
+        std::map<int, AnyFuncPtr> acks_;
         AnyEmitterPtr emitter_;
     };
 }
