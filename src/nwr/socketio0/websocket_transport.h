@@ -19,6 +19,7 @@ namespace sio0 {
     public:
         WebsocketTransport(const std::shared_ptr<CoreSocket> & socket,
                            const std::string & sessid);
+        virtual ~WebsocketTransport();
         
         std::string name() override;
         void Open() override;

@@ -32,6 +32,10 @@ namespace jsrtc {
                                                              nullptr);
     }
     
+    RtcPeerConnectionFactory::~RtcPeerConnectionFactory() {
+        Close();
+    }
+    
     std::shared_ptr<RtcPeerConnection> RtcPeerConnectionFactory::
     CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
                          const MediaTrackConstraints * constraints)
@@ -112,5 +116,12 @@ namespace jsrtc {
         });
     }
     
+    void RtcPeerConnectionFactory::OnClose() {
+        inner_factory_ = nullptr;
+        worker_thread_->Stop();
+        worker_thread_ = nullptr;
+        signaling_thread_->Stop();
+        signaling_thread_ = nullptr;
+    }
 }
 }

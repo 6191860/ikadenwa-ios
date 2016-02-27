@@ -17,6 +17,8 @@ namespace ert {
         AggregatingTimer();
         AggregatingTimer(int counter);
         
+        void Clear();
+        
         int counter;
         std::shared_ptr<Timer> timer;
         

@@ -9,6 +9,11 @@
 #include "ios_task_queue.h"
 
 namespace nwr {
+    IosTaskQueue::~IosTaskQueue() {
+        std::lock_guard<std::mutex> lk(cache_mutex_);
+        cache_.erase(inner_queue());
+    }
+    
     IosTaskQueue::IosTaskQueue(NSOperationQueue * operation_queue):
     operation_queue_(operation_queue){
     }
@@ -19,6 +24,24 @@ namespace nwr {
         }];
     }
     std::shared_ptr<IosTaskQueue> IosTaskQueue::current_queue() {
-        return std::make_shared<IosTaskQueue>([NSOperationQueue currentQueue]);
+        std::lock_guard<std::mutex> lk(cache_mutex_);
+        
+        NSOperationQueue * inner = [NSOperationQueue currentQueue];
+
+        std::shared_ptr<IosTaskQueue> thiz;
+        
+        if (HasKey(cache_, inner)) {
+            thiz = cache_[inner].lock();
+            if (thiz) {
+                return thiz;
+            }
+        }
+        
+        thiz = std::make_shared<IosTaskQueue>(inner);
+        cache_[inner] = thiz;
+        return thiz;
     }
+    
+    std::map<NSOperationQueue*, std::weak_ptr<IosTaskQueue>> IosTaskQueue::cache_;
+    std::mutex IosTaskQueue::cache_mutex_;
 }

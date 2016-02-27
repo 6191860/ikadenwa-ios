@@ -57,6 +57,10 @@
 		D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66436F11C5014BF0059A94B /* timer_pool.cpp */; };
 		D6652B4D1C7F43D500F85895 /* websocket_transport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6652B4B1C7F43D500F85895 /* websocket_transport.cpp */; };
 		D6652B501C7F550D00F85895 /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6652B4E1C7F550D00F85895 /* util.cpp */; };
+		D6652B541C817FA200F85895 /* DebugMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6652B521C817FA200F85895 /* DebugMenuViewController.swift */; };
+		D6652B551C817FA200F85895 /* DebugMenuViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6652B531C817FA200F85895 /* DebugMenuViewController.xib */; };
+		D6652B581C81848C00F85895 /* BaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D6652B571C81848C00F85895 /* BaseViewController.m */; };
+		D6652B5B1C819A1400F85895 /* closable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6652B591C819A1400F85895 /* closable.cpp */; };
 		D67CAE411C6A530E0000A3C3 /* any.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67CAE3F1C6A530E0000A3C3 /* any.cpp */; };
 		D6A690531C42361700952A7F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A690521C42361700952A7F /* ViewController.swift */; };
 		D6A690561C42361700952A7F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6A690541C42361700952A7F /* Main.storyboard */; };
@@ -222,6 +226,12 @@
 		D6652B4C1C7F43D500F85895 /* websocket_transport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = websocket_transport.h; path = nwr/socketio0/websocket_transport.h; sourceTree = "<group>"; };
 		D6652B4E1C7F550D00F85895 /* util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = nwr/socketio0/util.cpp; sourceTree = "<group>"; };
 		D6652B4F1C7F550D00F85895 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = nwr/socketio0/util.h; sourceTree = "<group>"; };
+		D6652B521C817FA200F85895 /* DebugMenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DebugMenuViewController.swift; path = app/DebugMenuViewController.swift; sourceTree = "<group>"; };
+		D6652B531C817FA200F85895 /* DebugMenuViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DebugMenuViewController.xib; path = app/DebugMenuViewController.xib; sourceTree = "<group>"; };
+		D6652B561C81848C00F85895 /* BaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseViewController.h; path = app/BaseViewController.h; sourceTree = "<group>"; };
+		D6652B571C81848C00F85895 /* BaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BaseViewController.m; path = app/BaseViewController.m; sourceTree = "<group>"; };
+		D6652B591C819A1400F85895 /* closable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = closable.cpp; path = nwr/jsrtc/closable.cpp; sourceTree = "<group>"; };
+		D6652B5A1C819A1400F85895 /* closable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = closable.h; path = nwr/jsrtc/closable.h; sourceTree = "<group>"; };
 		D67CAE3F1C6A530E0000A3C3 /* any.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any.cpp; sourceTree = "<group>"; };
 		D67CAE401C6A530E0000A3C3 /* any.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any.h; sourceTree = "<group>"; };
 		D6A6904D1C42361700952A7F /* Ikadenwa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikadenwa.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -315,6 +325,10 @@
 			children = (
 				D664369C1C4A544C0059A94B /* AppDelegate.h */,
 				D664369B1C4A544C0059A94B /* AppDelegate.mm */,
+				D6652B561C81848C00F85895 /* BaseViewController.h */,
+				D6652B571C81848C00F85895 /* BaseViewController.m */,
+				D6652B521C817FA200F85895 /* DebugMenuViewController.swift */,
+				D6652B531C817FA200F85895 /* DebugMenuViewController.xib */,
 				D65237B41C7DE04000D399F6 /* EasyrtcDemos.h */,
 				D65237B51C7DE07900D399F6 /* EasyrtcDemos.mm */,
 				D65237B01C7DD68B00D399F6 /* EasyrtcDemo1ViewController.h */,
@@ -522,6 +536,8 @@
 		D6B9DE621C720DC200EBF183 /* jsrtc */ = {
 			isa = PBXGroup;
 			children = (
+				D6652B5A1C819A1400F85895 /* closable.h */,
+				D6652B591C819A1400F85895 /* closable.cpp */,
 				D65236DB1C7500FC00D399F6 /* post_target.h */,
 				D65236F91C7A096B00D399F6 /* media_track_constraints.h */,
 				D65236F81C7A096B00D399F6 /* media_track_constraints.cpp */,
@@ -662,6 +678,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D6652B551C817FA200F85895 /* DebugMenuViewController.xib in Resources */,
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
 				D6A690581C42361700952A7F /* Assets.xcassets in Resources */,
 				D6A690561C42361700952A7F /* Main.storyboard in Resources */,
@@ -694,6 +711,7 @@
 				D6155E901C660EBD00A8B6CA /* parser.cpp in Sources */,
 				D65236E41C760E3900D399F6 /* aggregating_timer.cpp in Sources */,
 				D66436EF1C4FEF330059A94B /* time.cpp in Sources */,
+				D6652B5B1C819A1400F85895 /* closable.cpp in Sources */,
 				D65236D61C74A1C600D399F6 /* rtc_session_description.cpp in Sources */,
 				D6B9DE5D1C6F2A0B00EBF183 /* receive_peer.cpp in Sources */,
 				D66436AE1C4A805F0059A94B /* url.cpp in Sources */,
@@ -701,6 +719,7 @@
 				D6A690651C42366800952A7F /* AAA.m in Sources */,
 				D664369D1C4A544C0059A94B /* AppDelegate.mm in Sources */,
 				D65236F51C790E1B00D399F6 /* fields.cpp in Sources */,
+				D6652B541C817FA200F85895 /* DebugMenuViewController.swift in Sources */,
 				D6B9DE711C72C8D200EBF183 /* media_stream_track.cpp in Sources */,
 				D6B9DE341C6C8E4700EBF183 /* nwr_test_set.cpp in Sources */,
 				D6B9DE371C6C8F4400EBF183 /* io.cpp in Sources */,
@@ -716,6 +735,7 @@
 				D60852A41C50B95100CEE554 /* path.cpp in Sources */,
 				D6F78A561C55090600B21614 /* socket.cpp in Sources */,
 				D6155E961C6615B100A8B6CA /* packet.cpp in Sources */,
+				D6652B581C81848C00F85895 /* BaseViewController.m in Sources */,
 				D6B9DE681C7220A300EBF183 /* rtc_peer_connection.cpp in Sources */,
 				D66436F31C5014BF0059A94B /* timer_pool.cpp in Sources */,
 				D6B9DE3E1C6CDB3200EBF183 /* easyrtc.mm in Sources */,

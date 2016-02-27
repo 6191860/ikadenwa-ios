@@ -29,6 +29,8 @@ namespace nwr {
         class RtcPeerConnection : public PostTarget<RtcPeerConnection> {
             friend RtcPeerConnectionFactory;
         public:
+            virtual ~RtcPeerConnection();
+            
             void CreateOffer(const MediaTrackConstraints * options,
                              const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                              const std::function<void(const std::string &)> & failure);
@@ -57,7 +59,7 @@ namespace nwr {
 //            static readonly attribute FrozenArray<RTCIceServer> defaultIceServers;
 //            RTCConfiguration               getConfiguration ();
 //            void                           setConfiguration (RTCConfiguration configuration);            
-            void Close();
+            void OnClose() override;
             void set_on_negotiation_needed(const std::function<void()> & value);
             void set_on_ice_candidate(const std::function<void(const std::shared_ptr<RtcIceCandidate> &)> & value);
             void set_on_signaling_state_change(const std::function<void(webrtc::PeerConnectionInterface::SignalingState)> & value);
@@ -141,7 +143,6 @@ namespace nwr {
             
             std::shared_ptr<MediaStream> FindRemoteStreamByInnerStream(webrtc::MediaStreamInterface * inner_stream);
             
-            bool closed_;
             rtc::scoped_refptr<webrtc::PeerConnectionInterface> inner_connection_;
             std::shared_ptr<InnerObserver> inner_observer_;
             

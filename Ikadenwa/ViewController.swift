@@ -17,7 +17,8 @@ class ViewController: UIViewController {
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-        EasyrtcDemo1Open(self);
+        let vc = DebugMenuViewController(nibName: "DebugMenuViewController", bundle: nil)
+        self.presentViewController(vc, animated: true, completion: nil)
     }
 
 }

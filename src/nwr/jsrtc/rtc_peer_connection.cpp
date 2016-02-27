@@ -17,6 +17,10 @@
 namespace nwr {
 namespace jsrtc {
     
+    RtcPeerConnection::~RtcPeerConnection() {
+        Close();
+    }
+    
     void RtcPeerConnection::
     CreateOffer(const MediaTrackConstraints * options,
                 const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
@@ -143,9 +147,7 @@ namespace jsrtc {
         return inner_connection_->ice_connection_state();
     }
     
-    void RtcPeerConnection::Close() {
-        if (closed_) { return; }
-        
+    void RtcPeerConnection::OnClose() {
         if (inner_connection_) {
             inner_connection_->Close();
             inner_connection_ = nullptr;
@@ -167,9 +169,6 @@ namespace jsrtc {
         remote_streams_.clear();
         on_add_stream_ = nullptr;
         on_remove_stream_ = nullptr;
-        
-        ClosePostTarget();
-        closed_ = true;
     }
     
     void RtcPeerConnection::
@@ -379,8 +378,7 @@ namespace jsrtc {
     }
     
     
-    RtcPeerConnection::RtcPeerConnection():
-    closed_(false)
+    RtcPeerConnection::RtcPeerConnection()
     {}
     
     void RtcPeerConnection::Init(webrtc::PeerConnectionInterface & inner_connection,

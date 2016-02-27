@@ -7,3 +7,14 @@
 //
 
 #include "receive_peer.h"
+
+namespace nwr {
+namespace ert {
+    
+    void ReceivePeer::Clear() {
+        cb = nullptr;
+        msg_types.clear();
+    }
+    
+}
+}

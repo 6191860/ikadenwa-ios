@@ -154,6 +154,7 @@ namespace sio0 {
     
     void CoreSocket::Connect(const std::function<void()> & fn) {
         auto thiz = shared_from_this();
+        std::weak_ptr<CoreSocket> whiz = thiz;
         
         if (connecting_) {
             return;
@@ -161,7 +162,7 @@ namespace sio0 {
         
         connecting_ = true;
 
-        Handshake([thiz, fn](const std::vector<std::string> & strs) {
+        Handshake([thiz, whiz, fn](const std::vector<std::string> & strs) {
             std::string sid = strs[0];
             std::string heartbeat = strs[1];
             std::string close = strs[2];
@@ -173,13 +174,14 @@ namespace sio0 {
             
             thiz->SetHeartbeatTimeout();
             
-            auto connect = [thiz](){
+            auto connect = [thiz, whiz](){
                 if (thiz->transport_) {
                     thiz->transport_->ClearTimeouts();
                 }
                 thiz->transport_ = thiz->GetTransport();
                 if (!thiz->transport_) {
                     thiz->Publish("connect_failed", {});
+                    thiz->OnError("connect failed (no transport)"); // add to original
                     return;
                 }
                 
@@ -195,7 +197,10 @@ namespace sio0 {
                                       if (!thiz->connected_) {
                                           thiz->connecting_ = false;
                                       }
-                                      printf("connect timeout\n");
+                                      
+                                      // modified from original
+                                      thiz->Publish("connect_failed", {});
+                                      thiz->OnError("connect timeout");
                                   });
                 }
 
@@ -203,7 +208,10 @@ namespace sio0 {
             
             connect();
 
-            thiz->emitter_->Once("connect", AnyEventListenerMake([thiz, fn](){
+            thiz->emitter_->Once("connect", AnyEventListenerMake([whiz, fn](){
+                auto thiz = whiz.lock();
+                if (thiz == nullptr) { return; }
+                
                 if (thiz->connect_timeout_timer_) {
                     thiz->connect_timeout_timer_->Cancel();
                     thiz->connect_timeout_timer_ = nullptr;

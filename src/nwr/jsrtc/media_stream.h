@@ -27,6 +27,8 @@ namespace jsrtc {
     class MediaStream : public PostTarget<MediaStream> {
     public:
         MediaStream(webrtc::MediaStreamInterface & inner_stream);
+        virtual ~MediaStream();
+        
         webrtc::MediaStreamInterface & inner_stream();
 
         std::string id();
@@ -44,7 +46,7 @@ namespace jsrtc {
 //        attribute EventHandler onaddtrack;
 //        attribute EventHandler onremovetrack;
         
-        void Close();
+        void OnClose() override;
     private:
         void OnTracksUpdate();
 
@@ -58,9 +60,7 @@ namespace jsrtc {
         
         void set_active(bool value);
         bool ComputeActive();
-        
-        bool closed_;
-        
+
         rtc::scoped_refptr<webrtc::MediaStreamInterface> inner_stream_;
         std::string id_;
         std::vector<std::shared_ptr<MediaStreamTrack>> audio_tracks_;

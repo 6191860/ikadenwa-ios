@@ -50,14 +50,18 @@ namespace nwr {
         }
         
         void Once(const EventListener<Event> & listener) {
-            auto on_handler_ptr = std::make_shared<EventListener<Event>>();
+            std::shared_ptr<std::weak_ptr<typename EventListener<Event>::element_type>>
+            weak_on_handler_ptr(new std::weak_ptr<typename EventListener<Event>::element_type>());
             
-            auto on_handler = EventListenerMake<Event>([this, on_handler_ptr, listener](const Event & event){
-                this->Off(*on_handler_ptr);
+            auto on_handler = EventListenerMake<Event>([this, weak_on_handler_ptr, listener](const Event & event){
+                auto on_handler = (*weak_on_handler_ptr).lock();
+                if (!on_handler) { return; }
+                
+                this->Off(on_handler);
                 (*listener)(event);
             });
             
-            *on_handler_ptr = on_handler;
+            *weak_on_handler_ptr = on_handler;
                         
             this->On(on_handler);
         }

@@ -25,6 +25,7 @@ namespace sio0 {
     public:
         Socket(const std::shared_ptr<CoreSocket> & socket,
                const std::string & name);
+        virtual ~Socket();
         
         AnyEmitterPtr emitter() const;
         std::shared_ptr<CoreSocket> socket() const;

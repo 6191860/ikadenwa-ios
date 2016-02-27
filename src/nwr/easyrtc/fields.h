@@ -15,6 +15,7 @@
 namespace nwr {
 namespace ert {
     struct Fields {
+        void Clear();
         std::map<std::string, std::map<std::string, Any>> rooms;
         std::map<std::string, Any> application;
         std::map<std::string, Any> connection;

@@ -25,7 +25,7 @@ namespace jsrtc {
     }
     
     MediaStreamTrack::~MediaStreamTrack() {
-        inner_track_->UnregisterObserver(inner_observer_.get());
+        Close();
     }
     
     webrtc::MediaStreamTrackInterface & MediaStreamTrack::inner_track() {
@@ -139,9 +139,7 @@ namespace jsrtc {
         inner_track->RemoveRenderer(&renderer);
     }
 
-    void MediaStreamTrack::Close() {
-        if (closed_) { return; }
-        
+    void MediaStreamTrack::OnClose() {
         Stop();
         inner_track_ = nullptr;
         inner_observer_ = nullptr;
@@ -152,9 +150,7 @@ namespace jsrtc {
         on_ended_ = nullptr;
         change_emitter_->RemoveAllListeners();
         
-        ClosePostTarget();
-        
-        closed_ = true;
+        inner_track_->UnregisterObserver(inner_observer_.get());
     }
     
     MediaStreamTrack::ChangeObserver::

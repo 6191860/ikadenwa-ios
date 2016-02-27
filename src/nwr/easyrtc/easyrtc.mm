@@ -93,6 +93,78 @@ namespace ert {
     void Easyrtc::Close() {
         if (closed_) { return; }
         
+        sdp_local_filter_ = nullptr;
+        sdp_remote_filter_ = nullptr;
+        on_peer_closed_ = nullptr;
+        on_peer_failing_ = nullptr;
+        on_peer_recovered_ = nullptr;
+        ice_candidate_filter_ = nullptr;
+        event_listeners_.clear();
+        ack_message_ = nullptr;
+        session_fields_.clear();
+        debug_printer_ = nullptr;
+        old_config_ = nullptr;
+        offers_pending_.clear();
+        room_join_.clear();
+        desired_video_properties_ = nullptr;
+        last_logged_in_list_.clear();
+        receive_peer_.Clear();
+        for (const auto & peer : Keys(peer_conns_)) {
+            DeletePeerConn(peer);
+        }
+        acceptance_pending_.clear();
+        room_api_fields_.clear();
+        if (room_api_field_timer_) {
+            room_api_field_timer_->Cancel();
+            room_api_field_timer_ = nullptr;
+        }
+        room_entry_listener_ = nullptr;
+        room_occupant_listener_ = nullptr;
+        on_data_channel_open_ = nullptr;
+        on_data_channel_close_ = nullptr;
+        named_local_media_streams_.clear();
+        room_data_.clear();
+        accept_check_ = nullptr;
+        stream_acceptor_ = nullptr;
+        on_error_ = nullptr;
+        call_canceled_ = nullptr;
+        on_stream_closed_ = nullptr;
+        receive_server_cb_ = nullptr;
+        disconnect_listener_ = nullptr;
+        if (websocket_) {
+#warning todo : if this is preallocated, I would not close it.
+            websocket_->Disconnect();
+            websocket_ = nullptr;
+        }
+        pc_config_ = nullptr;
+        pc_config_to_use_ = nullptr;
+        if (closed_channel_) {
+            closed_channel_->Disconnect();
+            closed_channel_ = nullptr;
+        }
+        fields_.Clear();
+        turn_servers_.clear();
+        queued_messages_.clear();
+        for (const auto & key : Keys(aggregating_timers_)) {
+            aggregating_timers_[key].Clear();
+        }
+        aggregating_timers_.clear();
+        websocket_listeners_.clear();
+        update_configuration_info_ = nullptr;
+        if (preallocated_socket_io_) {
+            preallocated_socket_io_->Disconnect();
+            preallocated_socket_io_ = nullptr;
+        }
+        video_ids_.clear();
+        video_id_to_caller_map_.clear();
+        on_call_ = nullptr;
+        on_hangup_ = nullptr;
+        refresh_pane_ = None();
+        got_media_callback_ = nullptr;
+        got_connection_callback_ = nullptr;
+        work_view_ = nullptr;
+        
+        peer_connection_factory_->Close();
         peer_connection_factory_ = nullptr;
         
         closed_ = true;
@@ -2746,8 +2818,6 @@ namespace ert {
                                const std::function<void(const Any &)> & ack_acceptor_fn)
     {
         auto thiz = shared_from_this();
-        
-        printf("%s\n", msg.ToJsonString().c_str());
         
         Optional<std::string> caller = msg.GetAt("senderEasyrtcid").AsString();
         std::string msg_type = msg.GetAt("msgType").AsString().value();

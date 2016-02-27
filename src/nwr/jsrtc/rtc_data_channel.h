@@ -32,6 +32,7 @@ namespace jsrtc {
     class RtcDataChannel : public PostTarget<RtcDataChannel> {
     public:
         RtcDataChannel(webrtc::DataChannelInterface & inner_channel);
+        virtual ~RtcDataChannel();
         
         webrtc::DataChannelInterface & inner_channel();
         
@@ -51,12 +52,13 @@ namespace jsrtc {
         //        attribute EventHandler        onerror;
         void set_on_close(const std::function<void()> & value);
 
-        void Close();
+        
         void set_on_message(const std::function<void(const eio::PacketData &)> & value);
 
 //        attribute DOMString           binaryType;
         void Send(const eio::PacketData & data);
-        
+    protected:
+        void OnClose() override;
     private:
         struct InnerObserver : public webrtc::DataChannelObserver {
             InnerObserver(RtcDataChannel & owner);

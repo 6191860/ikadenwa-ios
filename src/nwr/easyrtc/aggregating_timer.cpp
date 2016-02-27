@@ -17,5 +17,13 @@ namespace ert {
     AggregatingTimer::AggregatingTimer(int counter):
     counter(counter)
     {}
+    
+    void AggregatingTimer::Clear() {
+        if (timer) {
+            timer->Cancel();
+            timer = nullptr;
+        }
+        counter = 0;
+    }
 }
 }

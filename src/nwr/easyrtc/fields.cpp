@@ -7,3 +7,13 @@
 //
 
 #include "fields.h"
+
+namespace nwr {
+namespace ert {
+    void Fields::Clear() {
+        rooms.clear();
+        application.clear();
+        connection.clear();
+    }
+}
+}

@@ -17,39 +17,38 @@ using namespace nwr;
     
     _destButtons = [NSMutableArray array];
     
-    nwr_test_set_ = std::make_shared<app::NwrTestSet>();
-    nwr_test_set_->TestSio0();
+//    nwr_test_set_ = std::make_shared<app::NwrTestSet>();
+//    nwr_test_set_->TestSio0();
 }
 
-- (void)viewDidAppear:(BOOL)animated {
-    [super viewDidAppear:animated];
-    
+- (void)onStarted {
+    NSLog(@"onStarted");
     _easyrtc = ert::Easyrtc::Create("http://192.168.1.6:8080/",
                                     ObjcPointerMake(self.view));
     _easyrtc->EnableDebug(true);
     [self connect];
 }
 
-- (void)viewWillDisappear:(BOOL)animated {
+- (void)onStopped {
     
+    _easyrtc->Close();
+    _easyrtc = nullptr;
     
-    
-    [super viewWillDisappear:animated];
+    NSLog(@"onStopped");
 }
-
 
 - (void)addToConversation:(const std::string &)who
 msgType:(const std::string &)msgType
 content:(const nwr::Any &)content
 {
     NSMutableString * text = [NSMutableString stringWithString:_receiveTextView.text];
-    if (text.length != 0) {
-        [text appendString:@"\n"];
-    }
+//    if (text.length != 0) {
+//        [text appendString:@"\n"];
+//    }
     
     std::string content_str = content.AsString() || std::string();
 
-    [text appendFormat:@"%@: %@", ToNSString(who), ToNSString(content_str)];
+    [text appendFormat:@"%@: %@\n", ToNSString(who), ToNSString(content_str)];
     _receiveTextView.text = text;
 }
 
@@ -91,9 +90,7 @@ isPrimary:(const Any &)isPrimary
     occupants_.clear();
     for (const auto & easyrtcid : Keys(occupants)) {
         auto occupant = occupants.at(easyrtcid);
-        occupants_.push_back(occupant);
-        printf("%s\n", occupant.ToJsonString().c_str());
-        
+        occupants_.push_back(occupant);        
         
         UIButton * button = [UIButton buttonWithType:UIButtonTypeSystem];
         [self.view addSubview:button];
@@ -161,6 +158,10 @@ text:(const std::string &)text
                          nullptr);
     [self addToConversation:"Me" msgType:"message" content:Any(text)];
     _sendTextView.text = @"";
+}
+
+- (IBAction)onCloseButton {
+    [self dismissViewControllerAnimated:true completion:nil];
 }
 
 @end

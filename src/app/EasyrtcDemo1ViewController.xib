@@ -30,24 +30,35 @@
                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="message" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="OE5-ZQ-qmf">
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="OE5-ZQ-qmf">
                     <rect key="frame" x="8" y="87" width="304" height="60"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="60" id="yZG-lc-Jt5"/>
                     </constraints>
+                    <string key="text">message
+</string>
                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                 </textView>
-                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="received message" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="qZU-RB-8ze">
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="qZU-RB-8ze">
                     <rect key="frame" x="8" y="290" width="304" height="270"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
                         <constraint firstAttribute="height" constant="270" id="Cf3-Q0-nII"/>
                     </constraints>
+                    <string key="text">received message
+</string>
                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
                     <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                 </textView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Pk6-JC-kMd">
+                    <rect key="frame" x="275" y="30" width="37" height="30"/>
+                    <state key="normal" title="close"/>
+                    <connections>
+                        <action selector="onCloseButton" destination="-1" eventType="touchUpInside" id="bao-Id-GJb"/>
+                    </connections>
+                </button>
             </subviews>
             <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
             <gestureRecognizers/>
@@ -56,10 +67,12 @@
                 <constraint firstItem="OE5-ZQ-qmf" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="6Hm-WN-aXT"/>
                 <constraint firstItem="rky-AF-EpV" firstAttribute="top" secondItem="b2g-4V-SLr" secondAttribute="bottom" constant="8" id="O3T-s5-qsw"/>
                 <constraint firstItem="OE5-ZQ-qmf" firstAttribute="top" secondItem="rky-AF-EpV" secondAttribute="bottom" constant="8" id="Pe5-1g-pd8"/>
+                <constraint firstAttribute="trailing" secondItem="Pk6-JC-kMd" secondAttribute="trailing" constant="8" id="Teb-mt-4TH"/>
                 <constraint firstAttribute="trailing" secondItem="qZU-RB-8ze" secondAttribute="trailing" constant="8" id="TrG-Av-Oo0"/>
                 <constraint firstItem="rky-AF-EpV" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="WSw-PO-At1"/>
                 <constraint firstItem="b2g-4V-SLr" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="30" id="cal-AV-jNk"/>
                 <constraint firstAttribute="bottom" secondItem="qZU-RB-8ze" secondAttribute="bottom" constant="8" id="f4I-x0-f7b"/>
+                <constraint firstItem="Pk6-JC-kMd" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="30" id="hk9-Ku-yEr"/>
                 <constraint firstItem="b2g-4V-SLr" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="8" id="r6s-pH-y1j"/>
                 <constraint firstAttribute="trailing" secondItem="OE5-ZQ-qmf" secondAttribute="trailing" constant="8" id="uyy-Bx-Pta"/>
             </constraints>

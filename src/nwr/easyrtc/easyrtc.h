@@ -63,14 +63,13 @@ namespace ert {
         void Init(const std::string & server_path,
                   const ObjcPointer & work_view);
 #warning todo clear all vars , especially check remove all retain cycles.
+    public:
         void Close();
     private:
         Any CreateIceServer(const std::string & url, const std::string & username, const std::string & credential);
         bool auto_init_user_media_;
         std::function<std::string(const std::string &)> sdp_local_filter_;
         std::function<std::string(const std::string &)> sdp_remote_filter_;
-        int connection_option_timeout_;
-        bool connection_option_force_new_connection_;
         void StopStream(const std::shared_ptr<MediaStream> & stream);
         void set_sdp_filters(const std::function<std::string(const std::string &)> & local_filter,
                              const std::function<std::string(const std::string &)> & remote_filter);

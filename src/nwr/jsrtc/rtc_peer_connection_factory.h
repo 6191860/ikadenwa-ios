@@ -13,6 +13,8 @@
 #include <nwr/base/task_queue.h>
 #include <nwr/base/lib_webrtc.h>
 
+#include "closable.h"
+
 namespace nwr {
 namespace jsrtc {
     class RtcPeerConnection;
@@ -21,10 +23,11 @@ namespace jsrtc {
     class MediaTrackConstraints;
     class MediaStreamConstraints;
         
-    class RtcPeerConnectionFactory {
+    class RtcPeerConnectionFactory : public ClosableImpl {
     public:
         RtcPeerConnectionFactory();
-        
+        virtual ~RtcPeerConnectionFactory();
+
         std::shared_ptr<RtcPeerConnection>
         CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
                              const MediaTrackConstraints * constraints);
@@ -54,6 +57,7 @@ namespace jsrtc {
                           const std::function<void(const std::shared_ptr<MediaStream> &)> & success,
                           const std::function<void(const std::string &)> & failure);
         
+        void OnClose() override;
     private:
         rtc::scoped_ptr<rtc::Thread> signaling_thread_;
         rtc::scoped_ptr<rtc::Thread> worker_thread_;

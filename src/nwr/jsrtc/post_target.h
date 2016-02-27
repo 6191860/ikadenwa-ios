@@ -10,37 +10,31 @@
 
 #include <functional>
 #include <memory>
+#include <nwr/base/env.h>
 #include <nwr/base/task_queue.h>
+
+#include "closable.h"
 
 namespace nwr {
 namespace jsrtc {
     template <typename T>
-    class PostTarget : public std::enable_shared_from_this<T> {
+    class PostTarget : public std::enable_shared_from_this<T>, public ClosableImpl {
     public:
-        PostTarget():
-        queue_(TaskQueue::system_current_queue()),
-        closed_(false)
+        PostTarget()
         {}
         
         virtual ~PostTarget() {}
         
         void Post(const std::function<void(T &)> & proc) {
             auto thiz = this->shared_from_this();
-            this->queue_->PostTask([thiz, proc](){
-                auto target_thiz = std::static_pointer_cast<PostTarget<T>>(thiz);
-                if (target_thiz->closed_) { return; }
+            this->queue()->PostTask([thiz, proc](){
+                if (thiz->closed()) { return; }
                 proc(*thiz);
             });
         }
-    protected:
-        void ClosePostTarget() {
-            if (closed_) { return; }
-            closed_ = true;
-        }
-    private:
-        std::shared_ptr<TaskQueue> queue_;
-        bool closed_;
         
+        virtual void OnClose() = 0;
+    private:
     };
 }
 }

@@ -32,6 +32,8 @@ namespace ert {
     };
     
     struct ReceivePeer {
+        void Clear();
+        
         ReceivePeerCallback cb;
         std::map<std::string, ReceivePeerMsgEntry> msg_types;
     };

@@ -13,6 +13,7 @@
 #include <nwr/base/string.h>
 #include <nwr/base/func.h>
 #include <nwr/base/none.h>
+#include <nwr/base/task_queue.h>
 #include <nwr/base/emitter.h>
 #include <nwr/base/lib_webrtc.h>
 #include "post_target.h"
@@ -65,7 +66,7 @@ namespace jsrtc {
         void AddVideoRenderer(webrtc::VideoRendererInterface & renderer);
         void RemoveVideoRenderer(webrtc::VideoRendererInterface & renderer);
         
-        void Close();
+        void OnClose() override;
     private:
         struct ChangeObserver: public webrtc::ObserverInterface {
             ChangeObserver(MediaStreamTrack & owner);
@@ -79,8 +80,6 @@ namespace jsrtc {
         void inner_set_ready_state(MediaStreamTrackState value);
         void OnInnerUpdate();
         MediaStreamTrackState ComputeState(webrtc::MediaStreamTrackInterface::TrackState state);
-        
-        bool closed_;
         
         rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> inner_track_;
         std::shared_ptr<ChangeObserver> inner_observer_;

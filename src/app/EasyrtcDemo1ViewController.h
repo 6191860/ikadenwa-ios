@@ -14,9 +14,10 @@
 #include <nwr/base/http_operation.h>
 #include <nwr/easyrtc/easyrtc.h>
 
+#import "BaseViewController.h"
 #include "nwr_test_set.h"
 
-@interface EasyrtcDemo1ViewController : UIViewController{
+@interface EasyrtcDemo1ViewController : BaseViewController {
     std::shared_ptr<app::NwrTestSet> nwr_test_set_;
     std::vector<nwr::Any> occupants_;
 }

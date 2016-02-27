@@ -23,6 +23,10 @@ namespace sio0 {
         acks_.clear();
     }
     
+    Socket::~Socket() {
+        
+    }
+    
     AnyEmitterPtr Socket::emitter() const {
         return emitter_;
     }

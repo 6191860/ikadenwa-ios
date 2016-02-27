@@ -17,7 +17,7 @@ namespace jsrtc {
     MediaStream::MediaStream(webrtc::MediaStreamInterface & inner_stream):
     inner_stream_(&inner_stream),
     active_(false)
-    {
+    {        
         id_ = GetRandomString(20);
         
         track_change_listener_ = FuncMake([this](const None & _){
@@ -36,6 +36,10 @@ namespace jsrtc {
         }
         
         active_ = ComputeActive();
+    }
+    
+    MediaStream::~MediaStream() {
+        Close();
     }
     
     webrtc::MediaStreamInterface &  MediaStream::inner_stream() {
@@ -134,9 +138,7 @@ namespace jsrtc {
         on_inactive_ = value;
     }
     
-    void MediaStream::Close() {
-        if (closed_) { return; }
-        
+    void MediaStream::OnClose() {
         for (const auto & track : tracks()) {
             RemoveTrack(track);
         }
@@ -149,10 +151,6 @@ namespace jsrtc {
         on_active_ = nullptr;
         on_inactive_ = nullptr;
         track_change_listener_ = nullptr;
-        
-        ClosePostTarget();
-        
-        closed_ = true;
     }
     
     void MediaStream::OnTracksUpdate() {

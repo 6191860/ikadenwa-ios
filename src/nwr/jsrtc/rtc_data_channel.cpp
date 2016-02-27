@@ -20,6 +20,10 @@ namespace jsrtc {
         ready_state_ = ComputeReadyState(inner_channel_->state());
     }
     
+    RtcDataChannel::~RtcDataChannel() {
+        Close();
+    }
+    
     webrtc::DataChannelInterface & RtcDataChannel::inner_channel() {
         return *inner_channel_;
     }
@@ -62,29 +66,7 @@ namespace jsrtc {
     void RtcDataChannel::set_on_close(const std::function<void()> & value) {
         on_close_ = value;
     }
-    
-    void RtcDataChannel::Close() {
-        if (closed_) { return; }
         
-        inner_set_ready_state(RtcDataChannelState::Closed);
-        
-        if (inner_channel_) {
-            inner_channel_->Close();
-            inner_channel_ = nullptr;
-        }
-        inner_observer_ = nullptr;
-    
-        ready_state_ = RtcDataChannelState::Closed;
-        
-        on_open_ = nullptr;
-        on_close_ = nullptr;
-        on_message_ = nullptr;
-        
-        ClosePostTarget();
-        
-        closed_ = true;
-    }
-    
     void RtcDataChannel::set_on_message(const std::function<void(const eio::PacketData &)> & value) {
         on_message_ = value;
     }
@@ -92,6 +74,22 @@ namespace jsrtc {
     void RtcDataChannel::Send(const eio::PacketData & data) {
         webrtc::DataBuffer wdata(rtc::Buffer(data.ptr(), data.size()), data.binary != nullptr);
         inner_channel_->Send(wdata);
+    }
+    
+    void RtcDataChannel::OnClose() {        
+        inner_set_ready_state(RtcDataChannelState::Closed);
+        
+        if (inner_channel_) {
+            inner_channel_->Close();
+            inner_channel_ = nullptr;
+        }
+        inner_observer_ = nullptr;
+        
+        ready_state_ = RtcDataChannelState::Closed;
+        
+        on_open_ = nullptr;
+        on_close_ = nullptr;
+        on_message_ = nullptr;
     }
     
     RtcDataChannel::InnerObserver::InnerObserver(RtcDataChannel & owner):

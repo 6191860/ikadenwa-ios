@@ -60,16 +60,20 @@ namespace nwr {
         Once(event, AnyEventListenerMake(listener));
     }
     void AnyEmitter::Once(const std::string & event, const AnyEventListener & listener) {
-        auto on_handler_ptr = std::make_shared<AnyEventListener>();
+        std::shared_ptr<std::weak_ptr<AnyEventListener::element_type>>
+        weak_on_handler_ptr(new std::weak_ptr<AnyEventListener::element_type>());
         
-        auto on_handler = AnyEventListenerMake([this, event, on_handler_ptr, listener]
+        auto on_handler = AnyEventListenerMake([this, event, weak_on_handler_ptr, listener]
                                                (const std::vector<Any> & args)
         {
-            this->Off(event, *on_handler_ptr);
+            auto on_handler = (*weak_on_handler_ptr).lock();
+            if (!on_handler) { return; }
+            
+            this->Off(event, on_handler);
             (*listener)(args);
         });
         
-        *on_handler_ptr = on_handler;
+        *weak_on_handler_ptr = on_handler;
         
         this->On(event, on_handler);
     }

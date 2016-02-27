@@ -19,6 +19,10 @@ namespace sio0 {
     Transport(socket, sessid)
     {}
     
+    WebsocketTransport::~WebsocketTransport() {
+        
+    }
+    
     std::string WebsocketTransport::name() {
         return "websocket";
     }
