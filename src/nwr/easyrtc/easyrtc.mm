@@ -57,10 +57,10 @@ namespace ert {
         cookie_id_ = "easyrtcsid";
         logging_out_ = false;
         disconnecting_ = false;
-        received_media_constraints_ = MediaTrackConstraints();
-        received_media_constraints_.mandatory()
+        received_media_constraints_ = std::make_shared<MediaTrackConstraints>();
+        received_media_constraints_->mandatory()
         .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, true);
-        received_media_constraints_.mandatory()
+        received_media_constraints_->mandatory()
         .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, true);
         audio_enabled_ = true;
         video_enabled_ = true;
@@ -287,12 +287,12 @@ namespace ert {
     std::string Easyrtc::err_codes_SIGNAL_ERROR_ = "SIGNAL_ERROR";
     
     void Easyrtc::EnableAudioReceive(bool value) {
-        received_media_constraints_.mandatory()
+        received_media_constraints_->mandatory()
         .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, value);
     }
     
     void Easyrtc::EnableVideoReceive(bool value) {
-        received_media_constraints_.mandatory()
+        received_media_constraints_->mandatory()
         .SetEntry(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, value);
     }
     
@@ -432,10 +432,11 @@ namespace ert {
         }
         //  else if (self._desiredVideoProperties.screenCapture) { ... }
         else if (!video_enabled_) {
-            constraints.video() = None();
+            constraints.set_video(nullptr);
         }
         else {
-            constraints.video() = Some(MediaTrackConstraints());
+            constraints.set_video(std::make_shared<MediaTrackConstraints>());
+
             auto & mandatory = constraints.video()->mandatory();
             
             if (desired_video_properties_.GetAt("width").AsInt()){
@@ -458,7 +459,7 @@ namespace ert {
 //                constraints.video.optional.push({sourceId: self._desiredVideoProperties.videoSrcId});
 //            }
         }
-        constraints.audio() = audio_enabled_ ? Some(MediaTrackConstraints()) : None();
+        constraints.set_audio(audio_enabled_ ? std::make_shared<MediaTrackConstraints>() : nullptr);
 
         return constraints;
     }
@@ -490,7 +491,7 @@ namespace ert {
     
     std::shared_ptr<RtcPeerConnection>
     Easyrtc::CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                                     const MediaTrackConstraints * constraints)
+                                     const std::shared_ptr<MediaTrackConstraints> & constraints)
     {
         return peer_connection_factory_->CreatePeerConnection(configuration,
                                                               constraints);
@@ -1536,22 +1537,21 @@ namespace ert {
         }
     }
     
-    MediaTrackConstraints Easyrtc::BuildPeerConstraints() {
-        //  TODO: google
-        //        options.push({'DtlsSrtpKeyAgreement': 'true'}); // for interoperability
+    std::shared_ptr<MediaTrackConstraints> Easyrtc::BuildPeerConstraints() {
+        auto consts = std::make_shared<MediaTrackConstraints>();
         
-        auto consts = MediaTrackConstraints();
+        consts->optional().SetEntry(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, true); // for interoperability
     
         return consts;
     }
     
     void Easyrtc::Call(const std::string & other_user,
+                       const Optional<std::vector<std::string>> & stream_names,
                        const std::function<void(const std::string &,
                                                 const std::string &)> & call_success_cb,
                        const std::function<void(const std::string &,
                                                 const std::string &)> & call_failure_cb,
-                       const std::function<void(bool, const std::string &)> & was_accepted_cb,
-                       const Optional<std::vector<std::string>> & stream_names)
+                       const std::function<void(bool, const std::string &)> & was_accepted_cb)
     {
         auto thiz = shared_from_this();
         
@@ -1580,10 +1580,10 @@ namespace ert {
                                 [thiz, other_user, call_success_cb, call_failure_cb, was_accepted_cb]
                                 (const std::shared_ptr<MediaStream> & stream){
                                     thiz->Call(other_user,
+                                               None(),
                                                call_success_cb,
                                                call_failure_cb,
-                                               was_accepted_cb,
-                                               None());
+                                               was_accepted_cb);
                                 },
                                 call_failure_cb);
                 return;
@@ -1700,7 +1700,7 @@ namespace ert {
                               return;
                           }
                           
-                          pc->CreateOffer(&thiz->received_media_constraints_,
+                          pc->CreateOffer(thiz->received_media_constraints_,
                                           set_local_and_send_message_0,
                                           [thiz, call_failure_cb](const std::string & error){
                                               FuncCall(call_failure_cb, thiz->err_codes_CALL_ERR_, error);
@@ -1885,7 +1885,7 @@ namespace ert {
                 };
                 
                 auto invoke_create_answer = [thiz, pc, easyrtcid, sdp, set_local_and_send_message_1]() {
-                    pc->CreateAnswer(&thiz->received_media_constraints_,
+                    pc->CreateAnswer(thiz->received_media_constraints_,
                                      set_local_and_send_message_1,
                                      [thiz](const std::string & message){
                                          thiz->ShowError(thiz->err_codes_INTERNAL_ERR_,
@@ -2029,7 +2029,7 @@ namespace ert {
         //
         
         auto consts = BuildPeerConstraints();
-        auto pc = CreateRtcPeerConnection(*ice_config, &consts);
+        auto pc = CreateRtcPeerConnection(*ice_config, consts);
         if (!pc) {
             std::string message("Unable to create PeerConnection object, check your ice configuration");
             //                JSON.stringify(ice_config)
@@ -2569,7 +2569,7 @@ namespace ert {
                 return;
             }
             
-            pc->CreateAnswer(&thiz->received_media_constraints_,
+            pc->CreateAnswer(thiz->received_media_constraints_,
                              set_local_and_send_message_1,
                              [thiz](const std::string & message){
                                  thiz->ShowError(thiz->err_codes_INTERNAL_ERR_, std::string("create-answer: " + message));
@@ -3894,10 +3894,10 @@ namespace ert {
             Timer::Create(TimeDuration(1.0), [thiz, easyrtcid](){
                 if (thiz->GetSlotOfCaller(easyrtcid) >= 0 && thiz->IsPeerInAnyRoom(easyrtcid)) {
                     thiz->Call(easyrtcid,
+                               None(),
                                nullptr,
                                nullptr,
-                               nullptr,
-                               None());
+                               nullptr);
                 }
             });
         });

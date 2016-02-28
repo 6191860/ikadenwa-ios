@@ -31,10 +31,10 @@ namespace nwr {
         public:
             virtual ~RtcPeerConnection();
             
-            void CreateOffer(const MediaTrackConstraints * options,
+            void CreateOffer(const std::shared_ptr<MediaTrackConstraints> & options,
                              const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                              const std::function<void(const std::string &)> & failure);
-            void CreateAnswer(const MediaTrackConstraints * options,
+            void CreateAnswer(const std::shared_ptr<MediaTrackConstraints> & options,
                               const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                               const std::function<void(const std::string &)> & failure);
             void SetLocalDescription(const std::shared_ptr<const RtcSessionDescription> & description,

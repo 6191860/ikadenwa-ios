@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="EasyrtcDemo2ViewController">
+            <connections>
+                <outlet property="myNameLabel" destination="9yk-eX-5dp" id="TjR-2Y-4oB"/>
+                <outlet property="receiveTextView" destination="mi1-VP-VkS" id="mJe-RY-HZh"/>
+                <outlet property="sendTextView" destination="rdI-RM-oWJ" id="mVx-qh-LtP"/>
+                <outlet property="view" destination="wiN-Wl-9aD" id="Nqu-OS-ZJD"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="wiN-Wl-9aD">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Demo2" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NY9-1u-tsd">
+                    <rect key="frame" x="8" y="30" width="55.5" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="I am ..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9yk-eX-5dp">
+                    <rect key="frame" x="8" y="58" width="50.5" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="rdI-RM-oWJ">
+                    <rect key="frame" x="8" y="87" width="304" height="60"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="60" id="RJj-nE-byn"/>
+                    </constraints>
+                    <string key="text">message
+</string>
+                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                </textView>
+                <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="mi1-VP-VkS">
+                    <rect key="frame" x="8" y="360" width="304" height="200"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="200" id="bs7-Hh-92d"/>
+                    </constraints>
+                    <string key="text">received message
+</string>
+                    <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                    <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                </textView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VYS-Ok-MK8">
+                    <rect key="frame" x="275" y="30" width="37" height="30"/>
+                    <state key="normal" title="close"/>
+                    <connections>
+                        <action selector="onCloseButton" destination="-1" eventType="touchUpInside" id="58L-AR-Njf"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+            <gestureRecognizers/>
+            <constraints>
+                <constraint firstItem="VYS-Ok-MK8" firstAttribute="top" secondItem="wiN-Wl-9aD" secondAttribute="top" constant="30" id="8zU-sD-1fa"/>
+                <constraint firstItem="mi1-VP-VkS" firstAttribute="leading" secondItem="wiN-Wl-9aD" secondAttribute="leading" constant="8" id="CTk-zr-s1a"/>
+                <constraint firstItem="rdI-RM-oWJ" firstAttribute="leading" secondItem="wiN-Wl-9aD" secondAttribute="leading" constant="8" id="H8J-Mq-OnA"/>
+                <constraint firstItem="NY9-1u-tsd" firstAttribute="top" secondItem="wiN-Wl-9aD" secondAttribute="top" constant="30" id="Lhk-dA-6nI"/>
+                <constraint firstAttribute="trailing" secondItem="rdI-RM-oWJ" secondAttribute="trailing" constant="8" id="O3c-1h-cnQ"/>
+                <constraint firstItem="rdI-RM-oWJ" firstAttribute="top" secondItem="9yk-eX-5dp" secondAttribute="bottom" constant="8" id="O6r-NB-fDk"/>
+                <constraint firstItem="9yk-eX-5dp" firstAttribute="top" secondItem="NY9-1u-tsd" secondAttribute="bottom" constant="8" id="VTf-zg-5ee"/>
+                <constraint firstAttribute="trailing" secondItem="mi1-VP-VkS" secondAttribute="trailing" constant="8" id="XsN-1t-nU3"/>
+                <constraint firstAttribute="bottom" secondItem="mi1-VP-VkS" secondAttribute="bottom" constant="8" id="dlV-rx-bWU"/>
+                <constraint firstItem="9yk-eX-5dp" firstAttribute="leading" secondItem="wiN-Wl-9aD" secondAttribute="leading" constant="8" id="fsU-Lv-glK"/>
+                <constraint firstItem="NY9-1u-tsd" firstAttribute="leading" secondItem="wiN-Wl-9aD" secondAttribute="leading" constant="8" id="hBb-qJ-woj"/>
+                <constraint firstAttribute="trailing" secondItem="VYS-Ok-MK8" secondAttribute="trailing" constant="8" id="wkk-qy-r70"/>
+            </constraints>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+            <connections>
+                <outletCollection property="gestureRecognizers" destination="do9-pz-R9C" appends="YES" id="lyd-7r-DL4"/>
+            </connections>
+            <point key="canvasLocation" x="142" y="245"/>
+        </view>
+        <tapGestureRecognizer id="do9-pz-R9C">
+            <connections>
+                <action selector="onTapGesture:" destination="-1" id="mYE-op-Den"/>
+            </connections>
+        </tapGestureRecognizer>
+    </objects>
+</document>

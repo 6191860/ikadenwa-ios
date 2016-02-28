@@ -62,7 +62,6 @@ namespace ert {
         Easyrtc();
         void Init(const std::string & server_path,
                   const ObjcPointer & work_view);
-#warning todo clear all vars , especially check remove all retain cycles.
     public:
         void Close();
     private:
@@ -122,9 +121,11 @@ namespace ert {
         bool logging_out_;
         bool disconnecting_;
         std::map<std::string, Any> session_fields_;
-        MediaTrackConstraints received_media_constraints_;
+        std::shared_ptr<MediaTrackConstraints> received_media_constraints_;
+    public:
         void EnableAudioReceive(bool value);
         void EnableVideoReceive(bool value);
+    private:
         //  GetSourcesList
         //  GetAudioSourceList
         //  GetVideoSourceList
@@ -166,7 +167,7 @@ namespace ert {
         bool SupportsPeerConnections();
         std::shared_ptr<RtcPeerConnection>
         CreateRtcPeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                                const MediaTrackConstraints * constraints);
+                                const std::shared_ptr<MediaTrackConstraints> & constraints);
         webrtc::DataChannelInit GetDataChannelConstraints();
         std::string server_path_;
         std::map<std::string, Any> last_logged_in_list_;
@@ -202,18 +203,28 @@ namespace ert {
                                                                  const Any &)> & listener);
     private:
         std::function<void(const std::string &, bool)> on_data_channel_open_;
+    public:
         void set_data_channel_open_listener(const std::function<void(const std::string &, bool)> & listener);
+    private:
         std::function<void(const std::string &)> on_data_channel_close_;
+    public:
         void set_data_channel_close_listener(const std::function<void(const std::string &)> & listener);
+    private:
         int connection_count();
         int max_p2p_message_length_;
         void set_max_p2p_message_length(int max_length);
         bool audio_enabled_;
+    public:
         void EnableAudio(bool enabled);
+    private:
         bool video_enabled_;
+    public:
         void EnableVideo(bool enabled);
+    private:
         bool data_enabled_;
+    public:
         void EnableDataChannels(bool enabled);
+    private:
         void EnableMediaTracks(bool enable,
                                const std::vector<std::shared_ptr<MediaStreamTrack>> & tracks);
         std::map<std::string, std::shared_ptr<MediaStream>> named_local_media_streams_;
@@ -299,7 +310,9 @@ namespace ert {
         void set_credential(const Any & credential_param);
         std::function<void()> disconnect_listener_;
         void set_disconnect_listener(const std::function<void()> & disconnect_listener);
+    public:
         std::string IdToName(const std::string & easyrtcid);
+    private:
         std::shared_ptr<sio0::Socket> websocket_;
         std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> pc_config_;
         std::shared_ptr<webrtc::PeerConnectionInterface::RTCConfiguration> pc_config_to_use_;
@@ -328,10 +341,10 @@ namespace ert {
                                                      const std::string &)> & error_callback);
         int send_by_chunk_uid_counter_;
         void SendByChunkHelper(const std::string & dest_user, const std::string & msg_data);
+    public:
         void SendDataP2P(const std::string & dest_user,
                          const std::string & msg_type,
                          const Any & msg_data);
-    public:
         void SendDataWS(const Any & destination,
                         const std::string & msg_type,
                         const Any & msg_data,
@@ -357,20 +370,24 @@ namespace ert {
         void GetRoomList(const std::function<void(const Any &)> & callback,
                          const std::function<void(const std::string &,
                                                   const std::string &)> & error_callback);
+    public:
         enum class ConnectStatus {
             NotConnected,
             BecomingConnected,
             IsConnected
         };
         ConnectStatus GetConnectStatus(const std::string & other_user);
-        MediaTrackConstraints BuildPeerConstraints();
+    private:
+        std::shared_ptr<MediaTrackConstraints> BuildPeerConstraints();
+    public:
         void Call(const std::string & other_user,
+                  const Optional<std::vector<std::string>> & stream_names,
                   const std::function<void(const std::string &,
                                            const std::string &)> & call_success_cb,
                   const std::function<void(const std::string &,
                                            const std::string &)> & call_failure_cb,
-                  const std::function<void(bool, const std::string &)> & was_accepted_cb,
-                  const Optional<std::vector<std::string>> & stream_names);
+                  const std::function<void(bool, const std::string &)> & was_accepted_cb);
+    private:
         void CallBody(const std::string & other_user,
                       const std::function<void(const std::string &,
                                                const std::string &)> & call_success_cb,

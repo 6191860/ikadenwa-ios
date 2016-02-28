@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <memory>
 #include <nwr/base/optional.h>
 #include "media_track_constraints.h"
 
@@ -15,13 +16,13 @@ namespace nwr {
 namespace jsrtc {
     class MediaStreamConstraints {
     public:
-        Optional<MediaTrackConstraints> & video();
-        const Optional<MediaTrackConstraints> & video() const;
-        Optional<MediaTrackConstraints> & audio();
-        const Optional<MediaTrackConstraints> & audio() const;
+        const std::shared_ptr<MediaTrackConstraints> video() const;
+        void set_video(const std::shared_ptr<MediaTrackConstraints> & value);
+        const std::shared_ptr<MediaTrackConstraints> audio() const;
+        void set_audio(const std::shared_ptr<MediaTrackConstraints> & value);
     private:
-        Optional<MediaTrackConstraints> video_;
-        Optional<MediaTrackConstraints> audio_;
+        std::shared_ptr<MediaTrackConstraints> video_;
+        std::shared_ptr<MediaTrackConstraints> audio_;
     };
 }
 }

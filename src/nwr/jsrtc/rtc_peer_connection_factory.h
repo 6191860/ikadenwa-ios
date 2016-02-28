@@ -30,16 +30,16 @@ namespace jsrtc {
 
         std::shared_ptr<RtcPeerConnection>
         CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                             const MediaTrackConstraints * constraints);
+                             const std::shared_ptr<MediaTrackConstraints> & constraints);
         std::shared_ptr<MediaStream>
         CreateMediaStream(const std::string & label);
 
         rtc::scoped_refptr<webrtc::AudioSourceInterface>
-        CreateAudioSource(const MediaTrackConstraints * constraints);
+        CreateAudioSource(const std::shared_ptr<MediaTrackConstraints> & constraints);
         
         rtc::scoped_refptr<webrtc::VideoSourceInterface>
         CreateVideoSource(cricket::VideoCapturer* capturer,
-                          const MediaTrackConstraints * constraints);
+                          const std::shared_ptr<MediaTrackConstraints> & constraints);
         
 #warning todo; apply constraints
         std::shared_ptr<MediaStreamTrack>

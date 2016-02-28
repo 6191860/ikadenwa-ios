@@ -14,6 +14,8 @@
 		D6155E931C66157200A8B6CA /* binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E911C66157200A8B6CA /* binary.cpp */; };
 		D6155E961C6615B100A8B6CA /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E941C6615B100A8B6CA /* packet.cpp */; };
 		D6155E991C66273500A8B6CA /* env.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E971C66273500A8B6CA /* env.cpp */; };
+		D6455FD21C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */; };
+		D6455FD41C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */; };
 		D65236D61C74A1C600D399F6 /* rtc_session_description.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */; };
 		D65236D91C74E4B500D399F6 /* rtc_data_channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D71C74E4B500D399F6 /* rtc_data_channel.cpp */; };
 		D65236DF1C75136F00D399F6 /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236DD1C75136F00D399F6 /* packet.cpp */; };
@@ -134,6 +136,9 @@
 		D6155E951C6615B100A8B6CA /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = nwr/socketio/packet.h; sourceTree = "<group>"; };
 		D6155E971C66273500A8B6CA /* env.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = env.cpp; sourceTree = "<group>"; };
 		D6155E981C66273500A8B6CA /* env.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = env.h; sourceTree = "<group>"; };
+		D6455FD01C82E81300DFDDFC /* EasyrtcDemo2ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemo2ViewController.h; path = app/EasyrtcDemo2ViewController.h; sourceTree = "<group>"; };
+		D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemo2ViewController.mm; path = app/EasyrtcDemo2ViewController.mm; sourceTree = "<group>"; };
+		D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EasyrtcDemo2ViewController.xib; path = app/EasyrtcDemo2ViewController.xib; sourceTree = "<group>"; };
 		D65236D21C73812800D399F6 /* type_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = type_helper.h; sourceTree = "<group>"; };
 		D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_session_description.cpp; path = nwr/jsrtc/rtc_session_description.cpp; sourceTree = "<group>"; };
 		D65236D51C74A1C600D399F6 /* rtc_session_description.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_session_description.h; path = nwr/jsrtc/rtc_session_description.h; sourceTree = "<group>"; };
@@ -334,6 +339,9 @@
 				D65237B01C7DD68B00D399F6 /* EasyrtcDemo1ViewController.h */,
 				D65237AF1C7DD68B00D399F6 /* EasyrtcDemo1ViewController.mm */,
 				D65237B21C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib */,
+				D6455FD01C82E81300DFDDFC /* EasyrtcDemo2ViewController.h */,
+				D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */,
+				D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */,
 				D6B9DE331C6C8E4700EBF183 /* nwr_test_set.h */,
 				D6B9DE321C6C8E4700EBF183 /* nwr_test_set.cpp */,
 			);
@@ -680,6 +688,7 @@
 			files = (
 				D6652B551C817FA200F85895 /* DebugMenuViewController.xib in Resources */,
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
+				D6455FD41C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib in Resources */,
 				D6A690581C42361700952A7F /* Assets.xcassets in Resources */,
 				D6A690561C42361700952A7F /* Main.storyboard in Resources */,
 				D65237B31C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib in Resources */,
@@ -705,6 +714,7 @@
 				D65236DF1C75136F00D399F6 /* packet.cpp in Sources */,
 				D60852A11C50B24D00CEE554 /* socket.cpp in Sources */,
 				D66436AB1C4A74C20059A94B /* string.mm in Sources */,
+				D6455FD21C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm in Sources */,
 				D66436C11C4D40D80059A94B /* ios_looper.mm in Sources */,
 				D66436C31C4D42980059A94B /* looper.mm in Sources */,
 				D66436B41C4CD89D0059A94B /* ios_task_queue.mm in Sources */,

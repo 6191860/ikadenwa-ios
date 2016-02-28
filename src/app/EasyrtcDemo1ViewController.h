@@ -28,7 +28,7 @@
 @property(nonatomic, retain) NSMutableArray<UIButton *> * destButtons;
 
 @property(nonatomic, assign) std::shared_ptr<nwr::ert::Easyrtc> easyrtc;
-@property(nonatomic, assign) std::string selfEasyrtcid;
+
 - (void)addToConversation:(const std::string &)who
 msgType:(const std::string &)msgType
 content:(const nwr::Any &)content;

@@ -42,10 +42,7 @@ msgType:(const std::string &)msgType
 content:(const nwr::Any &)content
 {
     NSMutableString * text = [NSMutableString stringWithString:_receiveTextView.text];
-//    if (text.length != 0) {
-//        [text appendString:@"\n"];
-//    }
-    
+
     std::string content_str = content.AsString() || std::string();
 
     [text appendFormat:@"%@: %@\n", ToNSString(who), ToNSString(content_str)];
@@ -127,7 +124,6 @@ isPrimary:(const Any &)isPrimary
           constraintsWithVisualFormat:@"|-(8)-[v]"
           options:0 metrics:nil
           views:@{@"v": button}]];
-        
     }
 }
 

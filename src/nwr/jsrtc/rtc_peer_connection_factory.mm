@@ -38,7 +38,7 @@ namespace jsrtc {
     
     std::shared_ptr<RtcPeerConnection> RtcPeerConnectionFactory::
     CreatePeerConnection(const webrtc::PeerConnectionInterface::RTCConfiguration & configuration,
-                         const MediaTrackConstraints * constraints)
+                         const std::shared_ptr<MediaTrackConstraints> & constraints)
     {
         auto connection = std::shared_ptr<RtcPeerConnection>(new RtcPeerConnection());
         auto inner_observer = std::make_shared<RtcPeerConnection::InnerObserver>(connection);
@@ -59,14 +59,14 @@ namespace jsrtc {
     }
     
     rtc::scoped_refptr<webrtc::AudioSourceInterface> RtcPeerConnectionFactory::
-    CreateAudioSource(const MediaTrackConstraints * constraints)
+    CreateAudioSource(const std::shared_ptr<MediaTrackConstraints> & constraints)
     {
         return inner_factory_->CreateAudioSource(constraints ? &constraints->inner_constraints() : nullptr);
     }
     
     rtc::scoped_refptr<webrtc::VideoSourceInterface> RtcPeerConnectionFactory::
     CreateVideoSource(cricket::VideoCapturer* capturer,
-                      const MediaTrackConstraints * constraints)
+                      const std::shared_ptr<MediaTrackConstraints> & constraints)
     {
         return inner_factory_->CreateVideoSource(capturer,
                                                  constraints ? &constraints->inner_constraints() : nullptr);
@@ -98,13 +98,13 @@ namespace jsrtc {
 #if !TARGET_IPHONE_SIMULATOR && TARGET_OS_IPHONE
         if (constraints.video()) {
             webrtc::AVFoundationVideoCapturer * capturer = new webrtc::AVFoundationVideoCapturer();
-            auto video_source = CreateVideoSource(capturer, &constraints.video().value());
+            auto video_source = CreateVideoSource(capturer, constraints.video());
             auto video_track = CreateVideoTrack("LocalVideo", video_source);
             stream->AddTrack(video_track);
         }
         
         if (constraints.audio()) {
-            auto audio_source = CreateAudioSource(&constraints.audio().value());
+            auto audio_source = CreateAudioSource(constraints.audio());
             auto audio_track = CreateAudioTrack("LocalAudio", audio_source);
             stream->AddTrack(audio_track);
         }

@@ -32,6 +32,7 @@ namespace jsrtc {
     class MediaTrackConstraints {
     public:
         MediaTrackConstraints();
+        virtual ~MediaTrackConstraints();
         
         webrtc::MediaConstraintsInterface & inner_constraints();
         const webrtc::MediaConstraintsInterface & inner_constraints() const;

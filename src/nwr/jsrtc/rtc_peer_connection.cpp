@@ -22,7 +22,7 @@ namespace jsrtc {
     }
     
     void RtcPeerConnection::
-    CreateOffer(const MediaTrackConstraints * options,
+    CreateOffer(const std::shared_ptr<MediaTrackConstraints> & options,
                 const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                 const std::function<void(const std::string &)> & failure)
     {
@@ -36,7 +36,7 @@ namespace jsrtc {
     }
     
     void RtcPeerConnection::
-    CreateAnswer(const MediaTrackConstraints * options,
+    CreateAnswer(const std::shared_ptr<MediaTrackConstraints> & options,
                  const std::function<void(const std::shared_ptr<RtcSessionDescription> &)> & success,
                  const std::function<void(const std::string &)> & failure)
     {

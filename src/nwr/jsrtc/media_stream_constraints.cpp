@@ -9,21 +9,21 @@
 #include "media_stream_constraints.h"
 
 namespace nwr {
-namespace jsrtc {
-    Optional<MediaTrackConstraints> & MediaStreamConstraints::video() {
+namespace jsrtc {    
+    const std::shared_ptr<MediaTrackConstraints> MediaStreamConstraints::video() const {
         return video_;
     }
     
-    const Optional<MediaTrackConstraints> & MediaStreamConstraints::video() const {
-        return video_;
+    void MediaStreamConstraints::set_video(const std::shared_ptr<MediaTrackConstraints> & value) {
+        video_ = value;
     }
-    
-    Optional<MediaTrackConstraints> & MediaStreamConstraints::audio() {
+
+    const std::shared_ptr<MediaTrackConstraints> MediaStreamConstraints::audio() const {
         return audio_;
     }
     
-    const Optional<MediaTrackConstraints> & MediaStreamConstraints::audio() const {
-        return audio_;
+    void MediaStreamConstraints::set_audio(const std::shared_ptr<MediaTrackConstraints> & value) {
+        audio_ = value;
     }
 }
 }
