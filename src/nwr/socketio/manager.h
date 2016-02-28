@@ -27,8 +27,6 @@
 namespace nwr {
 namespace sio {
     
-    //  TODO: reconnection, backoff
-    
     class OnToken;
     class Encoder;
     class Decoder;
@@ -120,7 +118,7 @@ namespace sio {
         TimeDuration reconnection_delay_;
         TimeDuration reconnection_delay_max_;
         double randomization_factor_;
-        int backoff_; //TODO
+        int backoff_;
         TimeDuration timeout_;
         ReadyState ready_state_;
         std::string uri_;

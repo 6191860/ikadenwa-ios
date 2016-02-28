@@ -104,9 +104,7 @@ namespace sio0 {
         TimeDuration heartbeat_timeout_;
         std::shared_ptr<Transport> transport_;
         TimerPtr connect_timeout_timer_;
-        TimerPtr heartbeat_timeout_timer_;
-        
-#warning todo clear namespaces to break cycle
+        TimerPtr heartbeat_timeout_timer_;        
     };
 }
 }

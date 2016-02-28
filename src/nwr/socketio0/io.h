@@ -15,8 +15,6 @@
 #include "socket.h"
 #include "namespace.h"
 
-#warning open issue : socket leakage ; temporary it has no matter because uses only with force_new
-
 namespace nwr {
 namespace sio0 {
     class Socket;

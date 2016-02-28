@@ -27,7 +27,6 @@ namespace nwr {
         return duration_cast<milliseconds>(utc_now - epoch);
     }
     
-#warning todo check
     std::string ToString(const std::chrono::system_clock::time_point & time) {
         std::stringstream ss;
         std::time_t tt = std::chrono::system_clock::to_time_t(time);

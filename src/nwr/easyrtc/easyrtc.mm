@@ -132,7 +132,6 @@ namespace ert {
         receive_server_cb_ = nullptr;
         disconnect_listener_ = nullptr;
         if (websocket_) {
-#warning todo : if this is preallocated, I would not close it.
             websocket_->Disconnect();
             websocket_ = nullptr;
         }
@@ -909,7 +908,6 @@ namespace ert {
                 });
                 [work_view addSubview: video_obj];
                 thiz->SetVideoObjectSrc(ObjcPointerMake(video_obj), stream);
-#warning todo porting timeout
             }
             else {
                 thiz->UpdateConfigurationInfo();
@@ -1723,7 +1721,7 @@ namespace ert {
                     }
                 }
                 //
-                // todo: may need to add a few lines here for closing the data channels
+                // t0d0: may need to add a few lines here for closing the data channels
                 //
                 peer_conns_[other_user]->pc()->Close();
             }
@@ -2549,7 +2547,6 @@ namespace ert {
                 
                 thiz->peer_conns_[caller]->set_connection_accepted(true);
                 thiz->SendQueuedCandidates(caller, on_signal_success, on_signal_failure);
-#warning todo
             };
             
             if (thiz->sdp_local_filter_) {
@@ -2852,7 +2849,6 @@ namespace ert {
             
             *pc_ptr = thiz->peer_conns_[caller]->pc();
             
-#warning todo open issue
 //            auto ice_add_success = [](){
 //                
 //            };
@@ -2998,7 +2994,6 @@ namespace ert {
             
             (*pc_ptr)->SetRemoteDescription(sd,
                                             [](){
-#warning todo
                                             },
                                             [](const std::string & message){
                                                 printf("setRemoteDescription failed %s", message.c_str());
@@ -3235,8 +3230,6 @@ namespace ert {
             }));
         }
 
-#warning todo sizes
-#warning todo language
         Any new_config(Any::ObjectType {
             { "userSettings", Any(Any::ObjectType{
                 { "sharingAudio", Any(have_audio_) },
@@ -3348,8 +3341,6 @@ namespace ert {
         for (const auto & room_name : Keys(room_data_)) {
             if (room_data_[room_name].GetAt("roomStatus").AsString() == Some(std::string("join"))) {
                 if (!HasKey(room_join_, room_name)) {
-#warning change js ref copy to cpp val copy; it may cause bugs.
-                    
                     room_join_[room_name] = room_data_[room_name];
                 }
                 
@@ -3527,7 +3518,6 @@ namespace ert {
         //
         // find our easyrtcsid
         //
-#warning todo! cookie handling emulation
         easyrtcsid_ = None();
 
         Any msg_data(Any::ObjectType{
@@ -3677,7 +3667,6 @@ namespace ert {
         }
         
         if (monitor_video_id) {
-#warning todo mute monitor
 //            document.getElementById(monitorVideoId).muted = "muted";
         }
         
@@ -3720,7 +3709,6 @@ namespace ert {
                             {
                                 FuncCall(thiz->debug_printer_, "stream acceptor called");
                                 
-#warning track original bug fix
 //                                if (thiz->refresh_pane_ && thiz->VideoIsFree(thiz->refresh_pane_.value())) {
 //                                    thiz->ShowVideo(thiz->refresh_pane_.value(), stream);
 ////                                    FuncCall(thiz->on_call_, caller, thiz->refresh_pane_.value());
@@ -3773,7 +3761,6 @@ namespace ert {
         }
         
         if (video_enabled_ && monitor_video_id) {
-#warning open issue about mute control
             auto monitor_video = GetElementById(monitor_video_id.value());
             if (!monitor_video) {
                 printf("Programmer error: no object called %d\n", monitor_video_id.value());

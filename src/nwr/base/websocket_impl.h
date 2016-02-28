@@ -25,8 +25,6 @@ extern "C" {
 
 #include "websocket.h"
 
-//  TODO: Agent
-
 namespace nwr {
     class TaskQueue;
     class WebsocketContext;

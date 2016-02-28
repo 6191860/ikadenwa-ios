@@ -314,7 +314,6 @@ namespace sio0 {
         if (advice == "reconnect" && (connected_ || connecting_)) {
             Disconnect();
             if (*options_.reconnect) {
-                #warning todo reconnect
                 // Reconnect();
             }
         }
@@ -336,7 +335,6 @@ namespace sio0 {
             transport_ = nullptr;
             if (was_connected) {
                 Publish("disconnect", { Any(reason) });
-#warning todo reconnect
 //                if ('booted' != reason && this.options.reconnect && !this.reconnecting) {
 //                    this.reconnect();
 //                }

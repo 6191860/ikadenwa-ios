@@ -30,7 +30,6 @@ namespace sio {
     {
     }
     
-//    TODO: recheck
     void Manager::Init(
         const std::string & uri, const eio::Socket::ConstructorParams & params)
     {
@@ -42,7 +41,7 @@ namespace sio {
         params_ = p;
         
         set_reconnection(p.reconnection);
-        reconnection_ = false; // TODO: disabled now
+        reconnection_ = false;
         
         set_reconnection_attempts(p.reconnection_attempts);
         set_reconnection_delay(p.reconnection_delay);
@@ -130,7 +129,7 @@ namespace sio {
     
     void Manager::MaybeReconnectOnOpen() {
         // Only try to reconnect if it's the first time we're connecting
-        if (!reconnecting_ && reconnection_ /* TODO: && this.backoff.attempts === 0 */) {
+        if (!reconnecting_ && reconnection_) {
             // keeps reconnection from firing twice for the same reconnection loop
             Reconnect();
         }
@@ -148,7 +147,7 @@ namespace sio {
         
         auto socket = engine_;
         ready_state_ = ReadyState::Opening;
-        skip_reconnect_ = true; // TODO: reconnecting is disabled now
+        skip_reconnect_ = true;
         
         auto thiz = shared_from_this();
         
@@ -180,7 +179,7 @@ namespace sio {
         });
         
         // emit `connect_timeout`
-        if (true /* TODO: timeout_enabled */) {
+        if (true) {
             auto timeout = timeout_;
             printf("[%s] connect attempt will timeout after %f\n", __PRETTY_FUNCTION__, timeout.count());
             

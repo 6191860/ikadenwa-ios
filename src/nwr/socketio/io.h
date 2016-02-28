@@ -15,7 +15,6 @@
 #include <nwr/engineio/socket.h>
 #include "socket.h"
 
-#warning todo open issue : manager leakage
 namespace nwr {
 namespace sio {
     class Socket;

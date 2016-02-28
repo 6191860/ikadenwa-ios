@@ -41,7 +41,6 @@ namespace jsrtc {
         CreateVideoSource(cricket::VideoCapturer* capturer,
                           const std::shared_ptr<MediaTrackConstraints> & constraints);
         
-#warning todo; apply constraints
         std::shared_ptr<MediaStreamTrack>
         CreateAudioTrack(const std::string& label,
                          webrtc::AudioSourceInterface * source);

@@ -38,7 +38,7 @@ namespace sio0 {
         }
 
         if (data != "") {
-            // todo: we should only do decodePayload for xhr transports
+            // t0d0: we should only do decodePayload for xhr transports
             
             Packet msg = DecodePacket(data);
             OnPacket(msg);

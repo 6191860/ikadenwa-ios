@@ -49,7 +49,7 @@ namespace nwr {
             std::shared_ptr<const RtcSessionDescription> remote_description();
             std::shared_ptr<const RtcSessionDescription> current_remote_description();
             std::shared_ptr<const RtcSessionDescription> pending_remote_description();
-#warning todo callback (issue)
+
             void AddIceCandidate(const std::shared_ptr<const RtcIceCandidate> & candidate);
             webrtc::PeerConnectionInterface::SignalingState signaling_state();
             webrtc::PeerConnectionInterface::IceGatheringState ice_gathering_state();
@@ -83,8 +83,6 @@ namespace nwr {
             std::shared_ptr<RtcDataChannel> CreateDataChannel(const std::string & label,
                                                               const webrtc::DataChannelInit * config);
             void set_on_data_channel(const std::function<void(const std::shared_ptr<RtcDataChannel> &)> & value);
-            
-#warning onconnection
             
             std::vector<std::shared_ptr<MediaStream>> local_streams();
             std::vector<std::shared_ptr<MediaStream>> remote_streams();
