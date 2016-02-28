@@ -55,7 +55,7 @@ namespace jsrtc {
     std::shared_ptr<MediaStream> RtcPeerConnectionFactory::
     CreateMediaStream(const std::string & label) {
         auto inner_stream = inner_factory_->CreateLocalMediaStream(label);
-        return std::make_shared<MediaStream>(*inner_stream);
+        return MediaStream::Create(TaskQueue::current_queue(), *inner_stream);
     }
     
     rtc::scoped_refptr<webrtc::AudioSourceInterface> RtcPeerConnectionFactory::
@@ -77,7 +77,7 @@ namespace jsrtc {
                      webrtc::AudioSourceInterface* source)
     {
         auto inner_track = inner_factory_->CreateAudioTrack(label, source);
-        return std::make_shared<MediaStreamTrack>(*inner_track);
+        return MediaStreamTrack::Create(TaskQueue::current_queue(), *inner_track);
     }
     
     std::shared_ptr<MediaStreamTrack> RtcPeerConnectionFactory::
@@ -85,7 +85,7 @@ namespace jsrtc {
                      webrtc::VideoSourceInterface * source)
     {
         auto inner_track = inner_factory_->CreateVideoTrack(label, source);
-        return std::make_shared<MediaStreamTrack>(*inner_track);
+        return MediaStreamTrack::Create(TaskQueue::current_queue(), *inner_track);
     }
     
     void RtcPeerConnectionFactory::
@@ -109,7 +109,7 @@ namespace jsrtc {
             stream->AddTrack(audio_track);
         }
 #endif
-        TaskQueue::system_current_queue()->PostTask([stream, success, failure](){
+        TaskQueue::current_queue()->PostTask([stream, success, failure](){
             if (stream) {
                 success(stream);
             }

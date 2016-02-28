@@ -11,7 +11,7 @@
 #include "ios_task_queue.h"
 
 namespace nwr {
-    std::shared_ptr<TaskQueue> TaskQueue::system_current_queue() {
+    std::shared_ptr<TaskQueue> TaskQueue::current_queue() {
         return IosTaskQueue::current_queue();
     }
 }

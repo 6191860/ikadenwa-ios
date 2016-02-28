@@ -14,28 +14,12 @@
 namespace nwr {
 namespace jsrtc {
     
-    MediaStream::MediaStream(webrtc::MediaStreamInterface & inner_stream):
-    inner_stream_(&inner_stream),
-    active_(false)
-    {        
-        id_ = GetRandomString(20);
-        
-        track_change_listener_ = FuncMake([this](const None & _){
-            this->OnTracksUpdate();
-        });
-        
-        for (const auto & inner_track : inner_stream.GetAudioTracks()) {
-            auto track = std::make_shared<MediaStreamTrack>(*inner_track);
-            audio_tracks_.push_back(track);
-            SubscribeTrackChange(track);
-        }
-        for (const auto & inner_track : inner_stream.GetVideoTracks()) {
-            auto track = std::make_shared<MediaStreamTrack>(*inner_track);
-            video_tracks_.push_back(track);
-            SubscribeTrackChange(track);
-        }
-        
-        active_ = ComputeActive();
+    std::shared_ptr<MediaStream> MediaStream::Create(const std::shared_ptr<TaskQueue> & queue,
+                                                     webrtc::MediaStreamInterface & inner_stream)
+    {
+        auto thiz = std::shared_ptr<MediaStream>(new MediaStream(queue));
+        thiz->Init(inner_stream);
+        return thiz;
     }
     
     MediaStream::~MediaStream() {
@@ -151,6 +135,35 @@ namespace jsrtc {
         on_active_ = nullptr;
         on_inactive_ = nullptr;
         track_change_listener_ = nullptr;
+    }
+    
+    MediaStream::MediaStream(const std::shared_ptr<TaskQueue> & queue):
+    PostTarget<nwr::jsrtc::MediaStream>(queue)
+    {
+    }
+    
+    void MediaStream::Init(webrtc::MediaStreamInterface & inner_stream) {
+        inner_stream_ = rtc::scoped_refptr<webrtc::MediaStreamInterface>(&inner_stream);
+        active_ = false;
+        
+        id_ = GetRandomString(20);
+        
+        track_change_listener_ = FuncMake([this](const None & _){
+            this->OnTracksUpdate();
+        });
+        
+        for (const auto & inner_track : inner_stream.GetAudioTracks()) {
+            auto track = MediaStreamTrack::Create(queue(), *inner_track);
+            audio_tracks_.push_back(track);
+            SubscribeTrackChange(track);
+        }
+        for (const auto & inner_track : inner_stream.GetVideoTracks()) {
+            auto track = MediaStreamTrack::Create(queue(), *inner_track);
+            video_tracks_.push_back(track);
+            SubscribeTrackChange(track);
+        }
+        
+        active_ = ComputeActive();
     }
     
     void MediaStream::OnTracksUpdate() {

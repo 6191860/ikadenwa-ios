@@ -9,15 +9,13 @@
 #include "rtc_data_channel.h"
 
 namespace nwr {
-namespace jsrtc {
-    RtcDataChannel::RtcDataChannel(webrtc::DataChannelInterface & inner_channel):
-    closed_(false),
-    inner_channel_(&inner_channel)
+namespace jsrtc {    
+    std::shared_ptr<RtcDataChannel> RtcDataChannel::Create(const std::shared_ptr<TaskQueue> & queue,
+                                                           webrtc::DataChannelInterface & inner_channel)
     {
-        inner_observer_ = std::make_shared<InnerObserver>(*this);
-        inner_channel_->RegisterObserver(inner_observer_.get());
-        
-        ready_state_ = ComputeReadyState(inner_channel_->state());
+        auto thiz = std::shared_ptr<RtcDataChannel>(new RtcDataChannel(queue));
+        thiz->Init(inner_channel);
+        return thiz;
     }
     
     RtcDataChannel::~RtcDataChannel() {
@@ -112,6 +110,21 @@ namespace jsrtc {
     }
     void RtcDataChannel::InnerObserver::OnBufferedAmountChange(uint64_t previous_amount) {
         
+    }
+    
+    RtcDataChannel::RtcDataChannel(const std::shared_ptr<TaskQueue> & queue):
+    PostTarget<nwr::jsrtc::RtcDataChannel>(queue)
+    {
+    }
+    
+    void RtcDataChannel::Init(webrtc::DataChannelInterface & inner_channel)
+    {
+        inner_observer_ = std::make_shared<InnerObserver>(*this);
+
+        inner_channel_ = rtc::scoped_refptr<webrtc::DataChannelInterface>(&inner_channel);
+        inner_channel_->RegisterObserver(inner_observer_.get());
+        
+        ready_state_ = ComputeReadyState(inner_channel_->state());
     }
     
     RtcDataChannelState RtcDataChannel::ComputeReadyState(webrtc::DataChannelInterface::DataState state) {

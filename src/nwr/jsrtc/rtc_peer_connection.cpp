@@ -203,22 +203,24 @@ namespace jsrtc {
     std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> RtcPeerConnection::receivers() {
         return inner_connection_->GetReceivers();
     }
-    rtc::scoped_refptr<webrtc::RtpSenderInterface>
-    RtcPeerConnection::AddTrack(webrtc::MediaStreamTrackInterface * track,
-                                std::vector<webrtc::MediaStreamInterface*> streams)
-    {
-        return inner_connection_->AddTrack(track, streams);
-    }
-    bool RtcPeerConnection::RemoveTrack(webrtc::RtpSenderInterface* sender) {
-        return inner_connection_->RemoveTrack(sender);
-    }
+    
+//    rtc::scoped_refptr<webrtc::RtpSenderInterface>
+//    RtcPeerConnection::AddTrack(webrtc::MediaStreamTrackInterface * track,
+//                                std::vector<webrtc::MediaStreamInterface*> streams)
+//    {
+//        return inner_connection_->AddTrack(track, streams);
+//    }
+//    bool RtcPeerConnection::RemoveTrack(webrtc::RtpSenderInterface* sender) {
+//        return inner_connection_->RemoveTrack(sender);
+//    }
     
     std::shared_ptr<RtcDataChannel> RtcPeerConnection::CreateDataChannel(const std::string & label,
                                                                          const webrtc::DataChannelInit * config)
     {
         auto inner_channel = inner_connection_->CreateDataChannel(label, config);
-        return std::make_shared<RtcDataChannel>(*inner_channel);
+        return RtcDataChannel::Create(TaskQueue::current_queue(), *inner_channel);
     }
+    
     void RtcPeerConnection::set_on_data_channel(const std::function<void(const std::shared_ptr<RtcDataChannel> &)> & value) {
         on_data_channel_ = value;
     }
@@ -262,7 +264,7 @@ namespace jsrtc {
     void RtcPeerConnection::InnerObserver::
     OnAddStream(webrtc::MediaStreamInterface* inner_stream)
     {
-        auto stream = std::make_shared<MediaStream>(*inner_stream);
+        auto stream = MediaStream::Create(owner->queue(), *inner_stream);
         owner->Post([stream](RtcPeerConnection & owner){
             owner.remote_streams_.push_back(stream);
             FuncCall(owner.on_add_stream_, stream);
@@ -281,7 +283,7 @@ namespace jsrtc {
     void RtcPeerConnection::InnerObserver::
     OnDataChannel(webrtc::DataChannelInterface* inner_channel)
     {
-        auto channel = std::make_shared<RtcDataChannel>(*inner_channel);
+        auto channel = RtcDataChannel::Create(owner->queue(), *inner_channel);
         owner->Post([channel](RtcPeerConnection & owner) {
             FuncCall(owner.on_data_channel_, channel);
         });

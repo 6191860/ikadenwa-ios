@@ -26,7 +26,8 @@ namespace jsrtc {
     
     class MediaStream : public PostTarget<MediaStream> {
     public:
-        MediaStream(webrtc::MediaStreamInterface & inner_stream);
+        static std::shared_ptr<MediaStream> Create(const std::shared_ptr<TaskQueue> & queue,
+                                                   webrtc::MediaStreamInterface & inner_stream);
         virtual ~MediaStream();
         
         webrtc::MediaStreamInterface & inner_stream();
@@ -48,6 +49,9 @@ namespace jsrtc {
         
         void OnClose() override;
     private:
+        MediaStream(const std::shared_ptr<TaskQueue> & queue);
+        void Init(webrtc::MediaStreamInterface & inner_stream);
+        
         void OnTracksUpdate();
 
         void AddTrackTo(const std::shared_ptr<MediaStreamTrack> & track,

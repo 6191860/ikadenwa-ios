@@ -11,19 +11,14 @@
 
 namespace nwr {
 namespace jsrtc {
-    MediaStreamTrack::MediaStreamTrack(webrtc::MediaStreamTrackInterface & inner_track):
-    inner_track_(&inner_track),
-    change_emitter_(std::make_shared<decltype(change_emitter_)::element_type>())
+    std::shared_ptr<MediaStreamTrack> MediaStreamTrack::Create(const std::shared_ptr<TaskQueue> & queue,
+                                                               webrtc::MediaStreamTrackInterface & inner_track)
     {
-        inner_observer_ = std::make_shared<ChangeObserver>(*this);
-        inner_track_->RegisterObserver(inner_observer_.get());
-        
-        id_ = GetRandomString(20);
-        
-        enabled_ = inner_track_->enabled();
-        ready_state_ = ComputeState(inner_track_->state());
+        auto thiz = std::shared_ptr<MediaStreamTrack>(new MediaStreamTrack(queue));
+        thiz->Init(inner_track);
+        return thiz;
     }
-    
+
     MediaStreamTrack::~MediaStreamTrack() {
         Close();
     }
@@ -166,6 +161,23 @@ namespace jsrtc {
             owner.inner_set_enabled(enabled);
             owner.inner_set_ready_state(state);
         });
+    }
+    
+    MediaStreamTrack::MediaStreamTrack(const std::shared_ptr<TaskQueue> & queue):
+    PostTarget<nwr::jsrtc::MediaStreamTrack>(queue)
+    {}
+    
+    void MediaStreamTrack::Init(webrtc::MediaStreamTrackInterface & inner_track) {
+        inner_track_ = rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>(&inner_track);
+        change_emitter_ = std::make_shared<decltype(change_emitter_)::element_type>();
+        
+        inner_observer_ = std::make_shared<ChangeObserver>(*this);
+        inner_track_->RegisterObserver(inner_observer_.get());
+        
+        id_ = GetRandomString(20);
+        
+        enabled_ = inner_track_->enabled();
+        ready_state_ = ComputeState(inner_track_->state());
     }
     
     void MediaStreamTrack::inner_set_enabled(bool value) {

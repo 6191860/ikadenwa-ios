@@ -31,7 +31,8 @@ namespace jsrtc {
         
     class RtcDataChannel : public PostTarget<RtcDataChannel> {
     public:
-        RtcDataChannel(webrtc::DataChannelInterface & inner_channel);
+        static std::shared_ptr<RtcDataChannel> Create(const std::shared_ptr<TaskQueue> & queue,
+                                                      webrtc::DataChannelInterface & inner_channel);
         virtual ~RtcDataChannel();
         
         webrtc::DataChannelInterface & inner_channel();
@@ -70,10 +71,12 @@ namespace jsrtc {
             RtcDataChannel & owner;
         };
         
+        RtcDataChannel(const std::shared_ptr<TaskQueue> & queue);
+        void Init(webrtc::DataChannelInterface & inner_channel);
+        
         RtcDataChannelState ComputeReadyState(webrtc::DataChannelInterface::DataState state);
         void inner_set_ready_state(RtcDataChannelState value);
         
-        bool closed_;
         rtc::scoped_refptr<webrtc::DataChannelInterface> inner_channel_;
         std::shared_ptr<InnerObserver> inner_observer_;
         

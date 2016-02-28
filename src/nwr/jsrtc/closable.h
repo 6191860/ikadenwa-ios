@@ -26,6 +26,7 @@ namespace jsrtc {
     class ClosableImpl : public Closable {
     public:
         ClosableImpl();
+        ClosableImpl(const std::shared_ptr<TaskQueue> & queue);
         virtual ~ClosableImpl();
         bool closed() const override;
         std::shared_ptr<TaskQueue> queue() const;

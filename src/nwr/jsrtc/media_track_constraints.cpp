@@ -18,17 +18,14 @@ namespace jsrtc {
         {}
         
         virtual ~MediaTrackConstraintAdapter() {
-            printf("[MediaTrackConstraintAdapter::dtor(%p)]\n", this);
         }
         
         const webrtc::MediaConstraintsInterface::Constraints & GetMandatory() const override {
             auto & entries = outer_.mandatory().inner_entries();
-            printf("[MediaTrackConstraintAdapter::GetMandatory(%p)] %p\n", this, &entries);
             return entries;
         }
         const webrtc::MediaConstraintsInterface::Constraints & GetOptional() const override {
             auto & entries = outer_.optional().inner_entries();
-            printf("[MediaTrackConstraintAdapter::GetOptional(%p)] %p\n", this, &entries);
             return entries;
         }
         
@@ -77,13 +74,11 @@ namespace jsrtc {
     
     webrtc::MediaConstraintsInterface & MediaTrackConstraints::inner_constraints() {
         auto & ret = *adapter_;
-        printf("[MediaTrackConstraints::inner_constraints] %p\n", &ret);
         return ret;
     }
     
     const webrtc::MediaConstraintsInterface & MediaTrackConstraints::inner_constraints() const {
         auto & ret = *adapter_;
-        printf("[MediaTrackConstraints::inner_constraints] %p\n", &ret);
         return ret;
     }
     

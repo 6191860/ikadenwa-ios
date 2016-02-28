@@ -16,7 +16,7 @@
 namespace nwr {
     WebsocketImpl::WebsocketImpl(Websocket * owner) {
         owner_ = owner;
-        queue_ = TaskQueue::system_current_queue();
+        queue_ = TaskQueue::current_queue();
         ready_state_ = Websocket::ReadyState::Connecting;
         context_ = nullptr;
     }

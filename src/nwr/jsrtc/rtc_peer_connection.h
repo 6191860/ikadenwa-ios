@@ -69,9 +69,13 @@ namespace nwr {
             std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> senders();
             std::vector<rtc::scoped_refptr<webrtc::RtpReceiverInterface>> receivers();
             //sequence<RTCRtpTransceiver> getTransceivers ();
-            rtc::scoped_refptr<webrtc::RtpSenderInterface> AddTrack(webrtc::MediaStreamTrackInterface * track,
-                                                                    std::vector<webrtc::MediaStreamInterface*> streams);
-            bool RemoveTrack(webrtc::RtpSenderInterface* sender);
+            
+            
+//            rtc::scoped_refptr<webrtc::RtpSenderInterface> AddTrack(webrtc::MediaStreamTrackInterface * track,
+//                                                                    std::vector<webrtc::MediaStreamInterface*> streams);
+//            bool RemoveTrack(webrtc::RtpSenderInterface* sender);
+            
+            
 //            RTCRtpTransceiver           addTransceiver ((MediaStreamTrack or DOMString) trackOrKind, RTCRtpTransceiverInit init);
 //            attribute EventHandler ontrack;
             

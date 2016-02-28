@@ -12,8 +12,14 @@ namespace nwr {
 namespace jsrtc {
     ClosableImpl::ClosableImpl():
     closed_(false),
-    queue_(TaskQueue::system_current_queue())
+    queue_(TaskQueue::current_queue())
     {}
+    
+    ClosableImpl::ClosableImpl(const std::shared_ptr<TaskQueue> & queue):
+    closed_(false),
+    queue_(queue)
+    {}
+    
     ClosableImpl::~ClosableImpl() {
         Close();
     }
@@ -31,7 +37,7 @@ namespace jsrtc {
         }
     }
     void ClosableImpl::CheckTaskQueue() {
-        if (queue_ != TaskQueue::system_current_queue()) {
+        if (queue_ != TaskQueue::current_queue()) {
             Fatal("invalid task queue");
         }
     }

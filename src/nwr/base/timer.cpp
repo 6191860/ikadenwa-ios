@@ -41,7 +41,7 @@ namespace nwr {
                      const TimeDuration & interval,
                      const Task & task)
     {
-        queue_ = TaskQueue::system_current_queue();
+        queue_ = TaskQueue::current_queue();
         delay_ = delay;
         interval_ = interval;
         repeat_count_ = 0;

@@ -2549,6 +2549,7 @@ namespace ert {
                 
                 thiz->peer_conns_[caller]->set_connection_accepted(true);
                 thiz->SendQueuedCandidates(caller, on_signal_success, on_signal_failure);
+#warning todo
             };
             
             if (thiz->sdp_local_filter_) {
@@ -2817,6 +2818,7 @@ namespace ert {
     void Easyrtc::OnChannelCmd(const Any & msg,
                                const std::function<void(const Any &)> & ack_acceptor_fn)
     {
+        printf("[OnChannelCmd] %s\n", msg.ToJsonString().c_str());
         auto thiz = shared_from_this();
         
         Optional<std::string> caller = msg.GetAt("senderEasyrtcid").AsString();
@@ -2996,7 +2998,7 @@ namespace ert {
             
             (*pc_ptr)->SetRemoteDescription(sd,
                                             [](){
-                                                
+#warning todo
                                             },
                                             [](const std::string & message){
                                                 printf("setRemoteDescription failed %s", message.c_str());
@@ -3419,6 +3421,8 @@ namespace ert {
     }
     
     void Easyrtc::ProcessIceConfig(const Any & arg_ice_config) {
+        printf("[ProcessIceConfig] %s\n", arg_ice_config.ToJsonString().c_str());
+        
         Any ice_config = arg_ice_config;
         
         pc_config_ = std::make_shared<webrtc::PeerConnectionInterface::RTCConfiguration>();

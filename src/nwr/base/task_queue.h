@@ -19,6 +19,6 @@ namespace nwr {
         virtual ~TaskQueue() {}
         virtual void PostTask(const Task & task) = 0;
         
-        static std::shared_ptr<TaskQueue> system_current_queue();
+        static std::shared_ptr<TaskQueue> current_queue();
     };
 }

@@ -20,7 +20,12 @@ namespace jsrtc {
     template <typename T>
     class PostTarget : public std::enable_shared_from_this<T>, public ClosableImpl {
     public:
-        PostTarget()
+        PostTarget():
+        ClosableImpl()
+        {}
+        
+        PostTarget(const std::shared_ptr<TaskQueue> & queue):
+        ClosableImpl(queue)
         {}
         
         virtual ~PostTarget() {}
