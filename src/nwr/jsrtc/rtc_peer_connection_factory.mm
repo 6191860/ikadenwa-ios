@@ -13,6 +13,7 @@
 #include "rtc_peer_connection.h"
 #include "media_stream_track.h"
 #include "media_stream.h"
+#include "env.h"
 
 namespace nwr {
 namespace jsrtc {
@@ -55,7 +56,7 @@ namespace jsrtc {
     std::shared_ptr<MediaStream> RtcPeerConnectionFactory::
     CreateMediaStream(const std::string & label) {
         auto inner_stream = inner_factory_->CreateLocalMediaStream(label);
-        return MediaStream::Create(TaskQueue::current_queue(), *inner_stream);
+        return MediaStream::Create(TaskQueue::current_queue(), *inner_stream, true);
     }
     
     rtc::scoped_refptr<webrtc::AudioSourceInterface> RtcPeerConnectionFactory::
@@ -74,18 +75,20 @@ namespace jsrtc {
     
     std::shared_ptr<MediaStreamTrack> RtcPeerConnectionFactory::
     CreateAudioTrack(const std::string& label,
-                     webrtc::AudioSourceInterface* source)
+                     webrtc::AudioSourceInterface* source,
+                     bool remote)
     {
         auto inner_track = inner_factory_->CreateAudioTrack(label, source);
-        return MediaStreamTrack::Create(TaskQueue::current_queue(), *inner_track);
+        return MediaStreamTrack::Create(TaskQueue::current_queue(), *inner_track, remote);
     }
     
     std::shared_ptr<MediaStreamTrack> RtcPeerConnectionFactory::
     CreateVideoTrack(const std::string& label,
-                     webrtc::VideoSourceInterface * source)
+                     webrtc::VideoSourceInterface * source,
+                     bool remote)
     {
         auto inner_track = inner_factory_->CreateVideoTrack(label, source);
-        return MediaStreamTrack::Create(TaskQueue::current_queue(), *inner_track);
+        return MediaStreamTrack::Create(TaskQueue::current_queue(), *inner_track, remote);
     }
     
     void RtcPeerConnectionFactory::
@@ -99,13 +102,13 @@ namespace jsrtc {
         if (constraints.video()) {
             webrtc::AVFoundationVideoCapturer * capturer = new webrtc::AVFoundationVideoCapturer();
             auto video_source = CreateVideoSource(capturer, constraints.video());
-            auto video_track = CreateVideoTrack("LocalVideo", video_source);
+            auto video_track = CreateVideoTrack("LocalVideo", video_source, false);
             stream->AddTrack(video_track);
         }
         
         if (constraints.audio()) {
             auto audio_source = CreateAudioSource(constraints.audio());
-            auto audio_track = CreateAudioTrack("LocalAudio", audio_source);
+            auto audio_track = CreateAudioTrack("LocalAudio", audio_source, false);
             stream->AddTrack(audio_track);
         }
 #endif
@@ -118,9 +121,7 @@ namespace jsrtc {
     
     void RtcPeerConnectionFactory::OnClose() {
         inner_factory_ = nullptr;
-        worker_thread_->Stop();
         worker_thread_ = nullptr;
-        signaling_thread_->Stop();
         signaling_thread_ = nullptr;
     }
 }

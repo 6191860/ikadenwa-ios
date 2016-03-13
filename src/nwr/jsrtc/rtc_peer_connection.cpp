@@ -264,7 +264,7 @@ namespace jsrtc {
     void RtcPeerConnection::InnerObserver::
     OnAddStream(webrtc::MediaStreamInterface* inner_stream)
     {
-        auto stream = MediaStream::Create(owner->queue(), *inner_stream);
+        auto stream = MediaStream::Create(owner->queue(), *inner_stream, true);
         owner->Post([stream](RtcPeerConnection & owner){
             owner.remote_streams_.push_back(stream);
             FuncCall(owner.on_add_stream_, stream);
@@ -339,6 +339,7 @@ namespace jsrtc {
         rtc::scoped_refptr<CreateSessionDescriptionObserver> thiz(this);
         std::shared_ptr<RtcSessionDescription> desc = RtcSessionDescription::FromWebrtc(*arg_desc);
         if (!desc) { Fatal("invalid"); }
+        delete arg_desc;
         
         owner->Post([thiz, desc](RtcPeerConnection & owner) {
             FuncCall(thiz->success, desc);

@@ -8,6 +8,8 @@
 
 #import "EasyrtcDemo1ViewController.h"
 
+#include "AppDelegate.h"
+
 using namespace nwr;
 
 @implementation EasyrtcDemo1ViewController
@@ -21,15 +23,16 @@ using namespace nwr;
 //    nwr_test_set_->TestSio0();
 }
 
-- (void)onStarted {
+- (void)onStart {
     NSLog(@"onStarted");
-    _easyrtc = ert::Easyrtc::Create("http://192.168.1.6:8080/",
-                                    ObjcPointerMake(self.view));
+    _easyrtc = ert::Easyrtc::Create(GetStaticAppDelegate().rtc_factory,
+                                    "http://192.168.1.6:8080/",
+                                    nullptr);
     _easyrtc->EnableDebug(true);
     [self connect];
 }
 
-- (void)onStopped {
+- (void)onStop {
     
     _easyrtc->Close();
     _easyrtc = nullptr;

@@ -17,5 +17,9 @@ class DebugMenuViewController: UIViewController {
     @IBAction func onDemo2() {
         EasyrtcDemo2Open(self)
     }
+    
+    @IBAction func onDemo3() {
+        EasyrtcDemo3Open(self)
+    }
 
 }

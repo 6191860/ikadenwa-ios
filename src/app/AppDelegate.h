@@ -17,11 +17,14 @@
 
 #include <nwr/base/env.h>
 #include <nwr/base/lib_webrtc.h>
+#include <nwr/jsrtc/rtc_peer_connection_factory.h>
 
 @interface AppDelegate : UIResponder<UIApplicationDelegate> {
 }
 
 @property(nonatomic, retain) UIWindow * window;
+
+@property(nonatomic, assign) std::shared_ptr<nwr::jsrtc::RtcPeerConnectionFactory> rtc_factory;
 
 - (BOOL)application:(UIApplication *)application
 didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
@@ -29,4 +32,7 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions;
 - (void)applicationWillTerminate:(UIApplication *)application;
 
 @end
+
+AppDelegate * GetStaticAppDelegate();
+
 

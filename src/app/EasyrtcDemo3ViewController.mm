@@ -1,29 +1,54 @@
 //
-//  EasyrtcDemo2ViewController.m
+//  EasyrtcDemo3ViewController.m
 //  Ikadenwa
 //
-//  Created by omochimetaru on 2016/02/28.
+//  Created by omochimetaru on 2016/03/12.
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
-#import "EasyrtcDemo2ViewController.h"
+#import "EasyrtcDemo3ViewController.h"
 
 #import "AppDelegate.h"
 
 using namespace nwr;
 
-@implementation EasyrtcDemo2ViewController
+class EasyrtcDemo3ViewControllerUserAgent : public ert::UserAgentInterface {
+public:
+    EasyrtcDemo3ViewController * __weak owner_;
+    virtual ObjcPointer GetElementById(const ert::ElementId & id) {
+        if (id == "selfVideo") {
+            return ObjcPointerMake(owner_.myVideoArea);
+        } else if (id == "callerVideo"){
+            return ObjcPointerMake(owner_.peerVideoArea);
+        } else {
+            return nullptr;
+        }
+    }
+    virtual void AddElement(const ObjcPointer & element) {
+        UIView * view = ObjcPointerGet(element);
+        [owner_.view addSubview:view];
+    }
+};
+
+@interface EasyrtcDemo3ViewController ()
+
+@end
+
+@implementation EasyrtcDemo3ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
     _destViews = [NSMutableArray array];
+    
+    _user_agent = std::make_shared<EasyrtcDemo3ViewControllerUserAgent>();
+    _user_agent->owner_ = self;
 }
 
 - (void)onStart {
     _easyrtc = ert::Easyrtc::Create(GetStaticAppDelegate().rtc_factory,
                                     "http://192.168.1.6:8080/",
-                                    nullptr);
+                                    _user_agent.get());
     _easyrtc->EnableDebug(true);
     [self connect];
 }
@@ -36,35 +61,18 @@ using namespace nwr;
 }
 
 - (void)connect {
-    _easyrtc->EnableDebug(true);
-    _easyrtc->EnableDataChannels(true);
-    _easyrtc->EnableVideo(false);
-    _easyrtc->EnableAudio(false);
-    _easyrtc->EnableVideoReceive(false);
-    _easyrtc->EnableAudioReceive(false);
-    _easyrtc->set_data_channel_open_listener([self](const std::string & other_party, bool v){
-        [self openListener:other_party];
-    });
-    _easyrtc->set_data_channel_close_listener([self](const std::string & other_party) {
-        [self closeListener:other_party];
-    });
-    _easyrtc->SetPeerListener(None(), None(),
-                              [self](const std::string & who,
-                                     const std::string & msg_type,
-                                     const Any & content,
-                                     const Any & target)
-                              {
-                                  [self addToConversation:who msgType:msg_type content:content];
-                              });
+    _easyrtc->set_video_dims(640, 480, None());
     _easyrtc->set_room_occupant_listener([self](const Optional<std::string> & room_name,
-                                                 const std::map<std::string, Any> & occupant_list,
-                                                 const Any & is_primary)
+                                                const std::map<std::string, Any> & occupant_list,
+                                                const Any & is_primary)
                                          {
                                              [self convertListToButtons:room_name
                                                               occupants:occupant_list
                                                               isPrimary:is_primary];
                                          });
-    _easyrtc->Connect("easyrtc.dataMessaging",
+    _easyrtc->EasyApp("easyrtc.audioVideoSimple",
+                      Some(std::string("selfVideo")),
+                      { "callerVideo" },
                       [self](const std::string & easyrtcid)
                       {
                           [self loginSuccess:easyrtcid];
@@ -73,28 +81,6 @@ using namespace nwr;
                       {
                           [self loginFailure:errorCode text:message];
                       });
-}
-
-- (void)addToConversation:(const std::string &)who
-                  msgType:(const std::string &)msgType
-                  content:(const nwr::Any &)content
-{
-    NSMutableString * text = [NSMutableString stringWithString:_receiveTextView.text];
-    
-    std::string content_str = content.AsString() || std::string();
-    
-    [text appendFormat:@"%@: %@\n", ToNSString(who), ToNSString(content_str)];
-    _receiveTextView.text = text;
-}
-
-- (void)openListener:(const std::string &)other_party {
-    channel_is_active_[other_party] = true;
-    [self updateButtonState:other_party];
-}
-
-- (void)closeListener:(const std::string &)other_party {
-    channel_is_active_[other_party] = false;
-    [self updateButtonState:other_party];
 }
 
 - (void)convertListToButtons:(const Optional<std::string> &)roomName
@@ -106,10 +92,10 @@ using namespace nwr;
     }
     [_destViews removeAllObjects];
     
-    occupants_.clear();
+    _occupants.clear();
     for (const auto & easyrtcid : Keys(occupants)) {
         auto occupant = occupants.at(easyrtcid);
-        occupants_.push_back(occupant);
+        _occupants.push_back(occupant);
         
         printf("%s\n", occupant.ToJsonString().c_str());
         
@@ -147,22 +133,6 @@ using namespace nwr;
          [NSLayoutConstraint
           constraintsWithVisualFormat:@"H:[n]-(4)-[v]"
           options:0 metrics:nil views:@{@"n": nameLabel, @"v": connectButton}]];
-        
-        UIButton * sendButton = [UIButton buttonWithType:UIButtonTypeSystem];
-        [destView addSubview:sendButton];
-        sendButton.tag = 3;
-        sendButton.titleLabel.font = [UIFont systemFontOfSize:12.0];
-        [sendButton setTitle:@"send" forState:UIControlStateNormal];
-        [sendButton addTarget:self action:@selector(onSendButton:) forControlEvents:UIControlEventTouchUpInside];
-        sendButton.translatesAutoresizingMaskIntoConstraints = NO;
-        [destView addConstraints:
-         [NSLayoutConstraint
-          constraintsWithVisualFormat:@"V:|-(0)-[v]"
-          options:0 metrics:nil views:@{@"n": nameLabel, @"v": sendButton}]];
-        [destView addConstraints:
-         [NSLayoutConstraint
-          constraintsWithVisualFormat:@"H:[l]-(4)-[v]"
-          options:0 metrics:nil views:@{@"l": connectButton ,@"v": sendButton}]];        
     }
     
     for (int i = 0; i < _destViews.count; i++) {
@@ -174,7 +144,7 @@ using namespace nwr;
              [NSLayoutConstraint
               constraintsWithVisualFormat:@"V:[a]-(8)-[v]"
               options:0 metrics:nil
-              views:@{@"a": _sendTextView,
+              views:@{@"a": _myNameLabel,
                       @"v": destView}]];
         } else {
             [self.view addConstraints:
@@ -204,11 +174,11 @@ using namespace nwr;
 }
 
 - (void)updateButtonState:(const std::string &)other_easyrtcid {
-    bool is_connected = channel_is_active_[other_easyrtcid];
+    bool is_connected = _channel_is_active[other_easyrtcid];
     
     int index = -1;
-    for (int i = 0; i < occupants_.size(); i++) {
-        const auto & occupant = occupants_[i];
+    for (int i = 0; i < _occupants.size(); i++) {
+        const auto & occupant = _occupants[i];
         std::string userid = occupant.GetAt("easyrtcid").AsString().value();
         if (other_easyrtcid == userid) {
             index = i;
@@ -222,56 +192,25 @@ using namespace nwr;
     if (connectButton) {
         connectButton.enabled = !is_connected;
     }
-    
-    UIButton * sendButton = [_destViews[index] viewWithTag:3];
-    if (sendButton) {
-        sendButton.enabled = is_connected;
-    }
 }
 
-- (void)startCall:(const std::string &)other_easyrtcid {
-    if (_easyrtc->GetConnectStatus(other_easyrtcid) == ert::Easyrtc::ConnectStatus::NotConnected)
-    {
-        _easyrtc->Call(other_easyrtcid, None(),
-                       [self, other_easyrtcid](const std::string & caller, const std::string & media)
-                       {
-                           if (media == "datachannel") {
-                               self->connect_list_[other_easyrtcid] = true;
-                           }
-                       },
-                       [self, other_easyrtcid](const std::string & error_code, const std::string & error_text){
-                           self->connect_list_[other_easyrtcid] = false;
-                           self->_easyrtc->ShowError(error_code, error_text);
-                       },
-                       [self](bool was_accepted, const std::string & user){
-                           
-                       });
-    }
-    else {
-        _easyrtc->ShowError("ALREADY-CONNECTED",
-                            Format("already connected to %s", _easyrtc->IdToName(other_easyrtcid).c_str()));
-    }
-}
 
-- (void)sendStuffP2P:(const std::string &)other_easyrtcid {
-    auto text = ToString(_sendTextView.text);
+- (void)performCall:(std::string)otherEasyrtcid {
+    _easyrtc->HangupAll();
     
-    if (_easyrtc->GetConnectStatus(other_easyrtcid) == ert::Easyrtc::ConnectStatus::IsConnected) {
-        _easyrtc->SendDataP2P(other_easyrtcid, "msg", Any(text));
-    }
-    else {
-        _easyrtc->ShowError("NOT-CONNECTED",
-                            Format("not connected to %s yes.", _easyrtc->IdToName(other_easyrtcid).c_str()));
-    }
-    
-    [self addToConversation:"Me" msgType:"msgtype" content:Any(text)];
-    
-    _sendTextView.text = @"";
+    _easyrtc->Call(otherEasyrtcid,
+                   None(),
+                   [](const std::string &, const std::string &) {
+                   },
+                   [](const std::string &, const std::string &) {
+                   },
+                   [](bool, const std::string &){
+                   });
 }
 
 - (void)loginSuccess:(const std::string &)easyrtcid
 {
-    self_easyrtcid_ = easyrtcid;
+    _self_easyrtcid = easyrtcid;
     _myNameLabel.text = [NSString stringWithFormat:@"I am %@", ToNSString(easyrtcid)];
 }
 
@@ -279,10 +218,6 @@ using namespace nwr;
                 text:(const std::string &)text
 {
     _easyrtc->ShowError(code, "failure to login");
-}
-
-- (IBAction)onTapGesture:(UITapGestureRecognizer *)recr {
-    [self.view endEditing:YES];
 }
 
 - (void)onConnectButton:(UIButton *)button {
@@ -296,28 +231,15 @@ using namespace nwr;
     }
     if (index == -1) { return; }
     
-    std::string user = occupants_[index].GetAt("easyrtcid").AsString().value();
-    [self startCall:user];
+    std::string user = _occupants[index].GetAt("easyrtcid").AsString().value();
+    [self performCall:user];
     
 }
-- (void)onSendButton:(UIButton *)button {
-    int index = -1;
-    for (int i = 0; i < _destViews.count; i++) {
-        UIView * destView = _destViews[i];
-        if (button == [destView viewWithTag:3]) {
-            index = i;
-            break;
-        }
-    }
-    if (index == -1) { return; }
-    
-    std::string user = occupants_[index].GetAt("easyrtcid").AsString().value();
-    [self sendStuffP2P:user];
-}
-
 
 - (IBAction)onCloseButton {
     [self dismissViewControllerAnimated:true completion:nil];
 }
+
+
 
 @end

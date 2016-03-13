@@ -16,6 +16,7 @@ extern "C" {
 
 void EasyrtcDemo1Open(UIViewController * current);
 void EasyrtcDemo2Open(UIViewController * current);
+void EasyrtcDemo3Open(UIViewController * current);
 
 #ifdef __cplusplus
 }

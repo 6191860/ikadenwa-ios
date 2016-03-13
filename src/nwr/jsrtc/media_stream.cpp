@@ -15,10 +15,11 @@ namespace nwr {
 namespace jsrtc {
     
     std::shared_ptr<MediaStream> MediaStream::Create(const std::shared_ptr<TaskQueue> & queue,
-                                                     webrtc::MediaStreamInterface & inner_stream)
+                                                     webrtc::MediaStreamInterface & inner_stream,
+                                                     bool remote)
     {
         auto thiz = std::shared_ptr<MediaStream>(new MediaStream(queue));
-        thiz->Init(inner_stream);
+        thiz->Init(inner_stream, remote);
         return thiz;
     }
     
@@ -142,7 +143,7 @@ namespace jsrtc {
     {
     }
     
-    void MediaStream::Init(webrtc::MediaStreamInterface & inner_stream) {
+    void MediaStream::Init(webrtc::MediaStreamInterface & inner_stream, bool remote) {
         inner_stream_ = rtc::scoped_refptr<webrtc::MediaStreamInterface>(&inner_stream);
         active_ = false;
         
@@ -153,12 +154,12 @@ namespace jsrtc {
         });
         
         for (const auto & inner_track : inner_stream.GetAudioTracks()) {
-            auto track = MediaStreamTrack::Create(queue(), *inner_track);
+            auto track = MediaStreamTrack::Create(queue(), *inner_track, remote);
             audio_tracks_.push_back(track);
             SubscribeTrackChange(track);
         }
         for (const auto & inner_track : inner_stream.GetVideoTracks()) {
-            auto track = MediaStreamTrack::Create(queue(), *inner_track);
+            auto track = MediaStreamTrack::Create(queue(), *inner_track, remote);
             video_tracks_.push_back(track);
             SubscribeTrackChange(track);
         }

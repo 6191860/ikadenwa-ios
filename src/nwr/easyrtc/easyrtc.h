@@ -40,6 +40,10 @@
 #include <nwr/jsrtc/rtc_peer_connection.h>
 #include <nwr/jsrtc/rtc_peer_connection_factory.h>
 
+#ifdef __OBJC__
+#   import <nwr/jsrtc/NWRHtmlMediaElementView.h>
+#endif
+
 #include "peer_conn.h"
 #include "receive_peer.h"
 #include "aggregating_timer.h"
@@ -50,18 +54,28 @@ namespace nwr {
 namespace ert {
     using namespace jsrtc;
     
+    using ElementId = std::string;
+    
+    class UserAgentInterface {
+    public:
+        virtual ~UserAgentInterface() {}
+        virtual ObjcPointer GetElementById(const ElementId & id) = 0;
+        virtual void AddElement(const ObjcPointer & element) = 0;
+    };
+    
     class Easyrtc: public std::enable_shared_from_this<Easyrtc> {
     public:
         friend PeerConn;
-        //  work_view: UIView
-        static std::shared_ptr<Easyrtc> Create(const std::string & server_path,
-                                               const ObjcPointer & work_view);
+        static std::shared_ptr<Easyrtc> Create(const std::shared_ptr<RtcPeerConnectionFactory> & rtc_factory,
+                                               const std::string & server_path,
+                                               UserAgentInterface * user_agent);
         ~Easyrtc();
         
     private:
         Easyrtc();
-        void Init(const std::string & server_path,
-                  const ObjcPointer & work_view);
+        void Init(const std::shared_ptr<RtcPeerConnectionFactory> & rtc_factory,
+                  const std::string & server_path,
+                  UserAgentInterface * user_agent);
     public:
         void Close();
     private:
@@ -152,7 +166,9 @@ namespace ert {
                                                 const std::string &)> & failure_callback);
         Any desired_video_properties_;
         //  set_video_source
+    public:
         void set_video_dims(int width, int height, const Optional<double> & frame_rate);
+    private:
         //  set_screen_capture
         Optional<MediaStreamConstraints> preset_media_constraints_;
         MediaStreamConstraints GetUserMediaConstraints();
@@ -396,8 +412,10 @@ namespace ert {
                       const std::function<void(bool, const std::string &)> & was_accepted_cb,
                       const Optional<std::vector<std::string>> & stream_names);
         void HangupBody(const std::string & other_user);
+    public:
         void Hangup(const std::string & other_user);
         void HangupAll();
+    private:
         bool DoesDataChannelWork(const std::string & other_user);
         std::shared_ptr<MediaStream>
         GetRemoteStream(const std::string & easyrtcid,
@@ -489,13 +507,10 @@ namespace ert {
         bool auto_add_close_buttons_;
         void DontAddCloseButtons();
         
-        using ElementId = int;
         void EasyAppBody(const Optional<ElementId> & monitor_video_id,
                          const std::vector<ElementId> & video_ids);
-        // search view in work view not recursively
-        ObjcPointer GetElementById(ElementId id);
         std::vector<ElementId> video_ids_;
-        std::map<ObjcPointer, Optional<std::string>> video_id_to_caller_map_;
+        std::map<ObjcPointer, std::string> video_id_to_caller_map_;
         bool ValidateVideoIds(const ElementId & monitor_video_id,
                               const std::vector<ElementId> & video_ids);
         Optional<std::string> GetCallerOfVideo(const ObjcPointer & video_object);
@@ -505,18 +520,20 @@ namespace ert {
         void set_on_call(const std::function<void(const std::string &, const int &)> & cb);
         std::function<void(const std::string &, int)> on_hangup_;
         void set_on_hangup(const std::function<void(const std::string &, int)> & cb);
-        Optional<ObjcPointer> GetIthVideo(int i);
+        ObjcPointer GetIthVideo(int i);
         Optional<std::string> GetIthCaller(int i);
         int GetSlotOfCaller(const std::string & easyrtcid);
         void HideVideo(const ObjcPointer & video);
         void ShowVideo(const ObjcPointer & video, const std::shared_ptr<MediaStream> & stream);
         Optional<ObjcPointer> refresh_pane_;
+    public:
         void EasyApp(const std::string & application_name,
                      const Optional<ElementId> & monitor_video_id,
                      const std::vector<ElementId> & video_ids,
                      const std::function<void(const std::string &)> & on_ready,
                      const std::function<void(const std::string &,
                                               const std::string &)> & on_failure);
+    private:
         std::function<void(bool, const Optional<std::string> &)> got_media_callback_;
         void set_got_media(const std::function<void(bool, const Optional<std::string> &)> & callback);
         std::function<void(bool, const Optional<std::string> &)> got_connection_callback_;
@@ -525,8 +542,8 @@ namespace ert {
 
         // ---
         bool closed_;
-        std::shared_ptr<RtcPeerConnectionFactory> peer_connection_factory_;
-        ObjcPointer work_view_;
+        std::shared_ptr<RtcPeerConnectionFactory> rtc_factory_;
+        UserAgentInterface * user_agent_;
         void SetPeerConn(const std::string & other_user, const std::shared_ptr<PeerConn> & peer_conn);
         void DeletePeerConn(const std::string & other_user);
     };

@@ -33,10 +33,15 @@
 #include <webrtc/api/videotrack.h>
 
 #ifdef __OBJC__
-#   import <webrtc/api/objc/RTCVideoRenderer.h>
-#   import <webrtc/api/objc/RTCEAGLVideoView.h>
-#   import <webrtc/api/objc/avfoundationvideocapturer.h>
-#   import <webrtc/api/objc/RTCVideoRendererAdapter+Private.h>
+#   import <webrtc/base/objc/RTCCameraPreviewView.h>
+#   import <talk/app/webrtc/objc/public/RTCVideoRenderer.h>
+#   import <talk/app/webrtc/objc/public/RTCEAGLVideoView.h>
+#   import <talk/app/webrtc/objc/avfoundationvideocapturer.h>
+#   import <talk/app/webrtc/objc/RTCVideoRendererAdapter.h>
+//#   import <webrtc/api/objc/RTCVideoRenderer.h>
+//#   import <webrtc/api/objc/RTCEAGLVideoView.h>
+//#   import <webrtc/api/objc/avfoundationvideocapturer.h>
+//#   import <webrtc/api/objc/RTCVideoRendererAdapter+Private.h>
 #endif
 
 #pragma clang diagnostic pop

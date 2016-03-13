@@ -14,6 +14,8 @@
 		D6155E931C66157200A8B6CA /* binary.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E911C66157200A8B6CA /* binary.cpp */; };
 		D6155E961C6615B100A8B6CA /* packet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E941C6615B100A8B6CA /* packet.cpp */; };
 		D6155E991C66273500A8B6CA /* env.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6155E971C66273500A8B6CA /* env.cpp */; };
+		D631E8041C93D19000C195A5 /* EasyrtcDemo3ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8021C93D19000C195A5 /* EasyrtcDemo3ViewController.mm */; };
+		D631E8051C93D19000C195A5 /* EasyrtcDemo3ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8031C93D19000C195A5 /* EasyrtcDemo3ViewController.xib */; };
 		D6455FD21C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */; };
 		D6455FD41C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */; };
 		D65236D61C74A1C600D399F6 /* rtc_session_description.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */; };
@@ -136,6 +138,9 @@
 		D6155E951C6615B100A8B6CA /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = nwr/socketio/packet.h; sourceTree = "<group>"; };
 		D6155E971C66273500A8B6CA /* env.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = env.cpp; sourceTree = "<group>"; };
 		D6155E981C66273500A8B6CA /* env.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = env.h; sourceTree = "<group>"; };
+		D631E8011C93D19000C195A5 /* EasyrtcDemo3ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemo3ViewController.h; path = app/EasyrtcDemo3ViewController.h; sourceTree = "<group>"; };
+		D631E8021C93D19000C195A5 /* EasyrtcDemo3ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemo3ViewController.mm; path = app/EasyrtcDemo3ViewController.mm; sourceTree = "<group>"; };
+		D631E8031C93D19000C195A5 /* EasyrtcDemo3ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EasyrtcDemo3ViewController.xib; path = app/EasyrtcDemo3ViewController.xib; sourceTree = "<group>"; };
 		D6455FD01C82E81300DFDDFC /* EasyrtcDemo2ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemo2ViewController.h; path = app/EasyrtcDemo2ViewController.h; sourceTree = "<group>"; };
 		D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemo2ViewController.mm; path = app/EasyrtcDemo2ViewController.mm; sourceTree = "<group>"; };
 		D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EasyrtcDemo2ViewController.xib; path = app/EasyrtcDemo2ViewController.xib; sourceTree = "<group>"; };
@@ -342,6 +347,9 @@
 				D6455FD01C82E81300DFDDFC /* EasyrtcDemo2ViewController.h */,
 				D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */,
 				D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */,
+				D631E8011C93D19000C195A5 /* EasyrtcDemo3ViewController.h */,
+				D631E8021C93D19000C195A5 /* EasyrtcDemo3ViewController.mm */,
+				D631E8031C93D19000C195A5 /* EasyrtcDemo3ViewController.xib */,
 				D6B9DE331C6C8E4700EBF183 /* nwr_test_set.h */,
 				D6B9DE321C6C8E4700EBF183 /* nwr_test_set.cpp */,
 			);
@@ -687,6 +695,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D6652B551C817FA200F85895 /* DebugMenuViewController.xib in Resources */,
+				D631E8051C93D19000C195A5 /* EasyrtcDemo3ViewController.xib in Resources */,
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
 				D6455FD41C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib in Resources */,
 				D6A690581C42361700952A7F /* Assets.xcassets in Resources */,
@@ -752,6 +761,7 @@
 				D6F78A461C54110700B21614 /* json.cpp in Sources */,
 				D65236FA1C7A096B00D399F6 /* media_track_constraints.cpp in Sources */,
 				D6F78A531C55018A00B21614 /* manager.cpp in Sources */,
+				D631E8041C93D19000C195A5 /* EasyrtcDemo3ViewController.mm in Sources */,
 				D6B9DE311C6BDBBD00EBF183 /* any_emitter.cpp in Sources */,
 				D6155E931C66157200A8B6CA /* binary.cpp in Sources */,
 				D65237CD1C7E92EF00D399F6 /* http_operation_impl.mm in Sources */,

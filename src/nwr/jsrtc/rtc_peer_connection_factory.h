@@ -17,6 +17,7 @@
 
 namespace nwr {
 namespace jsrtc {
+    class Env;
     class RtcPeerConnection;
     class MediaStream;
     class MediaStreamTrack;
@@ -43,10 +44,12 @@ namespace jsrtc {
         
         std::shared_ptr<MediaStreamTrack>
         CreateAudioTrack(const std::string& label,
-                         webrtc::AudioSourceInterface * source);
+                         webrtc::AudioSourceInterface * source,
+                         bool remote);
         std::shared_ptr<MediaStreamTrack>
         CreateVideoTrack(const std::string& label,
-                         webrtc::VideoSourceInterface * source);
+                         webrtc::VideoSourceInterface * source,
+                         bool remote);
 //        bool StartAecDump(rtc::PlatformFile file, int64_t max_size_bytes);
 //        void StopAecDump();
 //        bool StartRtcEventLog(rtc::PlatformFile file);

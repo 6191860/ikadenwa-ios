@@ -12,15 +12,17 @@
 namespace nwr {
 namespace jsrtc {
     std::shared_ptr<MediaStreamTrack> MediaStreamTrack::Create(const std::shared_ptr<TaskQueue> & queue,
-                                                               webrtc::MediaStreamTrackInterface & inner_track)
+                                                               webrtc::MediaStreamTrackInterface & inner_track,
+                                                               bool remote)
     {
         auto thiz = std::shared_ptr<MediaStreamTrack>(new MediaStreamTrack(queue));
-        thiz->Init(inner_track);
+        thiz->Init(inner_track, remote);
         return thiz;
     }
 
     MediaStreamTrack::~MediaStreamTrack() {
         Close();
+        printf("[MediaStreamTrack(%p)] dtor\n", this);
     }
     
     webrtc::MediaStreamTrackInterface & MediaStreamTrack::inner_track() {
@@ -62,7 +64,7 @@ namespace jsrtc {
     }
     
     bool MediaStreamTrack::remote() {
-        return inner_source()->remote();
+        return remote_;
     }
     
     MediaStreamTrackState MediaStreamTrack::ready_state() {
@@ -78,13 +80,15 @@ namespace jsrtc {
         if (!track) {
             auto inner_audio_track = this->inner_audio_track();
             if (inner_audio_track) {
-                track = factory->CreateAudioTrack(label(), inner_audio_track->GetSource());
+                track = factory->CreateAudioTrack(label(), inner_audio_track->GetSource(),
+                                                  remote());
             }
         }
         if (!track) {
             auto inner_video_track = this->inner_video_track();
             if (inner_video_track) {
-                track = factory->CreateVideoTrack(label(), inner_video_track->GetSource());
+                track = factory->CreateVideoTrack(label(), inner_video_track->GetSource(),
+                                                  remote());
             }
         }
         track->set_enabled(enabled());
@@ -134,18 +138,21 @@ namespace jsrtc {
         inner_track->RemoveRenderer(&renderer);
     }
 
-    void MediaStreamTrack::OnClose() {
+    void MediaStreamTrack::OnClose() {       
+        inner_track_->UnregisterObserver(inner_observer_.get());
+        
         Stop();
-        inner_track_ = nullptr;
-        inner_observer_ = nullptr;
         
         id_.clear();
-        enabled_ = false;
-        ready_state_ = MediaStreamTrackState::Ended;
+        
+        inner_set_enabled(false);
+        inner_set_ready_state(MediaStreamTrackState::Ended);
+        
         on_ended_ = nullptr;
         change_emitter_->RemoveAllListeners();
-        
-        inner_track_->UnregisterObserver(inner_observer_.get());
+                
+        inner_track_ = nullptr;
+        inner_observer_ = nullptr;
     }
     
     MediaStreamTrack::ChangeObserver::
@@ -167,7 +174,7 @@ namespace jsrtc {
     PostTarget<nwr::jsrtc::MediaStreamTrack>(queue)
     {}
     
-    void MediaStreamTrack::Init(webrtc::MediaStreamTrackInterface & inner_track) {
+    void MediaStreamTrack::Init(webrtc::MediaStreamTrackInterface & inner_track, bool remote) {
         inner_track_ = rtc::scoped_refptr<webrtc::MediaStreamTrackInterface>(&inner_track);
         change_emitter_ = std::make_shared<decltype(change_emitter_)::element_type>();
         
@@ -177,6 +184,7 @@ namespace jsrtc {
         id_ = GetRandomString(20);
         
         enabled_ = inner_track_->enabled();
+        remote_ = remote;
         ready_state_ = ComputeState(inner_track_->state());
     }
     

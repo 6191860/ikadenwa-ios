@@ -13,7 +13,7 @@
 - (BOOL)isForeground;
 - (BOOL)isAppeared;
 - (BOOL)isStarted;
-- (void)onStarted;
-- (void)onStopped;
+- (void)onStart;
+- (void)onStop;
 
 @end

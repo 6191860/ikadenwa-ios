@@ -31,7 +31,8 @@ namespace jsrtc {
     class MediaStreamTrack : public PostTarget<MediaStreamTrack> {
     public:
         static std::shared_ptr<MediaStreamTrack> Create(const std::shared_ptr<TaskQueue> & queue,
-                                                        webrtc::MediaStreamTrackInterface & inner_track);
+                                                        webrtc::MediaStreamTrackInterface & inner_track,
+                                                        bool remote);
         
         virtual ~MediaStreamTrack();
         
@@ -79,7 +80,7 @@ namespace jsrtc {
         };
         
         MediaStreamTrack(const std::shared_ptr<TaskQueue> & queue);
-        void Init(webrtc::MediaStreamTrackInterface & inner_track);
+        void Init(webrtc::MediaStreamTrackInterface & inner_track, bool remote);
         
         void inner_set_enabled(bool value);
         void inner_set_ready_state(MediaStreamTrackState value);
@@ -91,6 +92,7 @@ namespace jsrtc {
         
         std::string id_;
         bool enabled_;
+        bool remote_;
         MediaStreamTrackState ready_state_;
         std::function<void()> on_ended_;
         

@@ -66,15 +66,15 @@
     if (_isStarted != value) {
         _isStarted = value;
         if (value) {
-            [self onStarted];
+            [self onStart];
         } else {
-            [self onStopped];
+            [self onStop];
         }
     }
 }
 
-- (void)onStarted {}
-- (void)onStopped {}
+- (void)onStart {}
+- (void)onStop {}
 
 
 @end

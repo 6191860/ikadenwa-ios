@@ -74,17 +74,15 @@ namespace jsrtc {
         inner_channel_->Send(wdata);
     }
     
-    void RtcDataChannel::OnClose() {        
+    void RtcDataChannel::OnClose() {
+        inner_channel_->UnregisterObserver();
+        
         inner_set_ready_state(RtcDataChannelState::Closed);
         
-        if (inner_channel_) {
-            inner_channel_->Close();
-            inner_channel_ = nullptr;
-        }
+        inner_channel_->Close();
+        inner_channel_ = nullptr;
         inner_observer_ = nullptr;
-        
-        ready_state_ = RtcDataChannelState::Closed;
-        
+                
         on_open_ = nullptr;
         on_close_ = nullptr;
         on_message_ = nullptr;
