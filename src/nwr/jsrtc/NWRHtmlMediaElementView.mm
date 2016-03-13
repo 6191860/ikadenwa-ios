@@ -98,9 +98,6 @@ static CGRect CGSizeFit(CGSize size, CGRect bounds) {
 
 - (void)setSrcObject:(std::shared_ptr<nwr::jsrtc::MediaStream>)srcObject {
     if (_srcObjectVideoTrack) {
-        
-        printf("[NWRHtmlMediaElementView] _srcObjectVideoTrack=%p\n", _srcObjectVideoTrack.get());
-        
         if (_glVideoView) {
             _srcObjectVideoTrack->RemoveVideoRenderer(*_glVideoViewAdapter.nativeVideoRenderer);
         }
