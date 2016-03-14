@@ -32,6 +32,7 @@
 
 - (IBAction)onIkadenwa {
     UIViewController * vc = [[IkadenwaRoomViewController alloc] initWithNibName:@"IkadenwaRoomViewController" bundle:nil];
+    
     [self presentViewController:vc animated:YES completion:nil];
 }
 

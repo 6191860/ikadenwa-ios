@@ -13,10 +13,13 @@
 #import "Context.h"
 #import "Room.h"
 #import "User.h"
+#import "MyScrollView.h"
 
 @interface IkadenwaRoomViewController : BaseViewController<Context>
 
 @property(nonatomic, assign) std::shared_ptr<nwr::ert::Easyrtc> easyrtc;
 @property(nonatomic, retain) Room * room;
+
+@property(nonatomic, retain) IBOutlet MyScrollView * scrollView;
 
 @end
