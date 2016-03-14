@@ -153,12 +153,14 @@ namespace ert {
         std::map<std::string, Any> room_join_;
         bool IsNameValid(const std::string & name);
         void set_cookie_id(const std::string & cookie_id);
+    public:
         void JoinRoom(const std::string & room_name,
                       const Any & room_parameters,
                       const std::function<void(const std::string &)> & success_cb,
                       const std::function<void(const std::string &,
                                                const std::string &,
                                                const std::string &)> & failure_cb);
+    private:
         void LeaveRoom(const std::string & room_name,
                        const std::function<void(const std::string &)> & success_callback,
                        const std::function<void(const std::string &,
@@ -259,7 +261,9 @@ namespace ert {
         void EnableMicrophone(bool enable, const Optional<std::string> & stream_name);
         //  muteVideoObject (DOM)
         //  getLocalStreamAsUrl ; for <video>, <canvas>
+    public:
         std::shared_ptr<MediaStream> GetLocalStream(const Optional<std::string> & stream_name);
+    private:
         
         //  NWRHtmlMediaElementView
         void ClearMediaStream(const ObjcPointer & element);
@@ -271,32 +275,42 @@ namespace ert {
         //  loadStylesheet
         std::string FormatError(const Any & error);
         
+    public:
         void InitMediaSource(const Optional<std::string> & stream_name,
                              const std::function<void(const std::shared_ptr<MediaStream> &)> & success_callback,
                              const std::function<void(const std::string &,
                                                       const std::string &)> & error_callback);
+    private:
         std::function<void (const std::string &,
                             const std::function<void (bool,
                                                       const Optional<std::vector<std::string>> &)> &)> accept_check_;
+    public:
         void set_accept_checker(const std::function<void (const std::string &,
                                                           const std::function<void (bool,
                                                                                     const Optional<std::vector<std::string>> &)> &)> & accept_check);
+    private:
         std::function<void(const std::string &,
                            const std::shared_ptr<MediaStream> &,
                            const std::string &)> stream_acceptor_;
+    public:
         void set_stream_acceptor(const std::function<void(const std::string &,
                                                           const std::shared_ptr<MediaStream> &,
                                                           const std::string &)> & acceptor);
+    private:
         std::function<void(const Any &)> on_error_;
+    public:
         void set_on_error(const std::function<void(const Any &)> & err_listener);
+    private:
         std::function<void (const std::string &, bool)> call_canceled_;
         void set_call_canceled(const std::function<void(const std::string &, bool)> & call_canceled);
         std::function<void (const std::string &,
                             const std::shared_ptr<MediaStream> &,
                             const std::string &)> on_stream_closed_;
+    public:
         void set_on_stream_closed(const std::function<void(const std::string &,
                                                            const std::shared_ptr<MediaStream> &,
                                                            const std::string &)> & on_stream_closed);
+    private:
         //  setVideoBandwidth ; deprecated in original
         bool SupportsDataChannels();
     public:
@@ -316,7 +330,9 @@ namespace ert {
         sio0::SocketOptions connection_options_;
         void set_socket_url(const std::string & socket_url,
                             const Optional<sio0::SocketOptions> & options);
+    public:
         bool set_user_name(const std::string & username);
+    private:
         std::vector<std::tuple<std::string, std::string>> UsernameToIds(const std::string & username,
                                                                         const Optional<std::string> & room);
         Any GetRoomApiField(const std::string & room_name,
@@ -347,7 +363,9 @@ namespace ert {
         Fields fields_;
         bool IsEmptyObj(const Any & obj);
         void DisconnectBody();
+    public:
         void Disconnect();
+    private:
         void SendSignaling(const Optional<std::string> & dest_user,
                            const std::string & msg_type,
                            const Any & msg_data,
@@ -365,11 +383,11 @@ namespace ert {
                         const std::string & msg_type,
                         const Any & msg_data,
                         const std::function<void(const Any &)> & arg_ack_handler);
-    private:
         void SendData(const std::string & dest_user,
                       const std::string & msg_type,
                       const Any & msg_data,
                       const std::function<void(const Any &)> & ack_handler);
+    private:
         void SendPeerMessage(const Any & destination,
                              const std::string & msg_type,
                              const Any & msg_data,

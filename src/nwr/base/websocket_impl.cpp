@@ -60,7 +60,7 @@ namespace nwr {
             info.context = context_->context();
             info.address = url_parts.hostname.c_str();
             info.port = url_parts.port || -1;
-            info.ssl_connection = is_ssl ? 1 : 0;
+            info.ssl_connection = is_ssl ? 2 : 0;
             info.path = path.c_str();
             info.host = url_parts.hostname.c_str();
             info.origin = origin.c_str();

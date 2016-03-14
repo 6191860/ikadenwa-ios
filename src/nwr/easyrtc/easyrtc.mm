@@ -3545,6 +3545,8 @@ namespace ert {
             msg_data.SetAt("credential", Any(credential_.value()));
         }
         
+        printf("%s\n", msg_data.ToJsonString().c_str());
+        
         websocket_->JsonEmit("easyrtcAuth",
                          {
                              Any(Any::ObjectType

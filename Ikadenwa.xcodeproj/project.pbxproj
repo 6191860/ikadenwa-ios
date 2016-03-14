@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D631E8041C93D19000C195A5 /* EasyrtcDemo3ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8021C93D19000C195A5 /* EasyrtcDemo3ViewController.mm */; };
-		D631E8051C93D19000C195A5 /* EasyrtcDemo3ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8031C93D19000C195A5 /* EasyrtcDemo3ViewController.xib */; };
 		D631E8441C95754F00C195A5 /* peer_conn.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE521C6E44C700EBF183 /* peer_conn.cpp */; };
 		D631E8451C95754F00C195A5 /* receive_peer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE5B1C6F2A0B00EBF183 /* receive_peer.cpp */; };
 		D631E8461C95754F00C195A5 /* aggregating_timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65236E21C760E3900D399F6 /* aggregating_timer.cpp */; };
@@ -73,16 +71,23 @@
 		D631E8C61C95833300C195A5 /* libnwr_base.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D631E85A1C957F4E00C195A5 /* libnwr_base.a */; };
 		D631E8C71C95833300C195A5 /* libnwr_jsrtc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D631E8AA1C95811100C195A5 /* libnwr_jsrtc.a */; };
 		D631E8C81C95833300C195A5 /* libnwr_socketio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D631E8821C9580AD00C195A5 /* libnwr_socketio.a */; };
-		D6455FD21C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */; };
-		D6455FD41C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */; };
-		D65237B11C7DD68B00D399F6 /* EasyrtcDemo1ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D65237AF1C7DD68B00D399F6 /* EasyrtcDemo1ViewController.mm */; };
-		D65237B31C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D65237B21C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib */; };
-		D65237B61C7DE07900D399F6 /* EasyrtcDemos.mm in Sources */ = {isa = PBXBuildFile; fileRef = D65237B51C7DE07900D399F6 /* EasyrtcDemos.mm */; };
+		D631E8CC1C958E8600C195A5 /* Room.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8CB1C958E8600C195A5 /* Room.mm */; };
+		D631E8DC1C958EB900C195A5 /* DebugMenuViewController.h in Sources */ = {isa = PBXBuildFile; fileRef = D631E8CD1C958EB900C195A5 /* DebugMenuViewController.h */; };
+		D631E8DD1C958EB900C195A5 /* DebugMenuViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8CE1C958EB900C195A5 /* DebugMenuViewController.xib */; };
+		D631E8DE1C958EB900C195A5 /* EasyrtcDemo1ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8D01C958EB900C195A5 /* EasyrtcDemo1ViewController.mm */; };
+		D631E8DF1C958EB900C195A5 /* EasyrtcDemo1ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8D11C958EB900C195A5 /* EasyrtcDemo1ViewController.xib */; };
+		D631E8E01C958EB900C195A5 /* EasyrtcDemo2ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8D31C958EB900C195A5 /* EasyrtcDemo2ViewController.mm */; };
+		D631E8E11C958EB900C195A5 /* EasyrtcDemo2ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8D41C958EB900C195A5 /* EasyrtcDemo2ViewController.xib */; };
+		D631E8E21C958EB900C195A5 /* EasyrtcDemo3ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8D61C958EB900C195A5 /* EasyrtcDemo3ViewController.mm */; };
+		D631E8E31C958EB900C195A5 /* EasyrtcDemo3ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8D71C958EB900C195A5 /* EasyrtcDemo3ViewController.xib */; };
+		D631E8E51C958EB900C195A5 /* nwr_test_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D631E8DA1C958EB900C195A5 /* nwr_test_set.cpp */; };
+		D631E8E81C958F3000C195A5 /* User.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8E71C958F3000C195A5 /* User.mm */; };
+		D631E8F01C95AAEA00C195A5 /* IkadenwaRoomViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8EE1C95AAEA00C195A5 /* IkadenwaRoomViewController.mm */; };
+		D631E8F11C95AAEA00C195A5 /* IkadenwaRoomViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8EF1C95AAEA00C195A5 /* IkadenwaRoomViewController.xib */; };
+		D631E8F31C95B07C00C195A5 /* DebugMenuViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8F21C95B07C00C195A5 /* DebugMenuViewController.mm */; };
 		D664369D1C4A544C0059A94B /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = D664369B1C4A544C0059A94B /* AppDelegate.mm */; };
 		D66436A21C4A60E70059A94B /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = D66436A11C4A60E70059A94B /* libz.tbd */; };
 		D66436A51C4A64110059A94B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = D66436A41C4A64110059A94B /* main.m */; };
-		D6652B541C817FA200F85895 /* DebugMenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6652B521C817FA200F85895 /* DebugMenuViewController.swift */; };
-		D6652B551C817FA200F85895 /* DebugMenuViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6652B531C817FA200F85895 /* DebugMenuViewController.xib */; };
 		D6652B581C81848C00F85895 /* BaseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = D6652B571C81848C00F85895 /* BaseViewController.m */; };
 		D6A690531C42361700952A7F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A690521C42361700952A7F /* ViewController.swift */; };
 		D6A690561C42361700952A7F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6A690541C42361700952A7F /* Main.storyboard */; };
@@ -92,7 +97,6 @@
 		D6A6906A1C4237F100952A7F /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690681C4237F100952A7F /* libcrypto.a */; };
 		D6A6906B1C4237F100952A7F /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690691C4237F100952A7F /* libssl.a */; };
 		D6A6906E1C42380100952A7F /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A6906D1C42380100952A7F /* libwebsockets.a */; };
-		D6B9DE341C6C8E4700EBF183 /* nwr_test_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6B9DE321C6C8E4700EBF183 /* nwr_test_set.cpp */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -248,16 +252,32 @@
 		D6155E951C6615B100A8B6CA /* packet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packet.h; path = nwr/socketio/packet.h; sourceTree = "<group>"; };
 		D6155E971C66273500A8B6CA /* env.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = env.cpp; sourceTree = "<group>"; };
 		D6155E981C66273500A8B6CA /* env.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = env.h; sourceTree = "<group>"; };
-		D631E8011C93D19000C195A5 /* EasyrtcDemo3ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemo3ViewController.h; path = app/EasyrtcDemo3ViewController.h; sourceTree = "<group>"; };
-		D631E8021C93D19000C195A5 /* EasyrtcDemo3ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemo3ViewController.mm; path = app/EasyrtcDemo3ViewController.mm; sourceTree = "<group>"; };
-		D631E8031C93D19000C195A5 /* EasyrtcDemo3ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EasyrtcDemo3ViewController.xib; path = app/EasyrtcDemo3ViewController.xib; sourceTree = "<group>"; };
 		D631E80E1C95748F00C195A5 /* libnwr_easyrtc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnwr_easyrtc.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D631E85A1C957F4E00C195A5 /* libnwr_base.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnwr_base.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D631E8821C9580AD00C195A5 /* libnwr_socketio.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnwr_socketio.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		D631E8AA1C95811100C195A5 /* libnwr_jsrtc.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libnwr_jsrtc.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6455FD01C82E81300DFDDFC /* EasyrtcDemo2ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemo2ViewController.h; path = app/EasyrtcDemo2ViewController.h; sourceTree = "<group>"; };
-		D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemo2ViewController.mm; path = app/EasyrtcDemo2ViewController.mm; sourceTree = "<group>"; };
-		D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EasyrtcDemo2ViewController.xib; path = app/EasyrtcDemo2ViewController.xib; sourceTree = "<group>"; };
+		D631E8CA1C958E8600C195A5 /* Room.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Room.h; path = app/Room.h; sourceTree = "<group>"; };
+		D631E8CB1C958E8600C195A5 /* Room.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = Room.mm; path = app/Room.mm; sourceTree = "<group>"; };
+		D631E8CD1C958EB900C195A5 /* DebugMenuViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DebugMenuViewController.h; sourceTree = "<group>"; };
+		D631E8CE1C958EB900C195A5 /* DebugMenuViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DebugMenuViewController.xib; sourceTree = "<group>"; };
+		D631E8CF1C958EB900C195A5 /* EasyrtcDemo1ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EasyrtcDemo1ViewController.h; sourceTree = "<group>"; };
+		D631E8D01C958EB900C195A5 /* EasyrtcDemo1ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EasyrtcDemo1ViewController.mm; sourceTree = "<group>"; };
+		D631E8D11C958EB900C195A5 /* EasyrtcDemo1ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EasyrtcDemo1ViewController.xib; sourceTree = "<group>"; };
+		D631E8D21C958EB900C195A5 /* EasyrtcDemo2ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EasyrtcDemo2ViewController.h; sourceTree = "<group>"; };
+		D631E8D31C958EB900C195A5 /* EasyrtcDemo2ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EasyrtcDemo2ViewController.mm; sourceTree = "<group>"; };
+		D631E8D41C958EB900C195A5 /* EasyrtcDemo2ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EasyrtcDemo2ViewController.xib; sourceTree = "<group>"; };
+		D631E8D51C958EB900C195A5 /* EasyrtcDemo3ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EasyrtcDemo3ViewController.h; sourceTree = "<group>"; };
+		D631E8D61C958EB900C195A5 /* EasyrtcDemo3ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EasyrtcDemo3ViewController.mm; sourceTree = "<group>"; };
+		D631E8D71C958EB900C195A5 /* EasyrtcDemo3ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = EasyrtcDemo3ViewController.xib; sourceTree = "<group>"; };
+		D631E8DA1C958EB900C195A5 /* nwr_test_set.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nwr_test_set.cpp; sourceTree = "<group>"; };
+		D631E8DB1C958EB900C195A5 /* nwr_test_set.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nwr_test_set.h; sourceTree = "<group>"; };
+		D631E8E61C958F3000C195A5 /* User.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = User.h; path = app/User.h; sourceTree = "<group>"; };
+		D631E8E71C958F3000C195A5 /* User.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = User.mm; path = app/User.mm; sourceTree = "<group>"; };
+		D631E8E91C95906C00C195A5 /* Context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Context.h; path = app/Context.h; sourceTree = "<group>"; };
+		D631E8ED1C95AAEA00C195A5 /* IkadenwaRoomViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IkadenwaRoomViewController.h; path = app/IkadenwaRoomViewController.h; sourceTree = "<group>"; };
+		D631E8EE1C95AAEA00C195A5 /* IkadenwaRoomViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = IkadenwaRoomViewController.mm; path = app/IkadenwaRoomViewController.mm; sourceTree = "<group>"; };
+		D631E8EF1C95AAEA00C195A5 /* IkadenwaRoomViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = IkadenwaRoomViewController.xib; path = app/IkadenwaRoomViewController.xib; sourceTree = "<group>"; };
+		D631E8F21C95B07C00C195A5 /* DebugMenuViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = DebugMenuViewController.mm; sourceTree = "<group>"; };
 		D65236D21C73812800D399F6 /* type_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = type_helper.h; sourceTree = "<group>"; };
 		D65236D41C74A1C600D399F6 /* rtc_session_description.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rtc_session_description.cpp; path = nwr/jsrtc/rtc_session_description.cpp; sourceTree = "<group>"; };
 		D65236D51C74A1C600D399F6 /* rtc_session_description.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rtc_session_description.h; path = nwr/jsrtc/rtc_session_description.h; sourceTree = "<group>"; };
@@ -285,11 +305,6 @@
 		D65237021C7B329300D399F6 /* NWRHtmlMediaElementView.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = NWRHtmlMediaElementView.mm; path = nwr/jsrtc/NWRHtmlMediaElementView.mm; sourceTree = "<group>"; };
 		D65237041C7B561200D399F6 /* objc_pointer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = objc_pointer.mm; sourceTree = "<group>"; };
 		D65237051C7B561200D399F6 /* objc_pointer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = objc_pointer.h; sourceTree = "<group>"; };
-		D65237AF1C7DD68B00D399F6 /* EasyrtcDemo1ViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemo1ViewController.mm; path = app/EasyrtcDemo1ViewController.mm; sourceTree = "<group>"; };
-		D65237B01C7DD68B00D399F6 /* EasyrtcDemo1ViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemo1ViewController.h; path = app/EasyrtcDemo1ViewController.h; sourceTree = "<group>"; };
-		D65237B21C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = EasyrtcDemo1ViewController.xib; path = app/EasyrtcDemo1ViewController.xib; sourceTree = "<group>"; };
-		D65237B41C7DE04000D399F6 /* EasyrtcDemos.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = EasyrtcDemos.h; path = app/EasyrtcDemos.h; sourceTree = "<group>"; };
-		D65237B51C7DE07900D399F6 /* EasyrtcDemos.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = EasyrtcDemos.mm; path = app/EasyrtcDemos.mm; sourceTree = "<group>"; };
 		D65237B81C7DFFA200D399F6 /* parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = parser.cpp; path = nwr/socketio0/parser.cpp; sourceTree = "<group>"; };
 		D65237B91C7DFFA200D399F6 /* parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = parser.h; path = nwr/socketio0/parser.h; sourceTree = "<group>"; };
 		D65237BB1C7E0C7200D399F6 /* io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = io.cpp; path = nwr/socketio0/io.cpp; sourceTree = "<group>"; };
@@ -350,8 +365,6 @@
 		D6652B4C1C7F43D500F85895 /* websocket_transport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = websocket_transport.h; path = nwr/socketio0/websocket_transport.h; sourceTree = "<group>"; };
 		D6652B4E1C7F550D00F85895 /* util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = nwr/socketio0/util.cpp; sourceTree = "<group>"; };
 		D6652B4F1C7F550D00F85895 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = nwr/socketio0/util.h; sourceTree = "<group>"; };
-		D6652B521C817FA200F85895 /* DebugMenuViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DebugMenuViewController.swift; path = app/DebugMenuViewController.swift; sourceTree = "<group>"; };
-		D6652B531C817FA200F85895 /* DebugMenuViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = DebugMenuViewController.xib; path = app/DebugMenuViewController.xib; sourceTree = "<group>"; };
 		D6652B561C81848C00F85895 /* BaseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseViewController.h; path = app/BaseViewController.h; sourceTree = "<group>"; };
 		D6652B571C81848C00F85895 /* BaseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BaseViewController.m; path = app/BaseViewController.m; sourceTree = "<group>"; };
 		D6652B591C819A1400F85895 /* closable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = closable.cpp; path = nwr/jsrtc/closable.cpp; sourceTree = "<group>"; };
@@ -372,8 +385,6 @@
 		D6A6906D1C42380100952A7F /* libwebsockets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebsockets.a; path = lib/websockets/lib/libwebsockets.a; sourceTree = "<group>"; };
 		D6B9DE2F1C6BDBBD00EBF183 /* any_emitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any_emitter.cpp; sourceTree = "<group>"; };
 		D6B9DE301C6BDBBD00EBF183 /* any_emitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any_emitter.h; sourceTree = "<group>"; };
-		D6B9DE321C6C8E4700EBF183 /* nwr_test_set.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = nwr_test_set.cpp; path = app/nwr_test_set.cpp; sourceTree = "<group>"; };
-		D6B9DE331C6C8E4700EBF183 /* nwr_test_set.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = nwr_test_set.h; path = app/nwr_test_set.h; sourceTree = "<group>"; };
 		D6B9DE351C6C8F4400EBF183 /* io.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = io.cpp; path = nwr/socketio/io.cpp; sourceTree = "<group>"; };
 		D6B9DE361C6C8F4400EBF183 /* io.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = io.h; path = nwr/socketio/io.h; sourceTree = "<group>"; };
 		D6B9DE391C6CB79B00EBF183 /* array.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = array.h; sourceTree = "<group>"; };
@@ -455,6 +466,28 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D631E8C91C958DF700C195A5 /* dev */ = {
+			isa = PBXGroup;
+			children = (
+				D631E8CD1C958EB900C195A5 /* DebugMenuViewController.h */,
+				D631E8F21C95B07C00C195A5 /* DebugMenuViewController.mm */,
+				D631E8CE1C958EB900C195A5 /* DebugMenuViewController.xib */,
+				D631E8CF1C958EB900C195A5 /* EasyrtcDemo1ViewController.h */,
+				D631E8D01C958EB900C195A5 /* EasyrtcDemo1ViewController.mm */,
+				D631E8D11C958EB900C195A5 /* EasyrtcDemo1ViewController.xib */,
+				D631E8D21C958EB900C195A5 /* EasyrtcDemo2ViewController.h */,
+				D631E8D31C958EB900C195A5 /* EasyrtcDemo2ViewController.mm */,
+				D631E8D41C958EB900C195A5 /* EasyrtcDemo2ViewController.xib */,
+				D631E8D51C958EB900C195A5 /* EasyrtcDemo3ViewController.h */,
+				D631E8D61C958EB900C195A5 /* EasyrtcDemo3ViewController.mm */,
+				D631E8D71C958EB900C195A5 /* EasyrtcDemo3ViewController.xib */,
+				D631E8DA1C958EB900C195A5 /* nwr_test_set.cpp */,
+				D631E8DB1C958EB900C195A5 /* nwr_test_set.h */,
+			);
+			name = dev;
+			path = app/dev;
+			sourceTree = "<group>";
+		};
 		D65237B71C7DFF5700D399F6 /* socketio0 */ = {
 			isa = PBXGroup;
 			children = (
@@ -479,25 +512,19 @@
 		D664369A1C4A541D0059A94B /* app */ = {
 			isa = PBXGroup;
 			children = (
+				D631E8C91C958DF700C195A5 /* dev */,
 				D664369C1C4A544C0059A94B /* AppDelegate.h */,
 				D664369B1C4A544C0059A94B /* AppDelegate.mm */,
 				D6652B561C81848C00F85895 /* BaseViewController.h */,
 				D6652B571C81848C00F85895 /* BaseViewController.m */,
-				D6652B521C817FA200F85895 /* DebugMenuViewController.swift */,
-				D6652B531C817FA200F85895 /* DebugMenuViewController.xib */,
-				D65237B41C7DE04000D399F6 /* EasyrtcDemos.h */,
-				D65237B51C7DE07900D399F6 /* EasyrtcDemos.mm */,
-				D65237B01C7DD68B00D399F6 /* EasyrtcDemo1ViewController.h */,
-				D65237AF1C7DD68B00D399F6 /* EasyrtcDemo1ViewController.mm */,
-				D65237B21C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib */,
-				D6455FD01C82E81300DFDDFC /* EasyrtcDemo2ViewController.h */,
-				D6455FD11C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm */,
-				D6455FD31C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib */,
-				D631E8011C93D19000C195A5 /* EasyrtcDemo3ViewController.h */,
-				D631E8021C93D19000C195A5 /* EasyrtcDemo3ViewController.mm */,
-				D631E8031C93D19000C195A5 /* EasyrtcDemo3ViewController.xib */,
-				D6B9DE331C6C8E4700EBF183 /* nwr_test_set.h */,
-				D6B9DE321C6C8E4700EBF183 /* nwr_test_set.cpp */,
+				D631E8E91C95906C00C195A5 /* Context.h */,
+				D631E8E61C958F3000C195A5 /* User.h */,
+				D631E8E71C958F3000C195A5 /* User.mm */,
+				D631E8CA1C958E8600C195A5 /* Room.h */,
+				D631E8CB1C958E8600C195A5 /* Room.mm */,
+				D631E8ED1C95AAEA00C195A5 /* IkadenwaRoomViewController.h */,
+				D631E8EE1C95AAEA00C195A5 /* IkadenwaRoomViewController.mm */,
+				D631E8EF1C95AAEA00C195A5 /* IkadenwaRoomViewController.xib */,
 			);
 			name = app;
 			sourceTree = "<group>";
@@ -938,13 +965,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6652B551C817FA200F85895 /* DebugMenuViewController.xib in Resources */,
-				D631E8051C93D19000C195A5 /* EasyrtcDemo3ViewController.xib in Resources */,
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
-				D6455FD41C82E86D00DFDDFC /* EasyrtcDemo2ViewController.xib in Resources */,
+				D631E8E31C958EB900C195A5 /* EasyrtcDemo3ViewController.xib in Resources */,
+				D631E8DF1C958EB900C195A5 /* EasyrtcDemo1ViewController.xib in Resources */,
+				D631E8E11C958EB900C195A5 /* EasyrtcDemo2ViewController.xib in Resources */,
 				D6A690581C42361700952A7F /* Assets.xcassets in Resources */,
 				D6A690561C42361700952A7F /* Main.storyboard in Resources */,
-				D65237B31C7DDB7300D399F6 /* EasyrtcDemo1ViewController.xib in Resources */,
+				D631E8DD1C958EB900C195A5 /* DebugMenuViewController.xib in Resources */,
+				D631E8F11C95AAEA00C195A5 /* IkadenwaRoomViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1043,17 +1071,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D631E8E81C958F3000C195A5 /* User.mm in Sources */,
+				D631E8F31C95B07C00C195A5 /* DebugMenuViewController.mm in Sources */,
 				D66436A51C4A64110059A94B /* main.m in Sources */,
-				D65237B11C7DD68B00D399F6 /* EasyrtcDemo1ViewController.mm in Sources */,
-				D6455FD21C82E81300DFDDFC /* EasyrtcDemo2ViewController.mm in Sources */,
+				D631E8E21C958EB900C195A5 /* EasyrtcDemo3ViewController.mm in Sources */,
 				D6A690651C42366800952A7F /* AAA.m in Sources */,
 				D664369D1C4A544C0059A94B /* AppDelegate.mm in Sources */,
-				D6652B541C817FA200F85895 /* DebugMenuViewController.swift in Sources */,
-				D6B9DE341C6C8E4700EBF183 /* nwr_test_set.cpp in Sources */,
-				D65237B61C7DE07900D399F6 /* EasyrtcDemos.mm in Sources */,
+				D631E8CC1C958E8600C195A5 /* Room.mm in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
+				D631E8DE1C958EB900C195A5 /* EasyrtcDemo1ViewController.mm in Sources */,
+				D631E8DC1C958EB900C195A5 /* DebugMenuViewController.h in Sources */,
 				D6652B581C81848C00F85895 /* BaseViewController.m in Sources */,
-				D631E8041C93D19000C195A5 /* EasyrtcDemo3ViewController.mm in Sources */,
+				D631E8E51C958EB900C195A5 /* nwr_test_set.cpp in Sources */,
+				D631E8F01C95AAEA00C195A5 /* IkadenwaRoomViewController.mm in Sources */,
+				D631E8E01C958EB900C195A5 /* EasyrtcDemo2ViewController.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1382,6 +1413,7 @@
 				D631E8161C95748F00C195A5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D631E8601C957F4F00C195A5 /* Build configuration list for PBXNativeTarget "nwr_base" */ = {
 			isa = XCConfigurationList;
@@ -1390,6 +1422,7 @@
 				D631E8621C957F4F00C195A5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D631E8881C9580AD00C195A5 /* Build configuration list for PBXNativeTarget "nwr_socketio" */ = {
 			isa = XCConfigurationList;
@@ -1398,6 +1431,7 @@
 				D631E88A1C9580AD00C195A5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D631E8B01C95811100C195A5 /* Build configuration list for PBXNativeTarget "nwr_jsrtc" */ = {
 			isa = XCConfigurationList;
@@ -1406,6 +1440,7 @@
 				D631E8B21C95811100C195A5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		D6A690481C42361700952A7F /* Build configuration list for PBXProject "Ikadenwa" */ = {
 			isa = XCConfigurationList;
