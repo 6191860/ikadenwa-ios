@@ -109,6 +109,9 @@
 		D6A6906E1C42380100952A7F /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A6906D1C42380100952A7F /* libwebsockets.a */; };
 		D6F78A3E1C53E32C00B21614 /* webrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; };
 		D6F78A3F1C53E32C00B21614 /* webrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D6F78A3D1C53E2E400B21614 /* webrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D6FEE5931C999B5400187784 /* gray_light.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5921C999B5400187784 /* gray_light.png */; };
+		D6FEE5951C99ACE500187784 /* gray_dark.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5941C99ACE500187784 /* gray_dark.png */; };
+		D6FEE5971C99AD4B00187784 /* gray.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5961C99AD4B00187784 /* gray.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -283,7 +286,6 @@
 		D631E8DB1C958EB900C195A5 /* nwr_test_set.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nwr_test_set.h; sourceTree = "<group>"; };
 		D631E8E61C958F3000C195A5 /* User.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = User.h; path = app/User.h; sourceTree = "<group>"; };
 		D631E8E71C958F3000C195A5 /* User.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = User.mm; path = app/User.mm; sourceTree = "<group>"; };
-		D631E8E91C95906C00C195A5 /* Context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Context.h; path = app/Context.h; sourceTree = "<group>"; };
 		D631E8ED1C95AAEA00C195A5 /* IkadenwaRoomViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IkadenwaRoomViewController.h; path = app/IkadenwaRoomViewController.h; sourceTree = "<group>"; };
 		D631E8EE1C95AAEA00C195A5 /* IkadenwaRoomViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = IkadenwaRoomViewController.mm; path = app/IkadenwaRoomViewController.mm; sourceTree = "<group>"; };
 		D631E8EF1C95AAEA00C195A5 /* IkadenwaRoomViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = IkadenwaRoomViewController.xib; path = app/IkadenwaRoomViewController.xib; sourceTree = "<group>"; };
@@ -392,6 +394,7 @@
 		D66C98791C96F63400216D32 /* red_dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = red_dark.png; sourceTree = "<group>"; };
 		D66C987C1C9706F000216D32 /* MyScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MyScrollView.h; path = app/MyScrollView.h; sourceTree = "<group>"; };
 		D66C987D1C9706F000216D32 /* MyScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MyScrollView.m; path = app/MyScrollView.m; sourceTree = "<group>"; };
+		D66C987F1C98591500216D32 /* UserDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = UserDelegate.h; path = app/dev/UserDelegate.h; sourceTree = "<group>"; };
 		D67CAE3F1C6A530E0000A3C3 /* any.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any.cpp; sourceTree = "<group>"; };
 		D67CAE401C6A530E0000A3C3 /* any.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any.h; sourceTree = "<group>"; };
 		D6A6904D1C42361700952A7F /* Ikadenwa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikadenwa.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -439,6 +442,10 @@
 		D6F78A521C55018A00B21614 /* manager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = manager.h; path = nwr/socketio/manager.h; sourceTree = "<group>"; };
 		D6F78A541C55090600B21614 /* socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = socket.cpp; path = nwr/socketio/socket.cpp; sourceTree = "<group>"; };
 		D6F78A551C55090600B21614 /* socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socket.h; path = nwr/socketio/socket.h; sourceTree = "<group>"; };
+		D6FEE5911C99949100187784 /* RoomDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RoomDelegate.h; path = app/RoomDelegate.h; sourceTree = "<group>"; };
+		D6FEE5921C999B5400187784 /* gray_light.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gray_light.png; sourceTree = "<group>"; };
+		D6FEE5941C99ACE500187784 /* gray_dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gray_dark.png; sourceTree = "<group>"; };
+		D6FEE5961C99AD4B00187784 /* gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gray.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -544,17 +551,18 @@
 				D66C987D1C9706F000216D32 /* MyScrollView.m */,
 				D66C98681C96EFC500216D32 /* ViewLoader.h */,
 				D66C98691C96EFC500216D32 /* ViewLoader.m */,
-				D631E8E91C95906C00C195A5 /* Context.h */,
+				D66C986C1C96F02700216D32 /* UserPanel.h */,
+				D66C986D1C96F02700216D32 /* UserPanel.m */,
+				D66C98671C96EF2A00216D32 /* UserPanel.xib */,
+				D66C987F1C98591500216D32 /* UserDelegate.h */,
 				D631E8E61C958F3000C195A5 /* User.h */,
 				D631E8E71C958F3000C195A5 /* User.mm */,
+				D6FEE5911C99949100187784 /* RoomDelegate.h */,
 				D631E8CA1C958E8600C195A5 /* Room.h */,
 				D631E8CB1C958E8600C195A5 /* Room.mm */,
 				D631E8ED1C95AAEA00C195A5 /* IkadenwaRoomViewController.h */,
 				D631E8EE1C95AAEA00C195A5 /* IkadenwaRoomViewController.mm */,
 				D631E8EF1C95AAEA00C195A5 /* IkadenwaRoomViewController.xib */,
-				D66C986C1C96F02700216D32 /* UserPanel.h */,
-				D66C986D1C96F02700216D32 /* UserPanel.m */,
-				D66C98671C96EF2A00216D32 /* UserPanel.xib */,
 			);
 			name = app;
 			sourceTree = "<group>";
@@ -602,6 +610,9 @@
 		D66C986F1C96F53F00216D32 /* res */ = {
 			isa = PBXGroup;
 			children = (
+				D6FEE5961C99AD4B00187784 /* gray.png */,
+				D6FEE5941C99ACE500187784 /* gray_dark.png */,
+				D6FEE5921C999B5400187784 /* gray_light.png */,
 				D66C98781C96F63400216D32 /* green_dark.png */,
 				D66C98791C96F63400216D32 /* red_dark.png */,
 				D66C98701C96F53F00216D32 /* green.png */,
@@ -1011,7 +1022,9 @@
 			files = (
 				D66C98751C96F53F00216D32 /* green_light.png in Resources */,
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
+				D6FEE5971C99AD4B00187784 /* gray.png in Resources */,
 				D631E8E31C958EB900C195A5 /* EasyrtcDemo3ViewController.xib in Resources */,
+				D6FEE5951C99ACE500187784 /* gray_dark.png in Resources */,
 				D66C987A1C96F63400216D32 /* green_dark.png in Resources */,
 				D631E8DF1C958EB900C195A5 /* EasyrtcDemo1ViewController.xib in Resources */,
 				D631E8E11C958EB900C195A5 /* EasyrtcDemo2ViewController.xib in Resources */,
@@ -1020,6 +1033,7 @@
 				D6A690581C42361700952A7F /* Assets.xcassets in Resources */,
 				D6A690561C42361700952A7F /* Main.storyboard in Resources */,
 				D631E8DD1C958EB900C195A5 /* DebugMenuViewController.xib in Resources */,
+				D6FEE5931C999B5400187784 /* gray_light.png in Resources */,
 				D66C98741C96F53F00216D32 /* green.png in Resources */,
 				D66C98761C96F53F00216D32 /* red.png in Resources */,
 				D631E8F11C95AAEA00C195A5 /* IkadenwaRoomViewController.xib in Resources */,

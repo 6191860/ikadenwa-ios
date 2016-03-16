@@ -17,8 +17,8 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" delaysContentTouches="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Zry-By-Fjv" userLabel="scrollView" customClass="MyScrollView">
-                    <rect key="frame" x="0.0" y="64" width="320" height="504"/>
-                    <color key="backgroundColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                    <rect key="frame" x="0.0" y="64" width="320" height="460"/>
+                    <color key="backgroundColor" red="0.93725490199999995" green="0.93725490199999995" blue="0.95686274510000002" alpha="1" colorSpace="calibratedRGB"/>
                 </scrollView>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="5GC-Qi-FxI" userLabel="topBar">
                     <rect key="frame" x="0.0" y="0.0" width="320" height="64"/>
@@ -26,7 +26,7 @@
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="omochimetaru" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3b4-7O-Wnl" userLabel="roomNameLabel">
                             <rect key="frame" x="60" y="30.5" width="200" height="21.5"/>
                             <fontDescription key="fontDescription" type="system" pointSize="18"/>
-                            <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                            <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6f2-Tf-GiB" userLabel="leaveButton">
@@ -49,14 +49,33 @@
                         <constraint firstItem="6f2-Tf-GiB" firstAttribute="leading" secondItem="5GC-Qi-FxI" secondAttribute="leading" constant="6" id="t3Y-ez-nfi"/>
                     </constraints>
                 </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SAX-Ik-kEG" userLabel="bottomBar">
+                    <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LBy-rs-TpF">
+                            <rect key="frame" x="8" y="6" width="46" height="30"/>
+                            <state key="normal" title="Button"/>
+                            <connections>
+                                <action selector="onTestButton" destination="-1" eventType="touchUpInside" id="Ifd-gx-AL4"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="44" id="CDN-i4-I1J"/>
+                    </constraints>
+                </view>
             </subviews>
             <constraints>
                 <constraint firstItem="5GC-Qi-FxI" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="855-ST-jZq"/>
+                <constraint firstItem="SAX-Ik-kEG" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="98J-Tk-tso"/>
                 <constraint firstAttribute="trailing" secondItem="Zry-By-Fjv" secondAttribute="trailing" id="CBr-6Y-qRk"/>
+                <constraint firstAttribute="trailing" secondItem="SAX-Ik-kEG" secondAttribute="trailing" id="Dhf-ov-Sio"/>
+                <constraint firstAttribute="bottom" secondItem="SAX-Ik-kEG" secondAttribute="bottom" id="FiD-an-X8k"/>
+                <constraint firstItem="SAX-Ik-kEG" firstAttribute="top" secondItem="Zry-By-Fjv" secondAttribute="bottom" id="GnK-QQ-L2u"/>
                 <constraint firstItem="Zry-By-Fjv" firstAttribute="top" secondItem="5GC-Qi-FxI" secondAttribute="bottom" id="P76-jZ-Kgz"/>
                 <constraint firstItem="Zry-By-Fjv" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="Sxa-dN-gZl"/>
                 <constraint firstItem="5GC-Qi-FxI" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="fFd-hG-htn"/>
-                <constraint firstAttribute="bottom" secondItem="Zry-By-Fjv" secondAttribute="bottom" id="sYF-Hh-j4G"/>
                 <constraint firstAttribute="trailing" secondItem="5GC-Qi-FxI" secondAttribute="trailing" id="zkq-2J-QM7"/>
             </constraints>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>

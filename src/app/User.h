@@ -7,34 +7,51 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #include <string>
 #include <nwr/easyrtc/easyrtc.h>
 
-@protocol Context;
+#import "UserPanel.h"
+#import "UserDelegate.h"
 
 @interface User : NSObject
 
-@property(nonatomic, assign) NSObject<Context> * context;
-@property(nonatomic, assign) std::string easyrtcid;
-@property(nonatomic, assign) std::string name;
-@property(nonatomic, assign) bool joined;
-@property(nonatomic, assign) bool connected;
-@property(nonatomic, assign) bool muted;
+@property(nonatomic, weak) NSObject<UserDelegate> * delegate;
+@property(nonatomic, strong) NSString * easyrtcid;
+@property(nonatomic, strong) NSString * name;
+@property(nonatomic, assign) double joined;
+@property(nonatomic, assign) BOOL connected;
+@property(nonatomic, assign) BOOL muted;
 @property(nonatomic, assign) int volume;
-@property(nonatomic, assign) nwr::Optional<std::string> stream;
+@property(nonatomic, assign) std::shared_ptr<nwr::jsrtc::MediaStreamTrack> audioTrack;
 
-- (instancetype)initWithContext:(NSObject<Context> *)context
-                      easyrtcId:(const std::string &)easyrtcid
-                           name:(const std::string &)name
-                         joined:(bool)joined;
+@property(nonatomic, strong) UserPanel * view;
+
+- (instancetype)initWithDelegate:(NSObject<UserDelegate> *)delegate
+                       easyrtcId:(NSString *)easyrtcid
+                            name:(NSString *)name
+                          joined:(double)joined;
 - (void)toggle;
 - (void)connect;
 - (void)embedStream:(const std::shared_ptr<nwr::jsrtc::MediaStream> &)stream;
 - (void)removeStream;
 - (void)requestUnmute;
 - (void)requestMute;
-- (void)_requestMuteWithFlag:(bool)flag;
-- (void)muteWithFlag:(bool)flag;
+- (void)_requestMuteWithFlag:(BOOL)flag;
+- (void)muteWithFlag:(BOOL)flag;
 
+- (void)onConnectButton;
+- (void)onOffButton;
+- (void)onOnButton;
+
+- (UIColor *)whiteColor;
+- (UIColor *)grayColor;
+- (UIColor *)darkGrayColor;
+- (UIColor *)blackColor;
+- (void)updateView;
 
 @end
+
+User * UserFind(NSArray<User *> * users, int * index, BOOL (^pred)(User *));
+User * UserFindByEasyrtcid(NSArray<User *> * users, int * index, NSString * easyrtcid);
+

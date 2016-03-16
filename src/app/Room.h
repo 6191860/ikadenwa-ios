@@ -12,32 +12,37 @@
 #include <algorithm>
 #include <nwr/easyrtc/easyrtc.h>
 
-@protocol Context;
-@class User;
+#import "User.h"
+#import "RoomDelegate.h"
 
 @interface Room : NSObject
 
-@property(nonatomic, assign) NSObject<Context> * context;
-@property(nonatomic, assign) nwr::Optional<std::string> easyrtcid;
-@property(nonatomic, assign) std::vector<User *> users;
-@property(nonatomic, assign) std::map<std::string, User *> userDict;
-@property(nonatomic, assign) std::string documentTitle;
-@property(nonatomic, assign) std::string roomName;
-@property(nonatomic, assign) std::string userName;
+@property(nonatomic, weak) NSObject<RoomDelegate> * delegate;
+@property(nonatomic, strong) NSString * easyrtcid;
+@property(nonatomic, strong) NSArray<User *> * users;
+@property(nonatomic, strong) NSString * documentTitle;
+@property(nonatomic, strong) NSString * roomName;
+@property(nonatomic, strong) NSString * userName;
 @property(nonatomic, assign) std::shared_ptr<nwr::jsrtc::MediaStream> localStream;
-@property(nonatomic, assign) bool localMonitor;
+@property(nonatomic, assign) BOOL localMonitor;
 
-- (instancetype)initWithContext:(NSObject<Context> *)context;
-- (void)activateWithRoomName:(const std::string &)roomName;
+- (instancetype)initWithDelegate:(NSObject<RoomDelegate> *)delegate;
+- (User *)userForEasyrtcid:(NSString *)easyrtcid;
+- (void)activateWithRoomName:(NSString *)roomName;
 - (void)deactivate;
 - (void)join;
 - (void)muteAll;
 - (void)unmuteAll;
 - (void)_logout;
 - (void)logout;
+- (void)handleErrorWithCode:(NSString *)code
+                       text:(NSString *)text;
 
-- (void)handleErrorWithCode:(const std::string &)code
-                       text:(const std::string &)text;
+
+
+- (UserPanel *)createUserViewAt:(int)index;
+- (void)deleteUserView:(UserPanel *)view;
+- (void)moveUserView:(UserPanel *)view to:(int)index;
 
 
 @end

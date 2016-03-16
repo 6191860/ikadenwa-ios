@@ -8,27 +8,24 @@
 
 #import "Room.h"
 
-#import "Context.h"
-#import "User.h"
-
 using namespace nwr;
 using namespace nwr::jsrtc;
 
 @implementation Room
 
-- (instancetype)initWithContext:(NSObject<Context> *)context
+- (instancetype)initWithDelegate:(NSObject<RoomDelegate> *)delegate
 {
     self = [super init];
     if (!self) { return nil; }
-    _context = context;
-    _easyrtcid = None();
-    _users = {};
-    _userDict = {};
-    _documentTitle = "";
-    _roomName = "";
-    _userName = "";
+    
+    _delegate = delegate;
+    _easyrtcid = nil;
+    _users = [NSMutableArray array];
+    _documentTitle = @"";
+    _roomName = @"";
+    _userName = @"";
     _localStream = nullptr;
-    _localMonitor = false;
+    _localMonitor = NO;
 
     //    this.inputVolume = '';
 //    ko.track(this);
@@ -36,13 +33,55 @@ using namespace nwr::jsrtc;
     return self;
 }
 
-- (void)activateWithRoomName:(const std::string &)roomName {
+- (void)copyFrom:(Room *)other {
+    
+}
+
+- (User *)userForEasyrtcid:(NSString *)easyrtcid {
+    for (int i = 0; i < _users.count; i++) {
+        if ([_users[i].easyrtcid isEqualToString:easyrtcid]) {
+            return _users[i];
+        }
+    }
+    return nil;
+}
+
+- (void)setUsers:(NSArray<User *> *)newUsers {
+    NSArray<User *> * oldUsers = _users;
+    NSMutableArray<User *> * users = [NSMutableArray array];
+    
+    for (int newIndex = 0; newIndex < newUsers.count; newIndex++) {
+        User * newUser = newUsers[newIndex];
+        int oldIndex = -1;
+        User * oldUser = UserFindByEasyrtcid(oldUsers, &oldIndex, newUser.easyrtcid);
+        if (!oldUser) {
+            newUser.view = [self createUserViewAt:newIndex];
+            [users addObject:newUser];
+        } else {
+            [users addObject:oldUser];
+            if (oldIndex != newIndex) {
+                [self moveUserView:oldUser.view to:newIndex];
+            }
+        }
+    }
+    
+    for (int oldIndex = 0; oldIndex < oldUsers.count; oldIndex++) {
+        User * oldUser = oldUsers[oldIndex];
+        User * newUser = UserFindByEasyrtcid(newUsers, nil, oldUser.easyrtcid);
+        if (!newUser) {
+            [self deleteUserView:oldUser.view];
+        }
+    }
+    
+    _users = users;
+}
+
+- (void)activateWithRoomName:(NSString *)roomName {
     _roomName = roomName;
-    _easyrtcid = None();
-    _users = {};
-    _userDict = {};
+    _easyrtcid = nil;
+    _users = [NSMutableArray array];
     _documentTitle = roomName;
-    _userName = "ikadenwa-ios-test"; // TODO
+    _userName = @"ikadenwa-ios-test"; // TODO
     [self join];
 }
 
@@ -53,51 +92,38 @@ using namespace nwr::jsrtc;
 }
 
 - (void)join {
-    auto easyrtc = _context.easyrtc;
+    auto easyrtc = _delegate.easyrtc;
     
-    easyrtc->set_user_name(_userName);
+    easyrtc->set_user_name(ToString(_userName));
     
-    easyrtc->set_room_occupant_listener([self](const Optional<std::string> & roomNameOpt,
-                                           const std::map<std::string, Any> & occupants,
-                                           const Any & isPrimary)
+    easyrtc->set_room_occupant_listener([self](const Optional<std::string> & roomName,
+                                               const std::map<std::string, Any> & occupants,
+                                               const Any & isPrimary)
                                         {
-                                            auto roomName = roomNameOpt.value();
-                                            
-                                            if (roomName != _roomName) {
+                                            if (*roomName != ToString(_roomName)) {
                                                 return;
                                             }
                                             
-                                            std::vector<User *> users = {};
-                                            
-                                            for (std::string easyrtcid : Keys(occupants)) {
-                                                Any user = occupants.at(easyrtcid);
-                                                
-                                                bool found = false;
-                                                
-                                                for (int i = 0; i < _users.size(); i++) {
-                                                    User * _user = _users[i];
-                                                    if (_user.easyrtcid == easyrtcid) {
-                                                        users.push_back(_user);
-                                                        _users.erase(_users.begin() + i);
-                                                        found = true;
-                                                        break;
-                                                    }
+                                            NSMutableArray<User *> * newUsers = [NSMutableArray array];
+                                            for (const std::string & easyrtcid : Keys(occupants)) {
+                                                User * newUser = UserFindByEasyrtcid(_users, nil, ToNSString(easyrtcid));
+                                                if (!newUser) {
+                                                    const Any & userData = occupants.at(easyrtcid);
+                                                    newUser = [[User alloc] initWithDelegate:[_delegate userDelegate]
+                                                                                   easyrtcId:ToNSString(userData.GetAt("easyrtcid").AsString().value())
+                                                                                        name:ToNSString(userData.GetAt("username").AsString().value())
+                                                                                      joined:userData.GetAt("roomJoinTime").AsDouble().value()];
                                                 }
-                                                if (!found) {
-                                                    User * newUser = [[User alloc] initWithContext:_context
-                                                                                         easyrtcId:user.GetAt("easyrtcid").AsString().value()
-                                                                                              name:user.GetAt("username").AsString().value()
-                                                                                            joined:user.GetAt("roomJoinTime").AsInt().value() != 0];
-                                                    _userDict[newUser.easyrtcid] = newUser;
-                                                    users.push_back(newUser);
-                                                }
+                                                [newUsers addObject:newUser];
                                             }
+                                            [newUsers sortUsingComparator:^NSComparisonResult(User * a, User * b){
+                                                if (a.joined != b.joined) {
+                                                    return a.joined < b.joined ? NSOrderedAscending : NSOrderedDescending;
+                                                }
+                                                return NSOrderedSame;
+                                            }];
                                             
-                                            _users = users;
-                                            
-                                            std::sort(_users.begin(), _users.end(), [](User * a, User * b) {
-                                                return a.joined > b.joined ? 1 : -1;
-                                            });
+                                            self.users = newUsers;
                                         });
     
     easyrtc->SetPeerListener(None(), None(),
@@ -107,20 +133,23 @@ using namespace nwr::jsrtc;
                                 const Any & targeting)
                              {
                                  if (messageType == "mute") {
-                                     [_userDict[easyrtcid] muteWithFlag:content.GetAt("mute").AsBoolean().value()];
+                                     User * user = [self userForEasyrtcid:ToNSString(easyrtcid)];
+                                     [user muteWithFlag:content.GetAt("mute").AsBoolean().value()];
                                  }
                              });
     easyrtc->set_stream_acceptor([self](const std::string & easyrtcid,
                                         const std::shared_ptr<MediaStream> & stream,
                                         const std::string & stream_name)
                                  {
-                                     [_userDict[easyrtcid] embedStream:stream];
+                                     User * user = [self userForEasyrtcid:ToNSString(easyrtcid)];
+                                     [user embedStream:stream];
                                  });
     easyrtc->set_on_stream_closed([self](const std::string & easyrtcid,
                                          const std::shared_ptr<MediaStream> & stream,
                                          const std::string & stream_name)
                                   {
-                                      [_userDict[easyrtcid] removeStream];
+                                      User * user = [self userForEasyrtcid:ToNSString(easyrtcid)];
+                                      [user removeStream];
                                   });
     
     easyrtc->set_accept_checker([self](const std::string & easyrtcid,
@@ -135,9 +164,9 @@ using namespace nwr::jsrtc;
     easyrtc->set_on_error([self](const Any & error) {
         std::string errorCode = error.GetAt("errorCode").AsString().value();
         std::string message = error.GetAt("errorText").AsString().value();
-        [self handleErrorWithCode:errorCode text:message];
+        [self handleErrorWithCode:ToNSString(errorCode) text:ToNSString(message)];
     });
-    easyrtc->JoinRoom(_roomName,
+    easyrtc->JoinRoom(ToString(_roomName),
                       nullptr,
                       [](const std::string & room_name)
                       {
@@ -146,7 +175,8 @@ using namespace nwr::jsrtc;
                       [self]
                       (const std::string & errorCode, const std::string & message, const std::string & room_name)
                       {
-                          [self handleErrorWithCode:errorCode text:message];
+                          [self handleErrorWithCode:ToNSString(errorCode)
+                                               text:ToNSString(message)];
                       });
     easyrtc->EnableAudio(true);
     easyrtc->EnableVideo(false);
@@ -157,7 +187,7 @@ using namespace nwr::jsrtc;
                                  easyrtc->Connect("squid",
                                                   [self, easyrtc](const std::string & easyrtcid)
                                                   {
-                                                      _easyrtcid = Some(easyrtcid);
+                                                      _easyrtcid = ToNSString(easyrtcid);
                                                       
                                                       _localStream = easyrtc->GetLocalStream(None());
                                                       
@@ -173,12 +203,12 @@ using namespace nwr::jsrtc;
                                                   },
                                                   [self](const std::string & code, const std::string & text)
                                                   {
-                                                      [self handleErrorWithCode:code text:text];
+                                                      [self handleErrorWithCode:ToNSString(code) text:ToNSString(text)];
                                                   });
                              },
                              [self](const std::string & code, const std::string & message)
                              {
-                                 [self handleErrorWithCode:code text:message];
+                                 [self handleErrorWithCode:ToNSString(code) text:ToNSString(message)];
                              });
 }
 
@@ -205,10 +235,10 @@ using namespace nwr::jsrtc;
         [self toggleMonitor];
     }
     
-    _context.easyrtc->HangupAll();
-    _context.easyrtc->Disconnect();
+    _delegate.easyrtc->HangupAll();
+    _delegate.easyrtc->Disconnect();
 
-    _easyrtcid = None();
+    _easyrtcid = nil;
     
 //    var localStream = document.getElementById('localStream');
 //    localStream.parentElement.removeChild(localStream);
@@ -222,10 +252,36 @@ using namespace nwr::jsrtc;
 //    router.navigate('');
 }
 
-- (void)handleErrorWithCode:(const std::string &)code
-                       text:(const std::string &)text
+- (void)handleErrorWithCode:(NSString *)code
+                       text:(NSString *)text
 {
-    printf("error %s; %s\n", code.c_str(), text.c_str());
+    NSLog(@"error %@; %@", code, text);
+}
+
+- (UserPanel *)createUserViewAt:(int)index {
+    UserPanel * userPanel = [UserPanel load];
+    [[_delegate roomScrollView] addSubview:userPanel];
+    userPanel.frame = [_delegate roomUserPanelFrameAt:index];
+    userPanel.alpha = 0.0;
+    [UIView animateWithDuration:[_delegate animationDuration] animations:^{
+        userPanel.alpha = 1.0;
+    }];
+    return userPanel;
+}
+
+- (void)deleteUserView:(UserPanel *)view {
+    [UIView animateWithDuration:[_delegate animationDuration] animations:^{
+        view.alpha = 0.0;
+    } completion:^(BOOL finished){
+        [view removeFromSuperview];
+    }];
+}
+
+- (void)moveUserView:(UserPanel *)view to:(int)index {
+    CGRect frame = [_delegate roomUserPanelFrameAt:index];
+    [UIView animateWithDuration:[_delegate animationDuration] animations:^{
+        view.frame = frame;
+    }];
 }
 
 @end

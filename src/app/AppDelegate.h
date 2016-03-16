@@ -22,7 +22,7 @@
 @interface AppDelegate : UIResponder<UIApplicationDelegate> {
 }
 
-@property(nonatomic, retain) UIWindow * window;
+@property(nonatomic, strong) UIWindow * window;
 
 @property(nonatomic, assign) std::shared_ptr<nwr::jsrtc::RtcPeerConnectionFactory> rtc_factory;
 

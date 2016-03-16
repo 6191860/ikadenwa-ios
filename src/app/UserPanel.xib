@@ -16,22 +16,21 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="おもちメタルあいうえおあいうえおあいうえおあいう" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="o7q-5s-FE3" userLabel="nameLabel">
-                    <rect key="frame" x="6" y="8" width="132" height="33.5"/>
+                    <rect key="frame" x="8" y="8" width="128" height="33.5"/>
                     <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                    <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                    <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x2g-gk-f8d" userLabel="onButton">
-                    <rect key="frame" x="72" y="50" width="72" height="40"/>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jFA-3K-VrB" userLabel="connectButton">
+                    <rect key="frame" x="0.0" y="50" width="144" height="40"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="40" id="hZb-9V-WV2"/>
+                        <constraint firstAttribute="height" constant="40" id="a0E-3Z-XZa"/>
                     </constraints>
                     <fontDescription key="fontDescription" type="system" pointSize="15"/>
-                    <state key="normal" title="ON" backgroundImage="green.png">
-                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <state key="normal" title="接続する" backgroundImage="gray_light.png">
+                        <color key="titleColor" white="0.20000000000000001" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
-                    <state key="disabled" backgroundImage="green_light.png"/>
-                    <state key="highlighted" backgroundImage="green_dark.png"/>
+                    <state key="highlighted" backgroundImage="gray.png"/>
                 </button>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="eTi-g0-9Lh" userLabel="offButton">
                     <rect key="frame" x="0.0" y="50" width="72" height="40"/>
@@ -45,22 +44,38 @@
                     <state key="disabled" backgroundImage="red_light.png"/>
                     <state key="highlighted" backgroundImage="red_dark.png"/>
                 </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="x2g-gk-f8d" userLabel="onButton">
+                    <rect key="frame" x="72" y="50" width="72" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="40" id="hZb-9V-WV2"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <state key="normal" title="ON" backgroundImage="green.png">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <state key="disabled" backgroundImage="green_light.png"/>
+                    <state key="highlighted" backgroundImage="green_dark.png"/>
+                </button>
             </subviews>
-            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+            <color key="backgroundColor" red="0.75686274509803919" green="0.75686274509803919" blue="0.75686274509803919" alpha="1" colorSpace="calibratedRGB"/>
             <constraints>
                 <constraint firstItem="eTi-g0-9Lh" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" id="0Eq-QV-lEI"/>
                 <constraint firstItem="o7q-5s-FE3" firstAttribute="top" secondItem="ogo-vZ-TCm" secondAttribute="top" constant="8" id="86i-TC-Po1"/>
+                <constraint firstAttribute="bottom" secondItem="jFA-3K-VrB" secondAttribute="bottom" id="F3t-9z-C31"/>
                 <constraint firstItem="x2g-gk-f8d" firstAttribute="width" secondItem="eTi-g0-9Lh" secondAttribute="width" id="ItB-83-VfQ"/>
-                <constraint firstAttribute="trailing" secondItem="o7q-5s-FE3" secondAttribute="trailing" constant="6" id="Mfa-57-dJ8"/>
+                <constraint firstAttribute="trailing" secondItem="jFA-3K-VrB" secondAttribute="trailing" id="LCi-U1-JTq"/>
+                <constraint firstAttribute="trailing" secondItem="o7q-5s-FE3" secondAttribute="trailing" constant="8" id="Mfa-57-dJ8"/>
                 <constraint firstAttribute="trailing" secondItem="x2g-gk-f8d" secondAttribute="trailing" id="Mkr-hS-AhK"/>
                 <constraint firstAttribute="bottom" secondItem="x2g-gk-f8d" secondAttribute="bottom" id="ODN-1U-gdT"/>
                 <constraint firstAttribute="bottom" secondItem="eTi-g0-9Lh" secondAttribute="bottom" id="dZs-ye-Dao"/>
                 <constraint firstItem="x2g-gk-f8d" firstAttribute="leading" secondItem="eTi-g0-9Lh" secondAttribute="trailing" id="jIM-Jv-Xzp"/>
-                <constraint firstItem="o7q-5s-FE3" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" constant="6" id="nRx-3j-ZXF"/>
+                <constraint firstItem="o7q-5s-FE3" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" constant="8" id="nRx-3j-ZXF"/>
+                <constraint firstItem="jFA-3K-VrB" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" id="uU3-bm-uEh"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <connections>
+                <outlet property="connectButton" destination="jFA-3K-VrB" id="wfD-tp-JyW"/>
                 <outlet property="nameLabel" destination="o7q-5s-FE3" id="eiL-5S-MFV"/>
                 <outlet property="offButton" destination="eTi-g0-9Lh" id="B37-Pz-Q4h"/>
                 <outlet property="onButton" destination="x2g-gk-f8d" id="gId-44-7qV"/>
@@ -69,6 +84,8 @@
         </view>
     </objects>
     <resources>
+        <image name="gray.png" width="4" height="4"/>
+        <image name="gray_light.png" width="4" height="4"/>
         <image name="green.png" width="4" height="4"/>
         <image name="green_dark.png" width="4" height="4"/>
         <image name="green_light.png" width="4" height="4"/>

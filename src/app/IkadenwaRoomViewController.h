@@ -10,16 +10,18 @@
 
 #include <nwr/easyrtc/easyrtc.h>
 
-#import "Context.h"
 #import "Room.h"
 #import "User.h"
 #import "MyScrollView.h"
 
-@interface IkadenwaRoomViewController : BaseViewController<Context>
+@interface IkadenwaRoomViewController : BaseViewController
 
 @property(nonatomic, assign) std::shared_ptr<nwr::ert::Easyrtc> easyrtc;
 @property(nonatomic, retain) Room * room;
 
 @property(nonatomic, retain) IBOutlet MyScrollView * scrollView;
+
+@property(nonatomic, assign) int testCount;
+@property(nonatomic, assign) int testIdCount;
 
 @end

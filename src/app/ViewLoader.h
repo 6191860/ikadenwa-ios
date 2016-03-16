@@ -12,7 +12,7 @@
 
 @interface ViewLoader : NSObject
 
-@property(nonatomic, retain) IBOutlet UIView * view;
+@property(nonatomic, strong) IBOutlet UIView * view;
 
 - (UIView *)loadViewFromNib:(NSString *)nibName;
 
