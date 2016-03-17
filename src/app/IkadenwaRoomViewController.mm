@@ -43,11 +43,8 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
 }
 
 - (void)onStart {
-    _testCount = 0;
-    _testIdCount = 0;
-    
     self.automaticallyAdjustsScrollViewInsets = NO;
-    self.title = @"omochimetaru";
+    self.title = _roomName;
     
     [self startLoadingCover];
     
@@ -58,7 +55,7 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
                                     _userAgent.get());
     
     _room = [[Room alloc] initWithDelegate:self];
-    [_room activateWithRoomName:@"omochimetaru"];
+    [_room activateWithRoomName:_roomName userName:_userName];
 }
 
 - (void)onStop {
@@ -81,30 +78,6 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
     [super viewDidLayoutSubviews];
     
     self.scrollView.contentSize = [self scrollViewContentSize];
-}
-
-- (IBAction)onTestButton {
-    switch (_testCount) {
-        case 0: {
-            NSMutableArray * users = [NSMutableArray arrayWithArray:_room.users];
-            User * user = [[User alloc] initWithDelegate:[self userDelegate]
-                                               easyrtcId:[NSString stringWithFormat:@"id_%d", _testIdCount]
-                                                    name:@"太郎"
-                                                  joined:NO];
-            _testIdCount += 1;
-            [users addObject:user];
-            _room.users = users;
-            
-            break;
-        }
-            
-    }
-    
-    _testCount += 1;
-    
-    if (_testCount > 0) {
-        _testCount = 0;
-    }
 }
 
 - (IBAction)onLeaveButton {

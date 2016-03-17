@@ -29,7 +29,7 @@
 
 - (instancetype)initWithDelegate:(NSObject<RoomDelegate> *)delegate;
 - (User *)userForEasyrtcid:(NSString *)easyrtcid;
-- (void)activateWithRoomName:(NSString *)roomName;
+- (void)activateWithRoomName:(NSString *)roomName userName:(NSString *)userName;
 - (void)deactivate;
 - (void)join;
 - (void)muteAll;

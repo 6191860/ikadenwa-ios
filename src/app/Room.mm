@@ -83,12 +83,12 @@ using namespace nwr::jsrtc;
     _users = users;
 }
 
-- (void)activateWithRoomName:(NSString *)roomName {
+- (void)activateWithRoomName:(NSString *)roomName userName:(NSString *)userName {
     _roomName = roomName;
     _easyrtcid = nil;
     _users = [NSMutableArray array];
     _documentTitle = roomName;
-    _userName = @"ikadenwa-ios-test"; // TODO
+    _userName = userName;
     [self join];
 }
 

@@ -113,6 +113,9 @@
 		D6FEE5951C99ACE500187784 /* gray_dark.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5941C99ACE500187784 /* gray_dark.png */; };
 		D6FEE5971C99AD4B00187784 /* gray.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5961C99AD4B00187784 /* gray.png */; };
 		D6FEE5A71C9AD3C100187784 /* ika-mark@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5A61C9AD3C100187784 /* ika-mark@2x.png */; };
+		D6FEE5AB1C9AE3D100187784 /* IkadenwaEntranceViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6FEE5A91C9AE3D100187784 /* IkadenwaEntranceViewController.mm */; };
+		D6FEE5AC1C9AE3D100187784 /* IkadenwaEntranceViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5AA1C9AE3D100187784 /* IkadenwaEntranceViewController.xib */; };
+		D6FEE5AE1C9AE46D00187784 /* logo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5AD1C9AE46D00187784 /* logo@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -448,6 +451,10 @@
 		D6FEE5941C99ACE500187784 /* gray_dark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gray_dark.png; sourceTree = "<group>"; };
 		D6FEE5961C99AD4B00187784 /* gray.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gray.png; sourceTree = "<group>"; };
 		D6FEE5A61C9AD3C100187784 /* ika-mark@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ika-mark@2x.png"; sourceTree = "<group>"; };
+		D6FEE5A81C9AE3D100187784 /* IkadenwaEntranceViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = IkadenwaEntranceViewController.h; path = app/IkadenwaEntranceViewController.h; sourceTree = "<group>"; };
+		D6FEE5A91C9AE3D100187784 /* IkadenwaEntranceViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = IkadenwaEntranceViewController.mm; path = app/IkadenwaEntranceViewController.mm; sourceTree = "<group>"; };
+		D6FEE5AA1C9AE3D100187784 /* IkadenwaEntranceViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = IkadenwaEntranceViewController.xib; path = app/IkadenwaEntranceViewController.xib; sourceTree = "<group>"; };
+		D6FEE5AD1C9AE46D00187784 /* logo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -565,6 +572,9 @@
 				D631E8ED1C95AAEA00C195A5 /* IkadenwaRoomViewController.h */,
 				D631E8EE1C95AAEA00C195A5 /* IkadenwaRoomViewController.mm */,
 				D631E8EF1C95AAEA00C195A5 /* IkadenwaRoomViewController.xib */,
+				D6FEE5A81C9AE3D100187784 /* IkadenwaEntranceViewController.h */,
+				D6FEE5A91C9AE3D100187784 /* IkadenwaEntranceViewController.mm */,
+				D6FEE5AA1C9AE3D100187784 /* IkadenwaEntranceViewController.xib */,
 			);
 			name = app;
 			sourceTree = "<group>";
@@ -612,6 +622,7 @@
 		D66C986F1C96F53F00216D32 /* res */ = {
 			isa = PBXGroup;
 			children = (
+				D6FEE5AD1C9AE46D00187784 /* logo@2x.png */,
 				D6FEE5A61C9AD3C100187784 /* ika-mark@2x.png */,
 				D6FEE5961C99AD4B00187784 /* gray.png */,
 				D6FEE5941C99ACE500187784 /* gray_dark.png */,
@@ -1027,8 +1038,10 @@
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
 				D6FEE5971C99AD4B00187784 /* gray.png in Resources */,
 				D631E8E31C958EB900C195A5 /* EasyrtcDemo3ViewController.xib in Resources */,
+				D6FEE5AE1C9AE46D00187784 /* logo@2x.png in Resources */,
 				D6FEE5951C99ACE500187784 /* gray_dark.png in Resources */,
 				D66C987A1C96F63400216D32 /* green_dark.png in Resources */,
+				D6FEE5AC1C9AE3D100187784 /* IkadenwaEntranceViewController.xib in Resources */,
 				D6FEE5A71C9AD3C100187784 /* ika-mark@2x.png in Resources */,
 				D631E8DF1C958EB900C195A5 /* EasyrtcDemo1ViewController.xib in Resources */,
 				D631E8E11C958EB900C195A5 /* EasyrtcDemo2ViewController.xib in Resources */,
@@ -1146,6 +1159,7 @@
 				D631E8E21C958EB900C195A5 /* EasyrtcDemo3ViewController.mm in Sources */,
 				D6A690651C42366800952A7F /* AAA.m in Sources */,
 				D66C986E1C96F02700216D32 /* UserPanel.m in Sources */,
+				D6FEE5AB1C9AE3D100187784 /* IkadenwaEntranceViewController.mm in Sources */,
 				D664369D1C4A544C0059A94B /* AppDelegate.mm in Sources */,
 				D631E8CC1C958E8600C195A5 /* Room.mm in Sources */,
 				D6A690531C42361700952A7F /* ViewController.swift in Sources */,

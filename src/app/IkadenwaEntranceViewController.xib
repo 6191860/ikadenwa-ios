@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="9532" systemVersion="15C50" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES">
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="9530"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="IkadenwaEntranceViewController">
+            <connections>
+                <outlet property="contentPanel" destination="Ors-38-aaO" id="ATh-lA-PiH"/>
+                <outlet property="contentPanelYConstraint" destination="3Ay-pN-Qhj" id="bAR-QO-qmt"/>
+                <outlet property="roomNameField" destination="WzY-2t-jUc" id="FMG-cR-RrX"/>
+                <outlet property="userNameField" destination="54d-GR-VdH" id="3fS-bG-Q5K"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ors-38-aaO" userLabel="ContentPanel">
+                    <rect key="frame" x="20" y="164" width="280" height="240"/>
+                    <subviews>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="I2M-QP-Ive">
+                            <rect key="frame" x="115" y="204" width="50" height="30"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="30" id="3C4-3L-CvJ"/>
+                                <constraint firstAttribute="width" constant="50" id="CRw-15-bN2"/>
+                            </constraints>
+                            <state key="normal" title="入室"/>
+                            <connections>
+                                <action selector="onEnterButton" destination="-1" eventType="touchUpInside" id="PoQ-eU-6l2"/>
+                            </connections>
+                        </button>
+                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo.png" translatesAutoresizingMaskIntoConstraints="NO" id="Uai-5P-m2o">
+                            <rect key="frame" x="8" y="20" width="258" height="60"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="258" id="CGy-pq-kmL"/>
+                                <constraint firstAttribute="height" constant="60" id="ZTA-LQ-UvW"/>
+                            </constraints>
+                        </imageView>
+                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="部屋の名前" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WzY-2t-jUc">
+                            <rect key="frame" x="30" y="106" width="220" height="30"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="30" id="Elq-5f-FJw"/>
+                                <constraint firstAttribute="width" constant="220" id="QfF-ix-VGe"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <textInputTraits key="textInputTraits"/>
+                        </textField>
+                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="あなたの名前" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="54d-GR-VdH">
+                            <rect key="frame" x="30" y="152" width="220" height="30"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="220" id="fwP-XF-WGg"/>
+                                <constraint firstAttribute="height" constant="30" id="mGB-ow-xqn"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <textInputTraits key="textInputTraits"/>
+                        </textField>
+                    </subviews>
+                    <constraints>
+                        <constraint firstItem="Uai-5P-m2o" firstAttribute="leading" secondItem="Ors-38-aaO" secondAttribute="leading" constant="8" id="5ua-ot-sCw"/>
+                        <constraint firstItem="54d-GR-VdH" firstAttribute="top" secondItem="WzY-2t-jUc" secondAttribute="bottom" constant="16" id="9Ja-Cb-1Ls"/>
+                        <constraint firstAttribute="width" constant="280" id="D3m-0l-f0Q"/>
+                        <constraint firstItem="WzY-2t-jUc" firstAttribute="centerX" secondItem="Ors-38-aaO" secondAttribute="centerX" id="PyH-nF-ySC"/>
+                        <constraint firstItem="I2M-QP-Ive" firstAttribute="centerX" secondItem="Ors-38-aaO" secondAttribute="centerX" id="SSh-Vp-i3I"/>
+                        <constraint firstAttribute="height" constant="240" id="T9a-5C-XXt"/>
+                        <constraint firstItem="WzY-2t-jUc" firstAttribute="top" secondItem="Uai-5P-m2o" secondAttribute="bottom" constant="26" id="i58-2W-27U"/>
+                        <constraint firstItem="54d-GR-VdH" firstAttribute="centerX" secondItem="Ors-38-aaO" secondAttribute="centerX" id="joW-D2-wTq"/>
+                        <constraint firstItem="Uai-5P-m2o" firstAttribute="top" secondItem="Ors-38-aaO" secondAttribute="top" constant="20" id="qmJ-T0-BYB"/>
+                        <constraint firstItem="I2M-QP-Ive" firstAttribute="top" secondItem="54d-GR-VdH" secondAttribute="bottom" constant="22" id="tuY-y8-Ywx"/>
+                    </constraints>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+            <gestureRecognizers/>
+            <constraints>
+                <constraint firstItem="Ors-38-aaO" firstAttribute="centerY" secondItem="i5M-Pr-FkT" secondAttribute="centerY" id="3Ay-pN-Qhj"/>
+                <constraint firstItem="Ors-38-aaO" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="uWu-WG-csn"/>
+            </constraints>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
+            <connections>
+                <outletCollection property="gestureRecognizers" destination="Lqm-w5-2pR" appends="YES" id="0Cp-Wx-N0w"/>
+            </connections>
+            <point key="canvasLocation" x="232" y="216"/>
+        </view>
+        <tapGestureRecognizer id="Lqm-w5-2pR">
+            <connections>
+                <action selector="onBoardTap" destination="-1" id="PVs-Qx-NBH"/>
+            </connections>
+        </tapGestureRecognizer>
+    </objects>
+    <resources>
+        <image name="logo.png" width="258" height="60"/>
+    </resources>
+</document>

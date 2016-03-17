@@ -16,6 +16,9 @@
 
 @interface IkadenwaRoomViewController : BaseViewController
 
+@property(nonatomic, retain) NSString * roomName;
+@property(nonatomic, retain) NSString * userName;
+
 @property(nonatomic, assign) std::shared_ptr<nwr::ert::Easyrtc> easyrtc;
 @property(nonatomic, retain) Room * room;
 
@@ -26,8 +29,5 @@
 @property(nonatomic, retain) IBOutlet UIImageView * loadingMark;
 @property(nonatomic, retain) IBOutlet UIButton * allOffButton;
 @property(nonatomic, retain) IBOutlet UIButton * allOnButton;
-
-@property(nonatomic, assign) int testCount;
-@property(nonatomic, assign) int testIdCount;
 
 @end

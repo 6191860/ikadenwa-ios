@@ -43,9 +43,17 @@
                         <action selector="onIkadenwa" destination="-1" eventType="touchUpInside" id="4W6-r4-zbO"/>
                     </connections>
                 </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sr3-mS-mQG">
+                    <rect key="frame" x="8" y="192" width="61" height="30"/>
+                    <state key="normal" title="entrance"/>
+                    <connections>
+                        <action selector="onEntrance" destination="-1" eventType="touchUpInside" id="uvr-bV-AyD"/>
+                    </connections>
+                </button>
             </subviews>
             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
             <constraints>
+                <constraint firstItem="sr3-mS-mQG" firstAttribute="top" secondItem="9XS-bN-C0l" secondAttribute="bottom" constant="8" id="En5-oX-CAH"/>
                 <constraint firstItem="9XS-bN-C0l" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="8" id="HIG-VJ-J0E"/>
                 <constraint firstItem="wf8-xE-AHh" firstAttribute="top" secondItem="8QP-Bp-iNk" secondAttribute="bottom" constant="8" id="SuL-9z-MJ7"/>
                 <constraint firstItem="8QP-Bp-iNk" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="8" id="UGy-MZ-K61"/>
@@ -53,6 +61,7 @@
                 <constraint firstItem="iga-K8-GL5" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="40" id="dbf-9X-qno"/>
                 <constraint firstItem="8QP-Bp-iNk" firstAttribute="top" secondItem="iga-K8-GL5" secondAttribute="bottom" constant="8" id="dj1-Zd-iIz"/>
                 <constraint firstItem="iga-K8-GL5" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="8" id="eX4-eu-HZB"/>
+                <constraint firstItem="sr3-mS-mQG" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="8" id="flc-0w-nLJ"/>
                 <constraint firstItem="wf8-xE-AHh" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="8" id="gkZ-v9-irG"/>
             </constraints>
             <simulatedScreenMetrics key="simulatedDestinationMetrics"/>

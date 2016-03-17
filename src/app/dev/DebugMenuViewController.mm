@@ -12,6 +12,7 @@
 #import "EasyrtcDemo2ViewController.h"
 #import "EasyrtcDemo3ViewController.h"
 #import "IkadenwaRoomViewController.h"
+#import "ikadenwaEntranceViewController.h"
 
 @implementation DebugMenuViewController
 
@@ -33,6 +34,11 @@
 - (IBAction)onIkadenwa {
     UIViewController * vc = [[IkadenwaRoomViewController alloc] initWithNibName:@"IkadenwaRoomViewController" bundle:nil];
     
+    [self presentViewController:vc animated:YES completion:nil];
+}
+
+- (IBAction)onEntrance {
+    UIViewController * vc = [[IkadenwaEntranceViewController alloc] initWithNibName:@"IkadenwaEntranceViewController" bundle:nil];
     [self presentViewController:vc animated:YES completion:nil];
 }
 
