@@ -18,6 +18,7 @@
 @interface Room : NSObject
 
 @property(nonatomic, weak) NSObject<RoomDelegate> * delegate;
+@property(nonatomic, assign) BOOL isLoggedIn;
 @property(nonatomic, strong) NSString * easyrtcid;
 @property(nonatomic, strong) NSArray<User *> * users;
 @property(nonatomic, strong) NSString * documentTitle;

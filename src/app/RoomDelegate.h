@@ -23,4 +23,7 @@
 - (MyScrollView *)roomScrollView;
 - (CGRect)roomUserPanelFrameAt:(int)index;
 
+- (void)roomOnLoggedIn;
+- (void)roomOnErrorWithCode:(NSString *)code text:(NSString *)text;
+
 @end

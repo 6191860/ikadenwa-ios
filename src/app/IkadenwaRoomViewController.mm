@@ -40,6 +40,8 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
     self.automaticallyAdjustsScrollViewInsets = NO;
     self.title = @"omochimetaru";
     
+    [self startLoadingCover];
+    
     _userAgent = std::make_shared<IkadenwaRoomUserAgent>();
     _userAgent->owner = self;
     _easyrtc = ert::Easyrtc::Create(GetStaticAppDelegate().rtc_factory,
@@ -51,6 +53,8 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
 }
 
 - (void)onStop {
+    [self stopLoadingCover];
+    
     if (_room) {
         [_room deactivate];
         _room = nil;
@@ -94,6 +98,10 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
     }
 }
 
+- (IBAction)onLeaveButton {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
 - (std::shared_ptr<nwr::ert::Easyrtc>)easyrtc {
     return _easyrtc;
 }
@@ -125,6 +133,31 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
                       w, h);
 }
 
+- (void)roomOnLoggedIn {
+    [self stopLoadingCover];
+}
+
+- (void)roomOnErrorWithCode:(NSString *)code text:(NSString *)text {
+    if ([self isLoadingCoverOn]) {
+        [UIView animateWithDuration:[self animationDuration]
+                         animations:^(){
+                             _loadingMark.alpha = 0.0;
+                         }];
+    }
+    
+    NSString * message = [NSString stringWithFormat:@"code=[%@]\ntext=[%@]", code, text];
+    UIAlertController * alert = [UIAlertController alertControllerWithTitle:@"エラー"
+                                                                    message:message
+                                                             preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction * okButton = [UIAlertAction actionWithTitle:@"OK"
+                                                        style:UIAlertActionStyleDefault
+                                                      handler:^(UIAlertAction * action){
+                                                          [self onLeaveButton];
+                                                      }];
+    [alert addAction:okButton];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
 - (CGSize)scrollViewContentSize {
     int userNum = (int)_room.users.count;
     int rowNum = 1;
@@ -137,6 +170,55 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
     return CGSizeMake(CGRectGetWidth(_scrollView.frame), y);
 }
 
+- (BOOL)isLoadingCoverOn{
+    return _loadingCover.superview != nil && _loadingCover.alpha == 1.0;
+}
+
+- (void)startLoadingCover {
+    if ([self isLoadingCoverOn]) {
+        return;
+    }
+    
+    if (_loadingCover.superview != nil) {
+        [_loadingCover removeFromSuperview];
+    }
+    
+    [self.view addSubview:_loadingCover];
+    
+    CGFloat topY = CGRectGetMaxY(_topBar.frame);
+    CGFloat bottomY = CGRectGetMaxY(_bottomBar.frame);
+    _loadingCover.frame = CGRectMake(0, topY,
+                                     CGRectGetWidth(self.view.bounds),
+                                     bottomY - topY);
+    _loadingCover.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _loadingCover.alpha = 0.0;
+    [UIView animateWithDuration:[self animationDuration]
+                     animations:^(){
+                         _loadingCover.alpha = 1.0;
+                     }];
+    _loadingMark.alpha = 1.0;
+    
+    CAKeyframeAnimation * animation = [CAKeyframeAnimation animationWithKeyPath:@"transform.rotation"];
+    animation.values = @[@(0.0), @(M_PI_2), @(M_PI), @(3 * M_PI_2), @(2 * M_PI)];
+    animation.keyTimes = @[@(0.0), @(0.25), @(0.5), @(0.75), @(1.0)];
+    animation.duration = 2.0;
+    animation.repeatCount = HUGE_VALF;
+    [_loadingMark.layer addAnimation:animation forKey:@"rotationAnimation"];
+}
+
+- (void)stopLoadingCover {
+    if (![self isLoadingCoverOn]) {
+        return;
+    }
+    
+    [UIView animateWithDuration:[self animationDuration]
+                     animations:^(){
+                         _loadingCover.alpha = 0.0;
+                     }
+                     completion:^(BOOL finihsed){
+                         [_loadingCover removeFromSuperview];
+                     }];
+}
 
 
 @end

@@ -20,6 +20,7 @@
 @property(nonatomic, strong) NSString * easyrtcid;
 @property(nonatomic, strong) NSString * name;
 @property(nonatomic, assign) double joined;
+@property(nonatomic, assign) BOOL isMyself;
 @property(nonatomic, assign) BOOL connected;
 @property(nonatomic, assign) BOOL muted;
 @property(nonatomic, assign) int volume;

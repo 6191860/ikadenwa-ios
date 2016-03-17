@@ -19,6 +19,7 @@ using namespace nwr::jsrtc;
     if (!self) { return nil; }
     
     _delegate = delegate;
+    _isLoggedIn = NO;
     _easyrtcid = nil;
     _users = [NSMutableArray array];
     _documentTitle = @"";
@@ -33,10 +34,6 @@ using namespace nwr::jsrtc;
     return self;
 }
 
-- (void)copyFrom:(Room *)other {
-    
-}
-
 - (User *)userForEasyrtcid:(NSString *)easyrtcid {
     for (int i = 0; i < _users.count; i++) {
         if ([_users[i].easyrtcid isEqualToString:easyrtcid]) {
@@ -44,6 +41,16 @@ using namespace nwr::jsrtc;
         }
     }
     return nil;
+}
+
+- (void)setIsLoggedIn:(BOOL)newValue {
+    BOOL oldValue = _isLoggedIn;
+    _isLoggedIn = newValue;
+    if (oldValue != newValue) {
+        if (newValue) {
+            [_delegate roomOnLoggedIn];
+        }
+    }
 }
 
 - (void)setUsers:(NSArray<User *> *)newUsers {
@@ -104,7 +111,21 @@ using namespace nwr::jsrtc;
                                                 return;
                                             }
                                             
+                                            self.isLoggedIn = YES;
+                                            
                                             NSMutableArray<User *> * newUsers = [NSMutableArray array];
+                                            
+                                            User * myUser = UserFindByEasyrtcid(_users, nil, _easyrtcid);
+                                            if (!myUser) {
+                                                myUser = [[User alloc] initWithDelegate:[_delegate userDelegate]
+                                                                              easyrtcId:_easyrtcid
+                                                                                   name:_userName
+                                                                                 joined:0.0];
+                                                myUser.isMyself = YES;
+                                            }
+                                            [newUsers addObject:myUser];
+                                            
+                                            
                                             for (const std::string & easyrtcid : Keys(occupants)) {
                                                 User * newUser = UserFindByEasyrtcid(_users, nil, ToNSString(easyrtcid));
                                                 if (!newUser) {
@@ -117,6 +138,9 @@ using namespace nwr::jsrtc;
                                                 [newUsers addObject:newUser];
                                             }
                                             [newUsers sortUsingComparator:^NSComparisonResult(User * a, User * b){
+                                                if (a.isMyself != b.isMyself) {
+                                                    return a.isMyself ? NSOrderedAscending : NSOrderedDescending;
+                                                }
                                                 if (a.joined != b.joined) {
                                                     return a.joined < b.joined ? NSOrderedAscending : NSOrderedDescending;
                                                 }
@@ -239,6 +263,7 @@ using namespace nwr::jsrtc;
     _delegate.easyrtc->Disconnect();
 
     _easyrtcid = nil;
+    self.isLoggedIn = NO;
     
 //    var localStream = document.getElementById('localStream');
 //    localStream.parentElement.removeChild(localStream);
@@ -255,7 +280,7 @@ using namespace nwr::jsrtc;
 - (void)handleErrorWithCode:(NSString *)code
                        text:(NSString *)text
 {
-    NSLog(@"error %@; %@", code, text);
+    [_delegate roomOnErrorWithCode:code text:text];
 }
 
 - (UserPanel *)createUserViewAt:(int)index {

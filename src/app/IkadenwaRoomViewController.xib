@@ -7,7 +7,11 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="IkadenwaRoomViewController">
             <connections>
+                <outlet property="bottomBar" destination="SAX-Ik-kEG" id="YAI-7t-0ok"/>
+                <outlet property="loadingCover" destination="zLt-ct-g7b" id="CpU-Lq-bY9"/>
+                <outlet property="loadingMark" destination="BNd-7b-sFY" id="8w0-SX-L2z"/>
                 <outlet property="scrollView" destination="Zry-By-Fjv" id="UZO-xO-o97"/>
+                <outlet property="topBar" destination="5GC-Qi-FxI" id="20h-cA-E8a"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -36,6 +40,9 @@
                                 <constraint firstAttribute="height" constant="30" id="Sje-px-pey"/>
                             </constraints>
                             <state key="normal" title="退室"/>
+                            <connections>
+                                <action selector="onLeaveButton" destination="-1" eventType="touchUpInside" id="2TZ-W8-AcI"/>
+                            </connections>
                         </button>
                     </subviews>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -80,5 +87,33 @@
             </constraints>
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
+        <view contentMode="scaleToFill" id="zLt-ct-g7b" userLabel="loadingCover">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="xoR-OM-PBE" userLabel="bg">
+                    <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                </imageView>
+                <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ika-mark.png" translatesAutoresizingMaskIntoConstraints="NO" id="BNd-7b-sFY" userLabel="loadingMark">
+                    <rect key="frame" x="117" y="197" width="86" height="86"/>
+                </imageView>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstAttribute="bottom" secondItem="xoR-OM-PBE" secondAttribute="bottom" id="IZT-yg-13b"/>
+                <constraint firstItem="xoR-OM-PBE" firstAttribute="top" secondItem="zLt-ct-g7b" secondAttribute="top" id="RH1-qk-F1G"/>
+                <constraint firstItem="xoR-OM-PBE" firstAttribute="leading" secondItem="zLt-ct-g7b" secondAttribute="leading" id="Uui-ja-j1u"/>
+                <constraint firstAttribute="trailing" secondItem="xoR-OM-PBE" secondAttribute="trailing" id="eU7-P0-NJj"/>
+                <constraint firstItem="BNd-7b-sFY" firstAttribute="centerY" secondItem="zLt-ct-g7b" secondAttribute="centerY" id="hID-gv-OPq"/>
+                <constraint firstItem="BNd-7b-sFY" firstAttribute="centerX" secondItem="zLt-ct-g7b" secondAttribute="centerX" id="uGX-Nk-P6v"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <simulatedScreenMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="538" y="207"/>
+        </view>
     </objects>
+    <resources>
+        <image name="ika-mark.png" width="86" height="86"/>
+    </resources>
 </document>

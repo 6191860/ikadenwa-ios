@@ -11,6 +11,7 @@
 @interface UserPanel : UIView
 
 @property(nonatomic, retain) IBOutlet UILabel * nameLabel;
+@property(nonatomic, retain) IBOutlet UIButton * myselfDummyButton;
 @property(nonatomic, retain) IBOutlet UIButton * connectButton;
 @property(nonatomic, retain) IBOutlet UIButton * offButton;
 @property(nonatomic, retain) IBOutlet UIButton * onButton;

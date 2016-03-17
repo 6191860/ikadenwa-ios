@@ -25,6 +25,7 @@ using namespace nwr::jsrtc;
     _easyrtcid = easyrtcid;
     _name = name;
     _joined = joined;
+    _isMyself = false;
     _connected = false;
     _muted = true;
     _volume = 100;
@@ -182,7 +183,7 @@ using namespace nwr::jsrtc;
     
     _view.nameLabel.text = _name;
     
-    BOOL isOn = _connected && !_muted;
+    BOOL isOn = _isMyself || (_connected && !_muted);
     if (isOn) {
         _view.backgroundColor = [self whiteColor];
         _view.nameLabel.textColor = [self blackColor];
@@ -191,11 +192,18 @@ using namespace nwr::jsrtc;
         _view.nameLabel.textColor = [self darkGrayColor];
     }
     
-    if (!_connected) {
+    if (_isMyself) {
+        _view.myselfDummyButton.hidden = NO;
+        _view.connectButton.hidden = YES;
+        _view.offButton.hidden = YES;
+        _view.onButton.hidden = YES;
+    } else if (!_connected) {
+        _view.myselfDummyButton.hidden = YES;
         _view.connectButton.hidden = NO;
         _view.offButton.hidden = YES;
         _view.onButton.hidden = YES;
     } else {
+        _view.myselfDummyButton.hidden = YES;
         _view.connectButton.hidden = YES;
         _view.offButton.hidden = NO;
         _view.onButton.hidden = NO;

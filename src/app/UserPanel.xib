@@ -21,6 +21,17 @@
                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="giG-Yg-zmn" userLabel="myselfDummyButton">
+                    <rect key="frame" x="0.0" y="50" width="144" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="40" id="tSe-oV-jtQ"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                    <state key="normal" backgroundImage="gray_light.png">
+                        <color key="titleColor" white="0.20000000000000001" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <state key="highlighted" backgroundImage="gray.png"/>
+                </button>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jFA-3K-VrB" userLabel="connectButton">
                     <rect key="frame" x="0.0" y="50" width="144" height="40"/>
                     <constraints>
@@ -57,16 +68,19 @@
                     <state key="highlighted" backgroundImage="green_dark.png"/>
                 </button>
             </subviews>
-            <color key="backgroundColor" red="0.75686274509803919" green="0.75686274509803919" blue="0.75686274509803919" alpha="1" colorSpace="calibratedRGB"/>
+            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
             <constraints>
                 <constraint firstItem="eTi-g0-9Lh" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" id="0Eq-QV-lEI"/>
                 <constraint firstItem="o7q-5s-FE3" firstAttribute="top" secondItem="ogo-vZ-TCm" secondAttribute="top" constant="8" id="86i-TC-Po1"/>
+                <constraint firstItem="giG-Yg-zmn" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" id="AA1-hW-6k3"/>
                 <constraint firstAttribute="bottom" secondItem="jFA-3K-VrB" secondAttribute="bottom" id="F3t-9z-C31"/>
                 <constraint firstItem="x2g-gk-f8d" firstAttribute="width" secondItem="eTi-g0-9Lh" secondAttribute="width" id="ItB-83-VfQ"/>
                 <constraint firstAttribute="trailing" secondItem="jFA-3K-VrB" secondAttribute="trailing" id="LCi-U1-JTq"/>
                 <constraint firstAttribute="trailing" secondItem="o7q-5s-FE3" secondAttribute="trailing" constant="8" id="Mfa-57-dJ8"/>
                 <constraint firstAttribute="trailing" secondItem="x2g-gk-f8d" secondAttribute="trailing" id="Mkr-hS-AhK"/>
+                <constraint firstAttribute="trailing" secondItem="giG-Yg-zmn" secondAttribute="trailing" id="Nl0-2d-bFG"/>
                 <constraint firstAttribute="bottom" secondItem="x2g-gk-f8d" secondAttribute="bottom" id="ODN-1U-gdT"/>
+                <constraint firstAttribute="bottom" secondItem="giG-Yg-zmn" secondAttribute="bottom" id="cbR-ML-7Tn"/>
                 <constraint firstAttribute="bottom" secondItem="eTi-g0-9Lh" secondAttribute="bottom" id="dZs-ye-Dao"/>
                 <constraint firstItem="x2g-gk-f8d" firstAttribute="leading" secondItem="eTi-g0-9Lh" secondAttribute="trailing" id="jIM-Jv-Xzp"/>
                 <constraint firstItem="o7q-5s-FE3" firstAttribute="leading" secondItem="ogo-vZ-TCm" secondAttribute="leading" constant="8" id="nRx-3j-ZXF"/>
@@ -76,6 +90,7 @@
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <connections>
                 <outlet property="connectButton" destination="jFA-3K-VrB" id="wfD-tp-JyW"/>
+                <outlet property="myselfDummyButton" destination="giG-Yg-zmn" id="Q9v-4M-N0Q"/>
                 <outlet property="nameLabel" destination="o7q-5s-FE3" id="eiL-5S-MFV"/>
                 <outlet property="offButton" destination="eTi-g0-9Lh" id="B37-Pz-Q4h"/>
                 <outlet property="onButton" destination="x2g-gk-f8d" id="gId-44-7qV"/>

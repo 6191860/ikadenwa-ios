@@ -20,6 +20,10 @@
 @property(nonatomic, retain) Room * room;
 
 @property(nonatomic, retain) IBOutlet MyScrollView * scrollView;
+@property(nonatomic, retain) IBOutlet UIView * topBar;
+@property(nonatomic, retain) IBOutlet UIView * bottomBar;
+@property(nonatomic, retain) IBOutlet UIView * loadingCover;
+@property(nonatomic, retain) IBOutlet UIImageView * loadingMark;
 
 @property(nonatomic, assign) int testCount;
 @property(nonatomic, assign) int testIdCount;
