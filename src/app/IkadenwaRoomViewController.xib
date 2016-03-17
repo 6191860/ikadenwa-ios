@@ -7,6 +7,8 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="IkadenwaRoomViewController">
             <connections>
+                <outlet property="allOffButton" destination="oil-4Q-5yz" id="Ovo-q4-IAP"/>
+                <outlet property="allOnButton" destination="AY5-3P-Tic" id="c1y-wc-VvF"/>
                 <outlet property="bottomBar" destination="SAX-Ik-kEG" id="YAI-7t-0ok"/>
                 <outlet property="loadingCover" destination="zLt-ct-g7b" id="CpU-Lq-bY9"/>
                 <outlet property="loadingMark" destination="BNd-7b-sFY" id="8w0-SX-L2z"/>
@@ -28,7 +30,7 @@
                     <rect key="frame" x="0.0" y="0.0" width="320" height="64"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="omochimetaru" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3b4-7O-Wnl" userLabel="roomNameLabel">
-                            <rect key="frame" x="60" y="30.5" width="200" height="21.5"/>
+                            <rect key="frame" x="60" y="30" width="200" height="21.5"/>
                             <fontDescription key="fontDescription" type="system" pointSize="18"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
@@ -57,19 +59,48 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SAX-Ik-kEG" userLabel="bottomBar">
-                    <rect key="frame" x="0.0" y="524" width="320" height="44"/>
+                    <rect key="frame" x="0.0" y="516" width="320" height="52"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LBy-rs-TpF">
-                            <rect key="frame" x="8" y="6" width="46" height="30"/>
-                            <state key="normal" title="Button"/>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AY5-3P-Tic" userLabel="onButton">
+                            <rect key="frame" x="88" y="6" width="76" height="40"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="Mh9-i0-cus"/>
+                                <constraint firstAttribute="width" constant="76" id="kOh-TZ-lxy"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <state key="normal" title="全部ON" backgroundImage="green.png">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </state>
+                            <state key="disabled" backgroundImage="green_light.png"/>
+                            <state key="highlighted" backgroundImage="green_dark.png"/>
                             <connections>
-                                <action selector="onTestButton" destination="-1" eventType="touchUpInside" id="Ifd-gx-AL4"/>
+                                <action selector="onAllOnButton" destination="-1" eventType="touchUpInside" id="im9-0n-Rv3"/>
+                            </connections>
+                        </button>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oil-4Q-5yz" userLabel="offButton">
+                            <rect key="frame" x="6" y="6" width="76" height="40"/>
+                            <constraints>
+                                <constraint firstAttribute="width" constant="76" id="NxH-eN-04W"/>
+                                <constraint firstAttribute="height" constant="40" id="evs-6U-DzP"/>
+                            </constraints>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <state key="normal" title="全部OFF" backgroundImage="red.png">
+                                <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </state>
+                            <state key="disabled" backgroundImage="red_light.png"/>
+                            <state key="highlighted" backgroundImage="red_dark.png"/>
+                            <connections>
+                                <action selector="onAllOffButton" destination="-1" eventType="touchUpInside" id="qoI-m5-pZC"/>
                             </connections>
                         </button>
                     </subviews>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="44" id="CDN-i4-I1J"/>
+                        <constraint firstAttribute="height" constant="52" id="CDN-i4-I1J"/>
+                        <constraint firstItem="AY5-3P-Tic" firstAttribute="leading" secondItem="oil-4Q-5yz" secondAttribute="trailing" constant="6" id="NpS-3H-zYQ"/>
+                        <constraint firstItem="oil-4Q-5yz" firstAttribute="leading" secondItem="SAX-Ik-kEG" secondAttribute="leading" constant="6" id="PCd-h4-wRl"/>
+                        <constraint firstAttribute="bottom" secondItem="oil-4Q-5yz" secondAttribute="bottom" constant="6" id="SJQ-uM-CvO"/>
+                        <constraint firstAttribute="bottom" secondItem="AY5-3P-Tic" secondAttribute="bottom" constant="6" id="gHN-X0-919"/>
                     </constraints>
                 </view>
             </subviews>
@@ -79,7 +110,7 @@
                 <constraint firstAttribute="trailing" secondItem="Zry-By-Fjv" secondAttribute="trailing" id="CBr-6Y-qRk"/>
                 <constraint firstAttribute="trailing" secondItem="SAX-Ik-kEG" secondAttribute="trailing" id="Dhf-ov-Sio"/>
                 <constraint firstAttribute="bottom" secondItem="SAX-Ik-kEG" secondAttribute="bottom" id="FiD-an-X8k"/>
-                <constraint firstItem="SAX-Ik-kEG" firstAttribute="top" secondItem="Zry-By-Fjv" secondAttribute="bottom" id="GnK-QQ-L2u"/>
+                <constraint firstItem="SAX-Ik-kEG" firstAttribute="top" secondItem="Zry-By-Fjv" secondAttribute="bottom" constant="-8" id="GnK-QQ-L2u"/>
                 <constraint firstItem="Zry-By-Fjv" firstAttribute="top" secondItem="5GC-Qi-FxI" secondAttribute="bottom" id="P76-jZ-Kgz"/>
                 <constraint firstItem="Zry-By-Fjv" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="Sxa-dN-gZl"/>
                 <constraint firstItem="5GC-Qi-FxI" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="fFd-hG-htn"/>
@@ -88,15 +119,15 @@
             <simulatedScreenMetrics key="simulatedDestinationMetrics" type="retina4"/>
         </view>
         <view contentMode="scaleToFill" id="zLt-ct-g7b" userLabel="loadingCover">
-            <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+            <rect key="frame" x="0.0" y="0.0" width="247" height="303"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <imageView userInteractionEnabled="NO" alpha="0.5" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="xoR-OM-PBE" userLabel="bg">
-                    <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                    <rect key="frame" x="0.0" y="0.0" width="247" height="303"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                 </imageView>
                 <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ika-mark.png" translatesAutoresizingMaskIntoConstraints="NO" id="BNd-7b-sFY" userLabel="loadingMark">
-                    <rect key="frame" x="117" y="197" width="86" height="86"/>
+                    <rect key="frame" x="80" y="108" width="86" height="86"/>
                 </imageView>
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -109,11 +140,17 @@
                 <constraint firstItem="BNd-7b-sFY" firstAttribute="centerX" secondItem="zLt-ct-g7b" secondAttribute="centerX" id="uGX-Nk-P6v"/>
             </constraints>
             <nil key="simulatedStatusBarMetrics"/>
-            <simulatedScreenMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="538" y="207"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="561.5" y="854.5"/>
         </view>
     </objects>
     <resources>
+        <image name="green.png" width="4" height="4"/>
+        <image name="green_dark.png" width="4" height="4"/>
+        <image name="green_light.png" width="4" height="4"/>
         <image name="ika-mark.png" width="86" height="86"/>
+        <image name="red.png" width="4" height="4"/>
+        <image name="red_dark.png" width="4" height="4"/>
+        <image name="red_light.png" width="4" height="4"/>
     </resources>
 </document>

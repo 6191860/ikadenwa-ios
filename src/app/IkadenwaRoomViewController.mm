@@ -33,6 +33,15 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
 
 @implementation IkadenwaRoomViewController
 
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    _allOffButton.layer.cornerRadius = 4.0;
+    _allOffButton.clipsToBounds = YES;
+    _allOnButton.layer.cornerRadius = 4.0;
+    _allOnButton.clipsToBounds = YES;
+}
+
 - (void)onStart {
     _testCount = 0;
     _testIdCount = 0;
@@ -100,6 +109,14 @@ struct IkadenwaRoomUserAgent : ert::UserAgentInterface {
 
 - (IBAction)onLeaveButton {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (IBAction)onAllOffButton {
+    [_room muteAll];
+}
+
+- (IBAction)onAllOnButton {
+    [_room unmuteAll];
 }
 
 - (std::shared_ptr<nwr::ert::Easyrtc>)easyrtc {

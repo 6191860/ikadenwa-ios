@@ -24,6 +24,8 @@
 @property(nonatomic, retain) IBOutlet UIView * bottomBar;
 @property(nonatomic, retain) IBOutlet UIView * loadingCover;
 @property(nonatomic, retain) IBOutlet UIImageView * loadingMark;
+@property(nonatomic, retain) IBOutlet UIButton * allOffButton;
+@property(nonatomic, retain) IBOutlet UIButton * allOnButton;
 
 @property(nonatomic, assign) int testCount;
 @property(nonatomic, assign) int testIdCount;
