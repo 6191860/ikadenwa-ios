@@ -6,7 +6,10 @@
 //  Copyright © 2016年 omochimetaru. All rights reserved.
 //
 
-#include "AppDelegate.h"
+#import "AppDelegate.h"
+
+#import "IkadenwaEntranceViewController.h"
+#import "DebugMenuViewController.h"
 
 @implementation AppDelegate
 
@@ -19,6 +22,21 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
     if (!initialized) {
         nwr::Fatal("InitializeSSL failed");
     }
+    
+    UIWindow * window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window = window;
+    [window makeKeyAndVisible];
+    
+    BOOL isDebug = [[[NSBundle mainBundle] objectForInfoDictionaryKey:@"isDebug"] boolValue];
+    
+    UIViewController * vc;
+    if (isDebug) {
+        vc = [[DebugMenuViewController alloc] initWithNibName:@"DebugMenuViewController" bundle:nil];
+    } else {
+        vc = [[IkadenwaEntranceViewController alloc] initWithNibName:@"IkadenwaEntranceViewController" bundle:nil];
+    }
+    
+    window.rootViewController = vc;
     
     return YES;
 }

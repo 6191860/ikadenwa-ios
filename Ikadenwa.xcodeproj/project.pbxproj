@@ -72,7 +72,6 @@
 		D631E8C71C95833300C195A5 /* libnwr_jsrtc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D631E8AA1C95811100C195A5 /* libnwr_jsrtc.a */; };
 		D631E8C81C95833300C195A5 /* libnwr_socketio.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D631E8821C9580AD00C195A5 /* libnwr_socketio.a */; };
 		D631E8CC1C958E8600C195A5 /* Room.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8CB1C958E8600C195A5 /* Room.mm */; };
-		D631E8DC1C958EB900C195A5 /* DebugMenuViewController.h in Sources */ = {isa = PBXBuildFile; fileRef = D631E8CD1C958EB900C195A5 /* DebugMenuViewController.h */; };
 		D631E8DD1C958EB900C195A5 /* DebugMenuViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8CE1C958EB900C195A5 /* DebugMenuViewController.xib */; };
 		D631E8DE1C958EB900C195A5 /* EasyrtcDemo1ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D631E8D01C958EB900C195A5 /* EasyrtcDemo1ViewController.mm */; };
 		D631E8DF1C958EB900C195A5 /* EasyrtcDemo1ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D631E8D11C958EB900C195A5 /* EasyrtcDemo1ViewController.xib */; };
@@ -99,11 +98,8 @@
 		D66C987A1C96F63400216D32 /* green_dark.png in Resources */ = {isa = PBXBuildFile; fileRef = D66C98781C96F63400216D32 /* green_dark.png */; };
 		D66C987B1C96F63400216D32 /* red_dark.png in Resources */ = {isa = PBXBuildFile; fileRef = D66C98791C96F63400216D32 /* red_dark.png */; };
 		D66C987E1C9706F000216D32 /* MyScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = D66C987D1C9706F000216D32 /* MyScrollView.m */; };
-		D6A690531C42361700952A7F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A690521C42361700952A7F /* ViewController.swift */; };
-		D6A690561C42361700952A7F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6A690541C42361700952A7F /* Main.storyboard */; };
 		D6A690581C42361700952A7F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D6A690571C42361700952A7F /* Assets.xcassets */; };
 		D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D6A690591C42361700952A7F /* LaunchScreen.storyboard */; };
-		D6A690651C42366800952A7F /* AAA.m in Sources */ = {isa = PBXBuildFile; fileRef = D6A690641C42366800952A7F /* AAA.m */; };
 		D6A6906A1C4237F100952A7F /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690681C4237F100952A7F /* libcrypto.a */; };
 		D6A6906B1C4237F100952A7F /* libssl.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A690691C4237F100952A7F /* libssl.a */; };
 		D6A6906E1C42380100952A7F /* libwebsockets.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D6A6906D1C42380100952A7F /* libwebsockets.a */; };
@@ -116,6 +112,15 @@
 		D6FEE5AB1C9AE3D100187784 /* IkadenwaEntranceViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6FEE5A91C9AE3D100187784 /* IkadenwaEntranceViewController.mm */; };
 		D6FEE5AC1C9AE3D100187784 /* IkadenwaEntranceViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5AA1C9AE3D100187784 /* IkadenwaEntranceViewController.xib */; };
 		D6FEE5AE1C9AE46D00187784 /* logo@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5AD1C9AE46D00187784 /* logo@2x.png */; };
+		D6FEE5B51CA41B7F00187784 /* icon_120.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5B11CA41B7F00187784 /* icon_120.png */; };
+		D6FEE5B61CA41B7F00187784 /* icon_58.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5B21CA41B7F00187784 /* icon_58.png */; };
+		D6FEE5B71CA41B7F00187784 /* icon_80.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5B31CA41B7F00187784 /* icon_80.png */; };
+		D6FEE5B81CA41B7F00187784 /* icon_raw.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5B41CA41B7F00187784 /* icon_raw.png */; };
+		D6FEE5BB1CA41BB200187784 /* icon_152.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5B91CA41BB200187784 /* icon_152.png */; };
+		D6FEE5BC1CA41BB200187784 /* icon_167.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5BA1CA41BB200187784 /* icon_167.png */; };
+		D6FEE5BE1CA41BCE00187784 /* icon_76.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5BD1CA41BCE00187784 /* icon_76.png */; };
+		D6FEE5C01CA42F8A00187784 /* icon_29.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5BF1CA42F8A00187784 /* icon_29.png */; };
+		D6FEE5C21CA42FAD00187784 /* icon_40.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FEE5C11CA42FAD00187784 /* icon_40.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -402,14 +407,10 @@
 		D67CAE3F1C6A530E0000A3C3 /* any.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = any.cpp; sourceTree = "<group>"; };
 		D67CAE401C6A530E0000A3C3 /* any.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any.h; sourceTree = "<group>"; };
 		D6A6904D1C42361700952A7F /* Ikadenwa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikadenwa.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6A690521C42361700952A7F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		D6A690551C42361700952A7F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		D6A690571C42361700952A7F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D6A6905A1C42361700952A7F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D6A6905C1C42361700952A7F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D6A690621C42366700952A7F /* Ikadenwa-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Ikadenwa-Bridging-Header.h"; sourceTree = "<group>"; };
-		D6A690631C42366800952A7F /* AAA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AAA.h; sourceTree = "<group>"; };
-		D6A690641C42366800952A7F /* AAA.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AAA.m; sourceTree = "<group>"; };
 		D6A690681C4237F100952A7F /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = lib/openssl/lib/libcrypto.a; sourceTree = "<group>"; };
 		D6A690691C4237F100952A7F /* libssl.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libssl.a; path = lib/openssl/lib/libssl.a; sourceTree = "<group>"; };
 		D6A6906D1C42380100952A7F /* libwebsockets.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libwebsockets.a; path = lib/websockets/lib/libwebsockets.a; sourceTree = "<group>"; };
@@ -455,6 +456,15 @@
 		D6FEE5A91C9AE3D100187784 /* IkadenwaEntranceViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = IkadenwaEntranceViewController.mm; path = app/IkadenwaEntranceViewController.mm; sourceTree = "<group>"; };
 		D6FEE5AA1C9AE3D100187784 /* IkadenwaEntranceViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; name = IkadenwaEntranceViewController.xib; path = app/IkadenwaEntranceViewController.xib; sourceTree = "<group>"; };
 		D6FEE5AD1C9AE46D00187784 /* logo@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo@2x.png"; sourceTree = "<group>"; };
+		D6FEE5B11CA41B7F00187784 /* icon_120.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_120.png; sourceTree = "<group>"; };
+		D6FEE5B21CA41B7F00187784 /* icon_58.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_58.png; sourceTree = "<group>"; };
+		D6FEE5B31CA41B7F00187784 /* icon_80.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_80.png; sourceTree = "<group>"; };
+		D6FEE5B41CA41B7F00187784 /* icon_raw.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_raw.png; sourceTree = "<group>"; };
+		D6FEE5B91CA41BB200187784 /* icon_152.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_152.png; sourceTree = "<group>"; };
+		D6FEE5BA1CA41BB200187784 /* icon_167.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_167.png; sourceTree = "<group>"; };
+		D6FEE5BD1CA41BCE00187784 /* icon_76.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_76.png; sourceTree = "<group>"; };
+		D6FEE5BF1CA42F8A00187784 /* icon_29.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_29.png; sourceTree = "<group>"; };
+		D6FEE5C11CA42FAD00187784 /* icon_40.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_40.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -622,6 +632,7 @@
 		D66C986F1C96F53F00216D32 /* res */ = {
 			isa = PBXGroup;
 			children = (
+				D6FEE5B01CA41B7F00187784 /* icon */,
 				D6FEE5AD1C9AE46D00187784 /* logo@2x.png */,
 				D6FEE5A61C9AD3C100187784 /* ika-mark@2x.png */,
 				D6FEE5961C99AD4B00187784 /* gray.png */,
@@ -665,13 +676,9 @@
 				D66C986F1C96F53F00216D32 /* res */,
 				D6A690621C42366700952A7F /* Ikadenwa-Bridging-Header.h */,
 				D66436A41C4A64110059A94B /* main.m */,
-				D6A690521C42361700952A7F /* ViewController.swift */,
-				D6A690541C42361700952A7F /* Main.storyboard */,
 				D6A690571C42361700952A7F /* Assets.xcassets */,
 				D6A690591C42361700952A7F /* LaunchScreen.storyboard */,
 				D6A6905C1C42361700952A7F /* Info.plist */,
-				D6A690631C42366800952A7F /* AAA.h */,
-				D6A690641C42366800952A7F /* AAA.m */,
 			);
 			path = Ikadenwa;
 			sourceTree = "<group>";
@@ -864,6 +871,22 @@
 			name = socketio;
 			sourceTree = "<group>";
 		};
+		D6FEE5B01CA41B7F00187784 /* icon */ = {
+			isa = PBXGroup;
+			children = (
+				D6FEE5C11CA42FAD00187784 /* icon_40.png */,
+				D6FEE5BF1CA42F8A00187784 /* icon_29.png */,
+				D6FEE5BD1CA41BCE00187784 /* icon_76.png */,
+				D6FEE5B91CA41BB200187784 /* icon_152.png */,
+				D6FEE5BA1CA41BB200187784 /* icon_167.png */,
+				D6FEE5B11CA41B7F00187784 /* icon_120.png */,
+				D6FEE5B21CA41B7F00187784 /* icon_58.png */,
+				D6FEE5B31CA41B7F00187784 /* icon_80.png */,
+				D6FEE5B41CA41B7F00187784 /* icon_raw.png */,
+			);
+			path = icon;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1034,25 +1057,33 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D6FEE5B71CA41B7F00187784 /* icon_80.png in Resources */,
+				D6FEE5BB1CA41BB200187784 /* icon_152.png in Resources */,
+				D6FEE5B81CA41B7F00187784 /* icon_raw.png in Resources */,
 				D66C98751C96F53F00216D32 /* green_light.png in Resources */,
 				D6A6905B1C42361700952A7F /* LaunchScreen.storyboard in Resources */,
+				D6FEE5BC1CA41BB200187784 /* icon_167.png in Resources */,
 				D6FEE5971C99AD4B00187784 /* gray.png in Resources */,
 				D631E8E31C958EB900C195A5 /* EasyrtcDemo3ViewController.xib in Resources */,
 				D6FEE5AE1C9AE46D00187784 /* logo@2x.png in Resources */,
 				D6FEE5951C99ACE500187784 /* gray_dark.png in Resources */,
 				D66C987A1C96F63400216D32 /* green_dark.png in Resources */,
+				D6FEE5B51CA41B7F00187784 /* icon_120.png in Resources */,
 				D6FEE5AC1C9AE3D100187784 /* IkadenwaEntranceViewController.xib in Resources */,
+				D6FEE5C21CA42FAD00187784 /* icon_40.png in Resources */,
+				D6FEE5C01CA42F8A00187784 /* icon_29.png in Resources */,
 				D6FEE5A71C9AD3C100187784 /* ika-mark@2x.png in Resources */,
 				D631E8DF1C958EB900C195A5 /* EasyrtcDemo1ViewController.xib in Resources */,
 				D631E8E11C958EB900C195A5 /* EasyrtcDemo2ViewController.xib in Resources */,
 				D66C987B1C96F63400216D32 /* red_dark.png in Resources */,
 				D66C98771C96F53F00216D32 /* red_light.png in Resources */,
 				D6A690581C42361700952A7F /* Assets.xcassets in Resources */,
-				D6A690561C42361700952A7F /* Main.storyboard in Resources */,
 				D631E8DD1C958EB900C195A5 /* DebugMenuViewController.xib in Resources */,
 				D6FEE5931C999B5400187784 /* gray_light.png in Resources */,
 				D66C98741C96F53F00216D32 /* green.png in Resources */,
+				D6FEE5BE1CA41BCE00187784 /* icon_76.png in Resources */,
 				D66C98761C96F53F00216D32 /* red.png in Resources */,
+				D6FEE5B61CA41B7F00187784 /* icon_58.png in Resources */,
 				D631E8F11C95AAEA00C195A5 /* IkadenwaRoomViewController.xib in Resources */,
 				D66C986B1C96EFCF00216D32 /* UserPanel.xib in Resources */,
 			);
@@ -1157,14 +1188,11 @@
 				D631E8F31C95B07C00C195A5 /* DebugMenuViewController.mm in Sources */,
 				D66436A51C4A64110059A94B /* main.m in Sources */,
 				D631E8E21C958EB900C195A5 /* EasyrtcDemo3ViewController.mm in Sources */,
-				D6A690651C42366800952A7F /* AAA.m in Sources */,
 				D66C986E1C96F02700216D32 /* UserPanel.m in Sources */,
 				D6FEE5AB1C9AE3D100187784 /* IkadenwaEntranceViewController.mm in Sources */,
 				D664369D1C4A544C0059A94B /* AppDelegate.mm in Sources */,
 				D631E8CC1C958E8600C195A5 /* Room.mm in Sources */,
-				D6A690531C42361700952A7F /* ViewController.swift in Sources */,
 				D631E8DE1C958EB900C195A5 /* EasyrtcDemo1ViewController.mm in Sources */,
-				D631E8DC1C958EB900C195A5 /* DebugMenuViewController.h in Sources */,
 				D6652B581C81848C00F85895 /* BaseViewController.m in Sources */,
 				D66C987E1C9706F000216D32 /* MyScrollView.m in Sources */,
 				D631E8E51C958EB900C195A5 /* nwr_test_set.cpp in Sources */,
@@ -1235,14 +1263,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		D6A690541C42361700952A7F /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D6A690551C42361700952A7F /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		D6A690591C42361700952A7F /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -1355,7 +1375,6 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -1411,7 +1430,6 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1460,7 +1478,7 @@
 					"$(SRCROOT)/lib/openssl/lib",
 					"$(SRCROOT)/lib/websockets/lib",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.omochimetaru.Ikadenwa;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omochimetaru.ikadenwa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Ikadenwa/Ikadenwa-Bridging-Header.h";
 			};
@@ -1483,7 +1501,7 @@
 					"$(SRCROOT)/lib/openssl/lib",
 					"$(SRCROOT)/lib/websockets/lib",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.omochimetaru.Ikadenwa;
+				PRODUCT_BUNDLE_IDENTIFIER = com.omochimetaru.ikadenwa;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Ikadenwa/Ikadenwa-Bridging-Header.h";
 			};

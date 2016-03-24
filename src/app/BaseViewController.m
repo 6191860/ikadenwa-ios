@@ -76,5 +76,8 @@
 - (void)onStart {}
 - (void)onStop {}
 
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskPortrait;
+}
 
 @end
